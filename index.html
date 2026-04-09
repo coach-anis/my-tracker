@@ -155,7 +155,7 @@ header p {
 /* ─── SUMMARY STRIP ─── */
 .summary-strip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 24px;
 }
@@ -180,6 +180,7 @@ header p {
 .strip-card.s1::before { background: var(--orange); }
 .strip-card.s2::before { background: var(--green); }
 .strip-card.s3::before { background: var(--blue); }
+.strip-card.s4::before { background: var(--gold); }
 
 .strip-card .sv {
   font-family: 'Bebas Neue', sans-serif;
@@ -195,6 +196,7 @@ header p {
 .strip-card.s1 .sv { color: var(--orange); }
 .strip-card.s2 .sv { color: var(--green); }
 .strip-card.s3 .sv { color: var(--blue); }
+.strip-card.s4 .sv { color: var(--gold); }
 
 /* ─── SECTION TITLE ─── */
 .section-title {
@@ -296,6 +298,27 @@ header p {
 }
 
 .slot-input-wrap { display: flex; align-items: center; gap: 4px; }
+
+.slot-dual {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.slot-mini-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--dim);
+  text-align: center;
+  margin-bottom: 1px;
+}
+
+.slot-input-cal { border-color: rgba(232,168,122,0.2) !important; }
+.slot-input-cal:focus { border-color: rgba(232,168,122,0.5) !important; box-shadow: 0 0 0 3px rgba(232,168,122,0.08) !important; }
+.slot-input-pro { border-color: rgba(201,168,76,0.2) !important; }
+.slot-input-pro:focus { border-color: rgba(201,168,76,0.5) !important; box-shadow: 0 0 0 3px rgba(201,168,76,0.08) !important; }
 
 .slot-input {
   width: 100%;
@@ -564,12 +587,129 @@ header p {
   scrollbar-color: rgba(201,168,76,0.2) transparent;
 }
 
+/* ─── CALORIE GOAL ─── */
+.cal-goal-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+.cal-goal-wrap label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.cal-goal-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(232,168,122,0.2);
+  background: var(--dark3);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  max-width: 120px;
+}
+.cal-goal-input:focus {
+  border-color: rgba(232,168,122,0.5);
+  box-shadow: 0 0 0 3px rgba(232,168,122,0.08);
+}
+.cal-goal-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--orange);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+/* ─── CALORIE CHART ─── */
+.cal-chart-wrap {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  height: 155px;
+  overflow: hidden;
+}
+.cal-chart-wrap canvas { width:100% !important; height:100% !important; }
+.cal-chart-empty {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px; font-size: 11px;
+}
+/* ─── JOURNEY PROGRESS ─── */
+.journey-wrap {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.journey-wrap::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+.journey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.journey-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--dim);
+}
+.journey-pct {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: var(--green);
+  line-height: 1;
+}
+.journey-bar-bg {
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.journey-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+  transition: width .6s cubic-bezier(.34,1.56,.64,1);
+}
+.journey-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--dim);
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+}
 /* ─── Responsive ─── */
 @media(max-width:480px) {
   .tabs { padding: 20px 14px 0; }
   .panel { padding-left: 14px; padding-right: 14px; }
-  .summary-strip, .wgt-summary { grid-template-columns: 1fr 1fr; }
-  .summary-strip .strip-card:last-child,
+  .summary-strip { grid-template-columns: repeat(2, 1fr); }
+  .wgt-summary { grid-template-columns: 1fr 1fr; }
   .wgt-summary .wgt-sum-card:last-child { grid-column: span 2; }
 }
 </style>
@@ -594,10 +734,21 @@ header p {
 
   <div style="height:20px"></div>
 
+  <!-- Calorie Goal -->
+  <div class="cal-goal-wrap">
+    <label>هدف السعرات اليومي</label>
+    <input class="cal-goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
+    <span class="cal-goal-badge">KCAL / يوم</span>
+  </div>
+
   <div class="summary-strip">
     <div class="strip-card s1">
       <div class="sv" id="sum-total">0</div>
       <div class="sl">إجمالي السعرات</div>
+    </div>
+    <div class="strip-card s4">
+      <div class="sv" id="sum-protein">0<span style="font-size:14px">g</span></div>
+      <div class="sl">إجمالي البروتين</div>
     </div>
     <div class="strip-card s2">
       <div class="sv" id="sum-days">0</div>
@@ -607,6 +758,12 @@ header p {
       <div class="sv" id="sum-avg">0</div>
       <div class="sl">معدل يومي</div>
     </div>
+  </div>
+
+  <div class="section-title">مخطط السعرات · CAL CHART</div>
+  <div class="cal-chart-wrap">
+    <canvas id="cal-canvas"></canvas>
+    <div class="cal-chart-empty" id="cal-chart-empty">أضف أياماً لترى المخطط</div>
   </div>
 
   <div class="section-title">أيامي · MY DAYS</div>
@@ -632,7 +789,7 @@ header p {
     </div>
   </div>
 
-  <div class="wgt-summary">
+  <div class="wgt-summary" style="grid-template-columns: repeat(2,1fr);">
     <div class="wgt-sum-card w1">
       <div class="wv" id="w-current">--</div>
       <div class="wl">آخر وزن مسجل</div>
@@ -645,6 +802,27 @@ header p {
       <div class="wv" id="w-remaining">--</div>
       <div class="wl">المتبقي للهدف</div>
     </div>
+    <div class="wgt-sum-card" style="border-top:2px solid var(--orange); position:relative; overflow:hidden; background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:16px 10px; text-align:center;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange)"></div>
+      <div class="wv" id="w-weekly" style="color:var(--orange); font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; margin-bottom:4px;">--</div>
+      <div class="wl" style="font-size:10px;color:var(--dim);">خسارة أسبوعية</div>
+    </div>
+  </div>
+
+  <!-- Journey Progress -->
+  <div class="journey-wrap">
+    <div class="journey-header">
+      <span class="journey-title">🎯 تقدمك نحو الهدف</span>
+      <span class="journey-pct" id="journey-pct">0%</span>
+    </div>
+    <div class="journey-bar-bg">
+      <div class="journey-bar-fill" id="journey-bar" style="width:0%"></div>
+    </div>
+    <div class="journey-meta">
+      <span id="journey-start">البداية: --</span>
+      <span id="journey-now">الآن: --</span>
+      <span id="journey-target">الهدف: --</span>
+    </div>
   </div>
 
   <div class="wgt-chart-wrap">
@@ -652,7 +830,7 @@ header p {
     <div class="wgt-chart-empty" id="chart-empty">سجّل وزنك لترى منحنى التطور</div>
   </div>
 
-  <div class="section-title">من 10 أبريل إلى 31 ديسمبر 2026</div>
+  <div class="section-title">سجلاتي · MY LOG</div>
 
   <div class="wgt-list-wrap" id="wgt-list"></div>
 </div>
@@ -691,13 +869,18 @@ function switchTab(tab) {
 
 // ─── CALORIES ───
 let calDays = loadCalData();
+// migrate old format (slots as numbers) to new format (slots as objects)
+calDays = calDays.map(day => ({
+  ...day,
+  slots: day.slots.map(s => (typeof s === 'object' && s !== null) ? s : { cal: s, pro: '' })
+}));
 if(!calDays.length) {
-  calDays = [{ id: Date.now(), date: todayStr(), slots: ['','','','',''] }];
+  calDays = [{ id: Date.now(), date: '2026-04-10', slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) }];
   saveCalData(calDays);
 }
 
 function addDay() {
-  calDays.unshift({ id: Date.now(), date: todayStr(), slots: ['','','','',''] });
+  calDays.unshift({ id: Date.now(), date: '2026-04-10', slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) });
   saveCalData(calDays);
   renderDays();
 }
@@ -708,22 +891,24 @@ function removeDay(id) {
 }
 function addSlot(id) {
   const day = calDays.find(d => d.id === id);
-  if(day) { day.slots.push(''); saveCalData(calDays); renderDays(); }
+  if(day) { day.slots.push({cal:'',pro:''}); saveCalData(calDays); renderDays(); }
 }
 function removeSlot(id, idx) {
   const day = calDays.find(d => d.id === id);
   if(day && day.slots.length > 1) { day.slots.splice(idx, 1); saveCalData(calDays); renderDays(); }
 }
-function updateSlot(id, idx, val) {
+function updateSlot(id, idx, field, val) {
   const day = calDays.find(d => d.id === id);
   if(day) {
-    day.slots[idx] = val;
+    day.slots[idx][field] = val;
     saveCalData(calDays);
-    const total = day.slots.reduce((a, v) => a + (parseFloat(v)||0), 0);
+    const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
+    const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
     const badge = document.querySelector(`[data-badge="${id}"]`);
     const bar   = document.querySelector(`[data-bar="${id}"]`);
-    if(badge) badge.textContent = total > 0 ? total.toLocaleString() + ' CAL' : '0 CAL';
-    if(bar) bar.style.width = Math.min((total/3000)*100, 100) + '%';
+    if(badge) badge.innerHTML = (totalCal > 0 ? totalCal.toLocaleString() : '0') + ' CAL' +
+      (totalPro > 0 ? `<span style="color:var(--gold);font-size:12px;display:block;margin-top:1px">${totalPro}g PRO</span>` : '');
+    if(bar) bar.style.width = Math.min((totalCal/3000)*100, 100) + '%';
     updateCalSummary();
   }
 }
@@ -736,37 +921,44 @@ function renderDays() {
   const container = document.getElementById('days-container');
   container.innerHTML = '';
   calDays.forEach(day => {
-    const total = day.slots.reduce((a, v) => a + (parseFloat(v)||0), 0);
-    const pct = Math.min((total/3000)*100, 100);
+    const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
+    const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
+    const pct = Math.min((totalCal/3000)*100, 100);
     const card = document.createElement('div');
     card.className = 'day-card';
+    const dayNum = calDays.indexOf(day) + 1;
     card.innerHTML = `
       <div class="day-card-header">
         <div class="day-label">
           <div class="day-dot"></div>
           <div class="day-label-text">
             <div style="display:flex;align-items:center;gap:8px">
-              <span>يوم</span>
-              <input type="date" value="${day.date}"
-                style="background:transparent;border:none;color:var(--dim);font-family:'Cairo',sans-serif;font-size:0.72rem;outline:none;cursor:pointer"
-                onchange="updateDateForDay(${day.id}, this.value)" />
+              <span>يوم ${dayNum}</span>
             </div>
-            <div class="day-date-sub">${formatDate(day.date)}</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <div class="day-total-badge" data-badge="${day.id}">${total > 0 ? total.toLocaleString() + ' CAL' : '0 CAL'}</div>
+          <div class="day-total-badge" data-badge="${day.id}">
+            ${totalCal > 0 ? totalCal.toLocaleString() : '0'} CAL
+            ${totalPro > 0 ? `<span style="color:var(--gold);font-size:12px;display:block;margin-top:1px">${totalPro}g PRO</span>` : ''}
+          </div>
           <button class="btn-rm-day" onclick="removeDay(${day.id})">✕</button>
         </div>
       </div>
       <div class="day-card-body">
         <div class="slots-grid" id="slots-${day.id}">
-          ${day.slots.map((v, i) => `
+          ${day.slots.map((s, i) => `
             <div class="slot-wrap">
               <span class="slot-label">وجبة ${i+1}</span>
               <div class="slot-input-wrap">
-                <input class="slot-input" type="number" value="${v}" placeholder="0"
-                  oninput="updateSlot(${day.id}, ${i}, this.value)" min="0" />
+                <div class="slot-dual">
+                  <div class="slot-mini-label" style="color:var(--orange);opacity:0.7">CAL</div>
+                  <input class="slot-input slot-input-cal" type="number" value="${s.cal}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
+                  <div class="slot-mini-label" style="color:var(--gold);opacity:0.7">PRO g</div>
+                  <input class="slot-input slot-input-pro" type="number" value="${s.pro}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
+                </div>
                 ${day.slots.length > 1 ? `<button class="btn-rm-slot" onclick="removeSlot(${day.id},${i})">✕</button>` : ''}
               </div>
             </div>
@@ -786,12 +978,15 @@ function renderDays() {
 }
 
 function updateCalSummary() {
-  const daysWithData = calDays.filter(d => d.slots.some(v => parseFloat(v) > 0));
-  const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, v) => b + (parseFloat(v)||0), 0), 0);
+  const daysWithData = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
+  const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.cal)||0), 0), 0);
+  const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
   const avg = daysWithData.length ? Math.round(totalCals / daysWithData.length) : 0;
   document.getElementById('sum-total').textContent = totalCals.toLocaleString();
+  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:14px">g</span>';
   document.getElementById('sum-days').textContent  = daysWithData.length;
   document.getElementById('sum-avg').textContent   = avg.toLocaleString();
+  setTimeout(drawCalChart, 50);
 }
 
 // ─── WEIGHT ───
@@ -805,6 +1000,7 @@ function saveGoals() {
   wgtData.targetWeight = parseFloat(document.getElementById('target-weight').value) || null;
   saveWgtData(wgtData);
   updateWgtSummary();
+  drawChart();
 }
 
 function updateWeight(dateStr, val) {
@@ -856,6 +1052,49 @@ function updateWgtSummary() {
     if(r <= 0) { remEl.textContent = '🎉 وصلت!'; remEl.className = 'wv'; }
     else { remEl.textContent = r + ' KG'; remEl.className = 'wv'; }
   } else { remEl.textContent = '--'; remEl.className = 'wv'; }
+
+  // ─ Weekly loss rate ─
+  const weeklyEl = document.getElementById('w-weekly');
+  if(entries.length >= 2) {
+    const first = entries[0], lastE = entries[entries.length-1];
+    const daysDiff = Math.max(1, (new Date(lastE[0]) - new Date(first[0])) / 86400000);
+    const totalLoss = first[1] - lastE[1];
+    const weeklyLoss = +((totalLoss / daysDiff) * 7).toFixed(2);
+    if(weeklyLoss > 0) {
+      weeklyEl.textContent = '-' + weeklyLoss + ' KG';
+      weeklyEl.style.color = 'var(--green)';
+    } else if(weeklyLoss < 0) {
+      weeklyEl.textContent = '+' + Math.abs(weeklyLoss) + ' KG';
+      weeklyEl.style.color = 'var(--red)';
+    } else {
+      weeklyEl.textContent = '0 KG';
+      weeklyEl.style.color = 'var(--dim)';
+    }
+  } else { weeklyEl.textContent = '--'; weeklyEl.style.color = 'var(--orange)'; }
+
+  // ─ Journey progress ─
+  const pctEl  = document.getElementById('journey-pct');
+  const barEl  = document.getElementById('journey-bar');
+  const startM = document.getElementById('journey-start');
+  const nowM   = document.getElementById('journey-now');
+  const targM  = document.getElementById('journey-target');
+
+  if(start !== null && target !== null && last !== null && start !== target) {
+    const totalNeeded = Math.abs(start - target);
+    const done = Math.abs(start - last);
+    const pct = Math.min(100, Math.round((done / totalNeeded) * 100));
+    pctEl.textContent = pct + '%';
+    barEl.style.width = pct + '%';
+    startM.textContent = 'البداية: ' + start + ' KG';
+    nowM.textContent   = 'الآن: ' + last + ' KG';
+    targM.textContent  = 'الهدف: ' + target + ' KG';
+    pctEl.style.color = pct >= 100 ? 'var(--gold)' : 'var(--green)';
+  } else {
+    pctEl.textContent = '0%'; barEl.style.width = '0%';
+    startM.textContent = 'البداية: --';
+    nowM.textContent   = 'الآن: --';
+    targM.textContent  = 'الهدف: --';
+  }
 }
 
 function drawChart() {
@@ -931,56 +1170,131 @@ function renderWeight() {
   document.getElementById('start-weight').value  = wgtData.startWeight  || '';
   document.getElementById('target-weight').value = wgtData.targetWeight || '';
 
-  const list    = document.getElementById('wgt-list');
+  const list = document.getElementById('wgt-list');
   list.innerHTML = '';
-
-  const groups  = {};
-  ALL_DATES.forEach(d => { const m = d.slice(0,7); if(!groups[m]) groups[m]=[]; groups[m].push(d); });
   const entries = getSortedEntries();
 
-  Object.entries(groups).forEach(([monthKey, dates]) => {
-    const [y, mo] = monthKey.split('-');
-    const group   = document.createElement('div');
-    group.className = 'month-group';
-    group.innerHTML = `<div class="month-header">${AR_MONTHS[parseInt(mo)-1]} ${y}</div>`;
+  ALL_DATES.forEach((dateStr, index) => {
+    const w = wgtData.weights[dateStr];
+    const sortedIdx = entries.findIndex(e => e[0] === dateStr);
+    const dayNum = index + 1;
 
-    dates.forEach(dateStr => {
-      const w = wgtData.weights[dateStr];
-      const d = new Date(dateStr + 'T00:00:00');
-      const sortedIdx = entries.findIndex(e => e[0] === dateStr);
+    let diffHtml = `<div class="wgt-row-diff empty" data-wdiff="${dateStr}">--</div>`;
+    if(w !== undefined && sortedIdx > 0) {
+      const diff = +(w - entries[sortedIdx-1][1]).toFixed(1);
+      const cls  = diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same';
+      diffHtml = `<div class="wgt-row-diff ${cls}" data-wdiff="${dateStr}">${diff>0?'+':''}${diff} KG</div>`;
+    } else if(w !== undefined) {
+      diffHtml = `<div class="wgt-row-diff same" data-wdiff="${dateStr}">--</div>`;
+    }
 
-      let diffHtml = `<div class="wgt-row-diff empty" data-wdiff="${dateStr}">--</div>`;
-      if(w !== undefined && sortedIdx > 0) {
-        const diff = +(w - entries[sortedIdx-1][1]).toFixed(1);
-        const cls  = diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same';
-        diffHtml = `<div class="wgt-row-diff ${cls}" data-wdiff="${dateStr}">${diff>0?'+':''}${diff} KG</div>`;
-      } else if(w !== undefined) {
-        diffHtml = `<div class="wgt-row-diff same" data-wdiff="${dateStr}">--</div>`;
-      }
+    const row = document.createElement('div');
+    row.className = 'wgt-row';
+    row.innerHTML = `
+      <div class="wgt-row-date">
+        يوم ${dayNum}
+      </div>
 
-      const row = document.createElement('div');
-      row.className = 'wgt-row';
-      row.innerHTML = `
-        <div class="wgt-row-date">
-          ${d.getDate()} ${AR_MONTHS[d.getMonth()]}
-          <span>${AR_DAYS[d.getDay()]}</span>
-        </div>
-        <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined ? w : ''}"
-          step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
-        ${diffHtml}
-      `;
-      group.appendChild(row);
-    });
-    list.appendChild(group);
+      <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined ? w : ''}"
+        step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
+      ${diffHtml}
+    `;
+    list.appendChild(row);
   });
 
   updateWgtSummary();
   setTimeout(drawChart, 50);
 }
 
+// ─── CALORIE GOAL ───
+const KEY_GOAL = 'trackerCalGoal_v1';
+let calGoal = parseInt(localStorage.getItem(KEY_GOAL)) || 2500;
+
+function saveCalGoal() {
+  const v = parseInt(document.getElementById('cal-goal').value);
+  calGoal = isNaN(v) ? 2500 : v;
+  localStorage.setItem(KEY_GOAL, calGoal);
+  renderDays();
+  drawCalChart();
+}
+
+// ─── CALORIE CHART ───
+function drawCalChart() {
+  const canvas  = document.getElementById('cal-canvas');
+  const emptyEl = document.getElementById('cal-chart-empty');
+  const daysWithData = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
+  if(daysWithData.length < 2) { emptyEl.style.display = 'flex'; canvas.style.display='none'; return; }
+  emptyEl.style.display = 'none'; canvas.style.display='block';
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const vals = daysWithData.map(d => d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0));
+  const minV = Math.max(0, Math.min(...vals) - 200);
+  const maxV = Math.max(...vals, calGoal) + 200;
+  const pad  = { t:10, r:10, b:28, l:40 };
+  const cw   = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const tx   = i => pad.l + (i/(daysWithData.length-1||1)) * cw;
+  const ty   = v => pad.t + ch - ((v-minV)/(maxV-minV)) * ch;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+  for(let i=0; i<=4; i++) {
+    const y = pad.t + (i/4)*ch;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '10px Cairo'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxV - i*(maxV-minV)/4), pad.l-4, y+4);
+  }
+
+  // Goal line
+  if(calGoal) {
+    const gy = ty(calGoal);
+    if(gy >= pad.t && gy <= pad.t+ch) {
+      ctx.setLineDash([4,4]); ctx.strokeStyle = 'rgba(232,168,122,0.6)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l+cw, gy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(232,168,122,0.7)'; ctx.font = '9px Bebas Neue'; ctx.textAlign = 'left';
+      ctx.fillText('GOAL', pad.l+4, gy-3);
+    }
+  }
+
+  // Area
+  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t+ch);
+  grad.addColorStop(0, 'rgba(232,168,122,0.22)');
+  grad.addColorStop(1, 'rgba(232,168,122,0)');
+  ctx.beginPath();
+  daysWithData.forEach((d,i) => {
+    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
+    i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v));
+  });
+  ctx.lineTo(tx(daysWithData.length-1), pad.t+ch);
+  ctx.lineTo(tx(0), pad.t+ch);
+  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle = '#E8A87A'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  daysWithData.forEach((d,i) => {
+    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
+    i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v));
+  });
+  ctx.stroke();
+
+  // Dots
+  daysWithData.forEach((d,i) => {
+    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
+    ctx.beginPath(); ctx.arc(tx(i), ty(v), 4, 0, Math.PI*2);
+    ctx.fillStyle = '#E8A87A'; ctx.fill();
+    ctx.strokeStyle = '#080808'; ctx.lineWidth = 2; ctx.stroke();
+  });
+}
+
 // ─── INIT ───
+document.getElementById('cal-goal').value = calGoal || '';
 renderDays();
 renderWeight();
+setTimeout(drawCalChart, 80);
 </script>
 </body>
 </html>
