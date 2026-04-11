@@ -717,12 +717,6 @@ header p {
 <body>
 <div class="bg-glow"></div>
 
-<header>
-  <div class="header-tag">DAILY TRACKER · CALORIES · WEIGHT</div>
-  <h1>متتبعي<br><span>اليومي</span></h1>
-  <p>السعرات الحرارية · متابعة الوزن</p>
-  <div class="header-line"></div>
-</header>
 
 <div class="tabs">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
@@ -735,13 +729,20 @@ header p {
   <div style="height:20px"></div>
 
   <!-- Calorie Goal -->
-  <div class="cal-goal-wrap">
-    <label>هدف السعرات اليومي</label>
-    <input class="cal-goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
-    <span class="cal-goal-badge">KCAL / يوم</span>
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <div class="cal-goal-wrap" style="flex:1;margin-bottom:0;">
+      <label>هدف السعرات اليومي</label>
+      <input class="cal-goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
+      <span class="cal-goal-badge">KCAL / يوم</span>
+    </div>
+    <div class="cal-goal-wrap" style="flex:1;margin-bottom:0;">
+      <label>هدف البروتين اليومي</label>
+      <input class="cal-goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" style="border-color:rgba(201,168,76,0.2);" />
+      <span class="cal-goal-badge" style="color:var(--gold);">G / يوم</span>
+    </div>
   </div>
 
-  <div class="summary-strip">
+  <div class="summary-strip" style="grid-template-columns: repeat(2,1fr);">
     <div class="strip-card s1">
       <div class="sv" id="sum-total">0</div>
       <div class="sl">إجمالي السعرات</div>
@@ -750,27 +751,14 @@ header p {
       <div class="sv" id="sum-protein">0<span style="font-size:14px">g</span></div>
       <div class="sl">إجمالي البروتين</div>
     </div>
-    <div class="strip-card s2">
-      <div class="sv" id="sum-days">0</div>
-      <div class="sl">أيام مسجلة</div>
-    </div>
-    <div class="strip-card s3">
-      <div class="sv" id="sum-avg">0</div>
-      <div class="sl">معدل يومي</div>
-    </div>
   </div>
 
-  <div class="section-title">مخطط السعرات · CAL CHART</div>
-  <div class="cal-chart-wrap">
-    <canvas id="cal-canvas"></canvas>
-    <div class="cal-chart-empty" id="cal-chart-empty">أضف أياماً لترى المخطط</div>
-  </div>
 
   <div class="section-title">أيامي · MY DAYS</div>
 
   <div id="days-container"></div>
 
-  <button class="btn-add-day" onclick="addDay()">+ إضافة يوم جديد</button>
+  <button class="btn-add-day" onclick="resetDay()" style="border-color:rgba(232,122,122,0.3);background:rgba(232,122,122,0.04);color:var(--red);">↺ إعادة الضبط</button>
 </div>
 
 <!-- ═══ WEIGHT PANEL ═══ -->
@@ -889,6 +877,13 @@ function removeDay(id) {
   saveCalData(calDays);
   renderDays();
 }
+function resetDay() {
+  if(calDays.length > 0) {
+    calDays[0].slots = Array(5).fill(null).map(()=>({cal:'',pro:''}));
+    saveCalData(calDays);
+    renderDays();
+  }
+}
 function addSlot(id) {
   const day = calDays.find(d => d.id === id);
   if(day) { day.slots.push({cal:'',pro:''}); saveCalData(calDays); renderDays(); }
@@ -978,14 +973,10 @@ function renderDays() {
 }
 
 function updateCalSummary() {
-  const daysWithData = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
   const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.cal)||0), 0), 0);
   const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
-  const avg = daysWithData.length ? Math.round(totalCals / daysWithData.length) : 0;
   document.getElementById('sum-total').textContent = totalCals.toLocaleString();
   document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:14px">g</span>';
-  document.getElementById('sum-days').textContent  = daysWithData.length;
-  document.getElementById('sum-avg').textContent   = avg.toLocaleString();
   setTimeout(drawCalChart, 50);
 }
 
@@ -1218,8 +1209,19 @@ function saveCalGoal() {
   drawCalChart();
 }
 
+// ─── PROTEIN GOAL ───
+const KEY_PRO_GOAL = 'trackerProGoal_v1';
+let proGoal = parseInt(localStorage.getItem(KEY_PRO_GOAL)) || 150;
+
+function saveProGoal() {
+  const v = parseInt(document.getElementById('pro-goal').value);
+  proGoal = isNaN(v) ? 150 : v;
+  localStorage.setItem(KEY_PRO_GOAL, proGoal);
+}
+
 // ─── CALORIE CHART ───
 function drawCalChart() {
+  return; // chart removed
   const canvas  = document.getElementById('cal-canvas');
   const emptyEl = document.getElementById('cal-chart-empty');
   const daysWithData = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
@@ -1292,6 +1294,7 @@ function drawCalChart() {
 
 // ─── INIT ───
 document.getElementById('cal-goal').value = calGoal || '';
+document.getElementById('pro-goal').value = proGoal || '';
 renderDays();
 renderWeight();
 setTimeout(drawCalChart, 80);
