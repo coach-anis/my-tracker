@@ -882,6 +882,68 @@ body::after {
   text-align: center;
 }
 
+/* ── WELCOME OVERLAY ── */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(6,6,10,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeIn .4s ease both;
+  pointer-events: none;
+}
+.welcome-overlay.hide {
+  animation: fadeOut .5s ease both;
+}
+@keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+
+.welcome-box {
+  text-align: center;
+  animation: popIn .5s cubic-bezier(.34,1.56,.64,1) .1s both;
+}
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.85) translateY(12px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.welcome-emoji {
+  font-size: 52px;
+  margin-bottom: 14px;
+  display: block;
+}
+.welcome-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.welcome-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.welcome-line {
+  width: 60px;
+  height: 3px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--fire), var(--gold));
+  margin: 14px auto 0;
+  animation: expandLine .6s ease .3s both;
+}
+@keyframes expandLine {
+  from { width: 0; opacity:0; }
+  to   { width: 60px; opacity:1; }
+}
+
 /* ── PWA offline toast ── */
 .pwa-toast {
   position: fixed;
@@ -994,6 +1056,16 @@ body::after {
 </style>
 </head>
 <body>
+
+<!-- ── WELCOME OVERLAY ── -->
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-box">
+    <span class="welcome-emoji">🔥</span>
+    <div class="welcome-title">تطبيق المدرب أنيس</div>
+    <div class="welcome-sub">تتبع سعراتك ووزنك يومياً</div>
+    <div class="welcome-line"></div>
+  </div>
+</div>
 
 <!-- ── STICKY CALORIE BAR ── -->
 <div class="cal-sticky-bar hidden" id="cal-sticky-bar">
@@ -1421,19 +1493,42 @@ function updateMotivBanner() {
 }
 
 function exportData() {
-  const data = {
-    exportedAt: new Date().toISOString(),
-    calories: {
-      goal: calGoal,
-      proteinGoal: proGoal,
-      days: calDays
-    },
-    weight: wgtData
-  };
-  const jsonStr = JSON.stringify(data, null, 2);
-  const btn = document.getElementById('btn-export');
+  const today     = calDays[0];
+  const totalCal  = today ? today.slots.reduce((a,s) => a+(parseFloat(s.cal)||0), 0) : 0;
+  const totalPro  = today ? today.slots.reduce((a,s) => a+(parseFloat(s.pro)||0), 0) : 0;
+  const entries   = getSortedEntries();
+  const lastWgt   = entries.length ? entries[entries.length-1][1] : null;
+  const start     = wgtData.startWeight;
+  const target    = wgtData.targetWeight;
+  const remCal    = (calGoal||2500) - totalCal;
+  const line      = '━━━━━━━━━━━━━━';
 
-  navigator.clipboard.writeText(jsonStr).then(() => {
+  let calStatus = '';
+  if      (remCal > 0)  calStatus = `متبقي ${remCal.toLocaleString()} kcal`;
+  else if (remCal === 0) calStatus = '🎯 أكملت الهدف!';
+  else                  calStatus = `تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal ⚠️`;
+
+  let wgtLines = '';
+  if (lastWgt) {
+    const diff = start ? +((lastWgt - start).toFixed(1)) : null;
+    const rem  = target ? +((lastWgt - target).toFixed(1)) : null;
+    wgtLines = `
+${line}
+⚖️ الوزن الحالي: ${lastWgt} KG${diff !== null ? `\n📉 التغيّر: ${diff > 0 ? '+' : ''}${diff} KG` : ''}${rem !== null && rem > 0 ? `\n🏁 المتبقي للهدف: ${rem} KG` : rem !== null && rem <= 0 ? `\n🏁 وصلت للهدف! 🎉` : ''}`;
+  }
+
+  const text =
+`📊 تقرير اليوم - Coach Anis
+${line}
+🔥 السعرات: ${totalCal.toLocaleString()} / ${(calGoal||2500).toLocaleString()} kcal
+📌 ${calStatus}
+${line}
+💪 البروتين: ${totalPro}g / ${proGoal||150}g${wgtLines}
+${line}
+by @coach__anis`;
+
+  const btn = document.getElementById('btn-export');
+  navigator.clipboard.writeText(text).then(() => {
     const original = btn.innerHTML;
     btn.innerHTML = '✅ تم النسخ!';
     btn.style.borderColor = 'rgba(0,212,170,0.5)';
@@ -1446,9 +1541,8 @@ function exportData() {
       btn.style.background = '';
     }, 2000);
   }).catch(() => {
-    // Fallback for browsers that don't support clipboard API
     const ta = document.createElement('textarea');
-    ta.value = jsonStr;
+    ta.value = text;
     ta.style.position = 'fixed';
     ta.style.opacity = '0';
     document.body.appendChild(ta);
@@ -1843,13 +1937,20 @@ renderDays = function() {
 
 // ─── PWA SERVICE WORKER ───
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/my-tracker/sw.js').then(() => {
-    showToast('✅ التطبيق يعمل الآن بدون إنترنت');
-  }).catch(() => {});
+  navigator.serviceWorker.register('/my-tracker/sw.js').then(() => {}).catch(() => {});
 
   window.addEventListener('offline', () => showToast('📵 أنت غير متصل — يعمل أوف لاين'));
   window.addEventListener('online',  () => showToast('🌐 عاد الاتصال بالإنترنت'));
 }
+
+// رسالة الترحيب المركزية
+window.addEventListener('load', () => {
+  const overlay = document.getElementById('welcome-overlay');
+  setTimeout(() => {
+    overlay.classList.add('hide');
+    setTimeout(() => overlay.remove(), 500);
+  }, 1100);
+});
 
 // ─── PWA INSTALL PROMPT ───
 let _deferredPrompt = null;
