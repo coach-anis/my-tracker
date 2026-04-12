@@ -639,21 +639,78 @@ body::after {
 /* weight chart */
 .wgt-chart-wrap {
   background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
+  border: 1px solid rgba(0,212,170,0.15);
+  border-radius: 20px;
+  padding: 0;
   margin-bottom: 16px;
   position: relative;
-  height: 150px;
+  height: 240px;
   overflow: hidden;
 }
-.wgt-chart-wrap canvas { width:100%!important; height:100%!important; }
+.wgt-chart-wrap::before {
+  content:''; position:absolute; top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  z-index:2;
+}
+.wgt-chart-header {
+  position: absolute;
+  top: 14px; right: 16px; left: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 3;
+  pointer-events: none;
+}
+.wgt-chart-title {
+  font-size: 8px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color: var(--muted);
+}
+.wgt-chart-legend {
+  display: flex; gap: 12px; align-items: center;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 8px; font-weight:700; letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.legend-dot { width:6px; height:6px; border-radius:50%; }
+.legend-item.teal-l { color: var(--teal); }
+.legend-item.teal-l .legend-dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+.legend-item.gold-l { color: var(--gold); }
+.legend-item.gold-l .legend-dot { background: var(--gold); }
+
+.wgt-chart-wrap canvas { width:100%!important; height:100%!important; display:block; }
 .wgt-chart-empty {
   position:absolute; inset:0;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
   font-size: 9px; font-weight:700; letter-spacing:3px;
-  text-transform:uppercase;
-  color: var(--muted);
+  text-transform:uppercase; color: var(--muted);
+}
+.wgt-chart-empty span { font-size:28px; opacity:0.3; }
+
+.chart-tooltip {
+  position: absolute;
+  background: var(--bg4);
+  border: 1px solid rgba(0,212,170,0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 10;
+  transform: translateX(50%);
+  min-width: 80px;
+  text-align: center;
+}
+.chart-tooltip.visible { opacity: 1; }
+.chart-tooltip-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight:800;
+  color: var(--teal); letter-spacing:-0.5px;
+}
+.chart-tooltip-day {
+  font-size: 8px; font-weight:700; letter-spacing:1.5px;
+  text-transform:uppercase; color: var(--muted); margin-top:2px;
 }
 
 /* weight log rows */
@@ -721,6 +778,89 @@ body::after {
   .goals-row { grid-template-columns: 1fr; }
   .wgt-goals-row { grid-template-columns: 1fr; }
 }
+
+/* ── Motivational Banner ── */
+.motiv-banner {
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid;
+  animation: bannerIn .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes bannerIn {
+  from { opacity:0; transform:translateY(-8px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.motiv-banner.green  { background: rgba(0,212,170,0.07);  border-color: rgba(0,212,170,0.2); }
+.motiv-banner.fire   { background: rgba(255,95,31,0.07);  border-color: rgba(255,95,31,0.2); }
+.motiv-banner.gold   { background: rgba(245,200,66,0.07); border-color: rgba(245,200,66,0.2); }
+.motiv-banner.blue   { background: rgba(77,166,255,0.07); border-color: rgba(77,166,255,0.2); }
+.motiv-banner.red    { background: rgba(255,77,109,0.07); border-color: rgba(255,77,109,0.2); }
+
+.motiv-emoji { font-size: 22px; flex-shrink:0; }
+.motiv-text  { flex:1; }
+.motiv-title {
+  font-size: 0.82rem; font-weight:700;
+  line-height:1.35; color: var(--text);
+}
+.motiv-sub {
+  font-size: 0.72rem; color: var(--muted);
+  margin-top:2px; font-weight:600;
+}
+
+/* ── Day Smart Summary ── */
+.day-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.day-sum-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid;
+  letter-spacing: 0.3px;
+}
+.day-sum-pill.ok    { background: rgba(0,212,170,0.08);  border-color: rgba(0,212,170,0.25);  color: var(--teal2); }
+.day-sum-pill.warn  { background: rgba(255,200,66,0.08); border-color: rgba(255,200,66,0.25); color: var(--gold2); }
+.day-sum-pill.over  { background: rgba(255,77,109,0.08); border-color: rgba(255,77,109,0.25); color: var(--red); }
+.day-sum-pill.empty { background: rgba(255,255,255,0.03); border-color: var(--border); color: var(--muted); }
+
+/* ── Export Button ── */
+.btn-export {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(77,166,255,0.25);
+  background: rgba(77,166,255,0.05);
+  color: rgba(77,166,255,0.8);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all .25s;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-export:hover {
+  background: rgba(77,166,255,0.12);
+  border-color: var(--blue);
+  color: var(--blue);
+}
 </style>
 </head>
 <body>
@@ -751,6 +891,8 @@ body::after {
     </div>
   </div>
 
+  <div id="motiv-banner"></div>
+
   <div class="summary-strip">
     <div class="strip-card s1">
       <div class="sv" id="sum-total">0</div>
@@ -767,6 +909,7 @@ body::after {
   <div id="days-container"></div>
 
   <button class="btn-reset" onclick="resetDay()">↺ إعادة الضبط</button>
+  <button class="btn-export" onclick="exportData()">⬇ تصدير البيانات · JSON</button>
 </div>
 
 <!-- ═══ WEIGHT PANEL ═══ -->
@@ -818,9 +961,20 @@ body::after {
     </div>
   </div>
 
-  <div class="wgt-chart-wrap">
+  <div class="wgt-chart-wrap" id="chart-container">
+    <div class="wgt-chart-header">
+      <span class="wgt-chart-title">منحنى الوزن · WEIGHT CURVE</span>
+      <div class="wgt-chart-legend">
+        <div class="legend-item teal-l"><div class="legend-dot"></div>وزنك</div>
+        <div class="legend-item gold-l"><div class="legend-dot"></div>الهدف</div>
+      </div>
+    </div>
     <canvas id="wgt-canvas"></canvas>
-    <div class="wgt-chart-empty" id="chart-empty">سجّل وزنك لترى منحنى التطور</div>
+    <div class="wgt-chart-empty" id="chart-empty"><span>📉</span>سجّل وزنك لترى المنحنى</div>
+    <div class="chart-tooltip" id="chart-tooltip">
+      <div class="chart-tooltip-val" id="tooltip-val">--</div>
+      <div class="chart-tooltip-day" id="tooltip-day">--</div>
+    </div>
   </div>
 
   <div class="section-label">سجلاتي · MY LOG</div>
@@ -922,7 +1076,9 @@ function updateSlot(id, idx, field, val) {
       (totalPro > 0 ? `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>` : '');
     if(bar)    bar.style.width    = Math.min((totalCal / (calGoal || 2500)) * 100, 100) + '%';
     if(barPro) barPro.style.width = Math.min((totalPro / (proGoal || 150))  * 100, 100) + '%';
+    updateDaySummary(id, totalCal, totalPro);
     updateCalSummary();
+    updateMotivBanner();
   }
 }
 
@@ -935,6 +1091,30 @@ function renderDays() {
     const pct    = Math.min((totalCal / (calGoal || 2500)) * 100, 100);
     const proPct = Math.min((totalPro / (proGoal || 150))  * 100, 100);
     const dayNum = calDays.indexOf(day) + 1;
+
+    const remCal = (calGoal || 2500) - totalCal;
+    const remPro = (proGoal || 150) - totalPro;
+
+    // Smart summary pills
+    let calPill = '', proPill = '';
+    if(totalCal === 0) {
+      calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
+    } else if(remCal > 0) {
+      calPill = `<div class="day-sum-pill ok">🔥 متبقي ${remCal.toLocaleString()} kcal</div>`;
+    } else if(remCal === 0) {
+      calPill = `<div class="day-sum-pill warn">🎯 وصلت للهدف بالضبط!</div>`;
+    } else {
+      calPill = `<div class="day-sum-pill over">⚠️ تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal</div>`;
+    }
+    if(totalPro === 0) {
+      proPill = `<div class="day-sum-pill empty">💪 لم تُسجّل بروتين بعد</div>`;
+    } else if(remPro > 0) {
+      proPill = `<div class="day-sum-pill ok">💪 متبقي ${remPro}g بروتين</div>`;
+    } else if(remPro === 0) {
+      proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
+    } else {
+      proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
+    }
 
     const card = document.createElement('div');
     card.className = 'day-card';
@@ -953,6 +1133,7 @@ function renderDays() {
         </div>
       </div>
       <div class="day-card-body">
+        <div class="day-summary" data-summary="${day.id}">${calPill}${proPill}</div>
 
         <div class="sub-label fire">
           <div class="sub-dot"></div>
@@ -1001,6 +1182,7 @@ function renderDays() {
     container.appendChild(card);
   });
   updateCalSummary();
+  updateMotivBanner();
 }
 
 function updateCalSummary() {
@@ -1008,6 +1190,89 @@ function updateCalSummary() {
   const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
   document.getElementById('sum-total').textContent = totalCals.toLocaleString();
   document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:15px;font-weight:700">g</span>';
+}
+
+function updateDaySummary(id, totalCal, totalPro) {
+  const container = document.querySelector(`[data-summary="${id}"]`);
+  if(!container) return;
+  const remCal = (calGoal || 2500) - totalCal;
+  const remPro = (proGoal || 150) - totalPro;
+  let calPill, proPill;
+  if(totalCal === 0) calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
+  else if(remCal > 0) calPill = `<div class="day-sum-pill ok">🔥 متبقي ${remCal.toLocaleString()} kcal</div>`;
+  else if(remCal === 0) calPill = `<div class="day-sum-pill warn">🎯 وصلت للهدف بالضبط!</div>`;
+  else calPill = `<div class="day-sum-pill over">⚠️ تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal</div>`;
+  if(totalPro === 0) proPill = `<div class="day-sum-pill empty">💪 لم تُسجّل بروتين بعد</div>`;
+  else if(remPro > 0) proPill = `<div class="day-sum-pill ok">💪 متبقي ${remPro}g بروتين</div>`;
+  else if(remPro === 0) proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
+  else proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
+  container.innerHTML = calPill + proPill;
+}
+
+function updateMotivBanner() {
+  const el = document.getElementById('motiv-banner');
+  if(!el) return;
+
+  const daysWithCal = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
+  const totalCals = calDays.reduce((a,d) => a + d.slots.reduce((b,s) => b+(parseFloat(s.cal)||0),0), 0);
+  const remToday = (calGoal || 2500) - (calDays[0] ? calDays[0].slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0) : 0);
+  const streak = daysWithCal.length;
+
+  let emoji, title, sub, type;
+
+  if(streak === 0) {
+    emoji = '👋'; type = 'blue';
+    title = 'أهلاً! ابدأ بتسجيل وجباتك اليوم';
+    sub   = 'كل رحلة تبدأ بخطوة واحدة';
+  } else if(remToday < 0) {
+    emoji = '⚠️'; type = 'red';
+    title = `تجاوزت هدف السعرات اليوم بـ ${Math.abs(remToday).toLocaleString()} kcal`;
+    sub   = 'لا بأس — غداً فرصة جديدة للعودة للمسار';
+  } else if(remToday === 0) {
+    emoji = '🎯'; type = 'gold';
+    title = 'وصلت لهدف السعرات اليوم بالضبط!';
+    sub   = 'انضباط مثالي — أحسنت!';
+  } else if(streak >= 7) {
+    emoji = '🔥'; type = 'fire';
+    title = `${streak} أيام متتالية من التسجيل — رائع!`;
+    sub   = 'الاستمرارية هي السر — لا تتوقف';
+  } else if(streak >= 3) {
+    emoji = '💪'; type = 'green';
+    title = `ممتاز! ${streak} أيام متتالية مسجّلة`;
+    sub   = `متبقي لك اليوم ${remToday.toLocaleString()} kcal`;
+  } else {
+    emoji = '✅'; type = 'green';
+    title = `متبقي لك اليوم ${remToday.toLocaleString()} kcal`;
+    sub   = streak > 1 ? `${streak} أيام مسجّلة — استمر!` : 'بداية موفقة، واصل التسجيل يومياً';
+  }
+
+  el.innerHTML = `
+    <div class="motiv-banner ${type}">
+      <div class="motiv-emoji">${emoji}</div>
+      <div class="motiv-text">
+        <div class="motiv-title">${title}</div>
+        <div class="motiv-sub">${sub}</div>
+      </div>
+    </div>`;
+}
+
+function exportData() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    calories: {
+      goal: calGoal,
+      proteinGoal: proGoal,
+      days: calDays
+    },
+    weight: wgtData
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── WEIGHT ───
@@ -1113,8 +1378,8 @@ function drawChart() {
   const canvas  = document.getElementById('wgt-canvas');
   const emptyEl = document.getElementById('chart-empty');
   const entries = getSortedEntries();
-  if(entries.length < 2) { emptyEl.style.display = 'flex'; return; }
-  emptyEl.style.display = 'none';
+  if(entries.length < 2) { emptyEl.style.display = 'flex'; canvas.style.display = 'none'; return; }
+  emptyEl.style.display = 'none'; canvas.style.display = 'block';
 
   const ctx = canvas.getContext('2d');
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
@@ -1122,47 +1387,167 @@ function drawChart() {
   ctx.scale(devicePixelRatio, devicePixelRatio);
 
   const vals = entries.map(e => e[1]);
-  const minV = Math.min(...vals) - 1, maxV = Math.max(...vals) + 1;
-  const pad  = { t:10, r:10, b:28, l:36 };
-  const cw   = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-  const tx   = i => pad.l + (i/(entries.length-1)) * cw;
-  const ty   = v => pad.t + ch - ((v-minV)/(maxV-minV)) * ch;
+  const target = wgtData.targetWeight;
+  const allVals = target ? [...vals, target] : vals;
+  const minV = Math.min(...allVals) - 1.5;
+  const maxV = Math.max(...allVals) + 1.5;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
-  for(let i=0; i<=4; i++) {
-    const y = pad.t + (i/4)*ch;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '10px Cairo'; ctx.textAlign = 'right';
-    ctx.fillText((maxV - i*(maxV-minV)/4).toFixed(1), pad.l-4, y+4);
+  const pad = { t: 44, r: 20, b: 36, l: 42 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const tx = i => pad.l + (i / (entries.length - 1)) * cw;
+  const ty = v => pad.t + ch - ((v - minV) / (maxV - minV)) * ch;
+
+  // ── Background grid ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for(let i = 0; i <= 4; i++) {
+    const y = pad.t + (i / 4) * ch;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
   }
 
-  if(wgtData.targetWeight) {
-    const ty2 = ty(wgtData.targetWeight);
-    if(ty2 >= pad.t && ty2 <= pad.t+ch) {
-      ctx.setLineDash([4,4]); ctx.strokeStyle = '#00D4AA'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(pad.l, ty2); ctx.lineTo(pad.l+cw, ty2); ctx.stroke();
+  // ── Y-axis labels ──
+  for(let i = 0; i <= 4; i++) {
+    const v = maxV - i * (maxV - minV) / 4;
+    const y = pad.t + (i / 4) * ch;
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.font = `bold 9px Cairo`;
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(1), pad.l - 6, y + 4);
+  }
+
+  // ── X-axis day labels ──
+  const maxLabels = Math.min(entries.length, 6);
+  const step = Math.max(1, Math.floor(entries.length / maxLabels));
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font = 'bold 8px Cairo';
+  ctx.textAlign = 'center';
+  entries.forEach(([date], i) => {
+    if(i % step !== 0 && i !== entries.length - 1) return;
+    const d = new Date(date + 'T00:00:00');
+    const label = `${d.getDate()}/${d.getMonth() + 1}`;
+    ctx.fillText(label, tx(i), H - pad.b + 14);
+  });
+
+  // ── Target line ──
+  if(target) {
+    const gy = ty(target);
+    if(gy >= pad.t && gy <= pad.t + ch) {
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(245,200,66,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l + cw, gy); ctx.stroke();
       ctx.setLineDash([]);
+      // label
+      ctx.fillStyle = 'rgba(245,200,66,0.7)';
+      ctx.font = 'bold 8px Cairo';
+      ctx.textAlign = 'left';
+      ctx.fillText('GOAL  ' + target + ' KG', pad.l + 6, gy - 5);
+      ctx.restore();
     }
   }
 
-  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t+ch);
-  grad.addColorStop(0, 'rgba(0,212,170,0.18)');
-  grad.addColorStop(1, 'rgba(0,212,170,0)');
-  ctx.beginPath();
-  entries.forEach(([,v],i) => i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v)));
-  ctx.lineTo(tx(entries.length-1), pad.t+ch);
-  ctx.lineTo(tx(0), pad.t+ch);
-  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+  // ── Smooth bezier curve helper ──
+  function bezierPoints(pts) {
+    const cp = [];
+    for(let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i > 0 ? i - 1 : 0];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i < pts.length - 2 ? i + 2 : i + 1];
+      cp.push({
+        cp1x: p1.x + (p2.x - p0.x) / 6,
+        cp1y: p1.y + (p2.y - p0.y) / 6,
+        cp2x: p2.x - (p3.x - p1.x) / 6,
+        cp2y: p2.y - (p3.y - p1.y) / 6,
+      });
+    }
+    return cp;
+  }
 
-  ctx.beginPath(); ctx.strokeStyle = '#00D4AA'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-  entries.forEach(([,v],i) => i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v)));
+  const pts = entries.map(([, v], i) => ({ x: tx(i), y: ty(v) }));
+  const cps = bezierPoints(pts);
+
+  // ── Gradient area ──
+  const areaGrad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ch);
+  areaGrad.addColorStop(0, 'rgba(0,212,170,0.2)');
+  areaGrad.addColorStop(0.6, 'rgba(0,212,170,0.05)');
+  areaGrad.addColorStop(1, 'rgba(0,212,170,0)');
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i = 0; i < pts.length - 1; i++) {
+    ctx.bezierCurveTo(cps[i].cp1x, cps[i].cp1y, cps[i].cp2x, cps[i].cp2y, pts[i+1].x, pts[i+1].y);
+  }
+  ctx.lineTo(pts[pts.length - 1].x, pad.t + ch);
+  ctx.lineTo(pts[0].x, pad.t + ch);
+  ctx.closePath();
+  ctx.fillStyle = areaGrad;
+  ctx.fill();
+
+  // ── Main line ──
+  const lineGrad = ctx.createLinearGradient(pad.l, 0, pad.l + cw, 0);
+  lineGrad.addColorStop(0, '#00D4AA');
+  lineGrad.addColorStop(1, '#00F5C4');
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i = 0; i < pts.length - 1; i++) {
+    ctx.bezierCurveTo(cps[i].cp1x, cps[i].cp1y, cps[i].cp2x, cps[i].cp2y, pts[i+1].x, pts[i+1].y);
+  }
+  ctx.strokeStyle = lineGrad;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   ctx.stroke();
 
-  entries.forEach(([,v],i) => {
-    ctx.beginPath(); ctx.arc(tx(i), ty(v), 4, 0, Math.PI*2);
-    ctx.fillStyle = '#00D4AA'; ctx.fill();
+  // ── Dots with glow ──
+  entries.forEach(([, v], i) => {
+    const x = tx(i), y = ty(v);
+    // glow
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, 10);
+    glow.addColorStop(0, 'rgba(0,212,170,0.3)');
+    glow.addColorStop(1, 'rgba(0,212,170,0)');
+    ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = glow; ctx.fill();
+    // dot
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#00F5C4'; ctx.fill();
     ctx.strokeStyle = '#06060A'; ctx.lineWidth = 2; ctx.stroke();
   });
+
+  // ── Tooltip on touch/hover ──
+  const container = document.getElementById('chart-container');
+  const tooltip   = document.getElementById('chart-tooltip');
+  const tipVal    = document.getElementById('tooltip-val');
+  const tipDay    = document.getElementById('tooltip-day');
+
+  function showTooltip(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    let closest = 0, minDist = Infinity;
+    pts.forEach((p, i) => {
+      const dist = Math.abs(p.x - mouseX);
+      if(dist < minDist) { minDist = dist; closest = i; }
+    });
+    if(minDist > 40) { tooltip.classList.remove('visible'); return; }
+    const [date, val] = entries[closest];
+    const d = new Date(date + 'T00:00:00');
+    tipVal.textContent = val + ' KG';
+    tipDay.textContent = `يوم ${closest + 1}  ·  ${d.getDate()}/${d.getMonth() + 1}`;
+    const tooltipX = pts[closest].x;
+    const tooltipY = Math.max(pad.t + 4, ty(val) - 56);
+    tooltip.style.right  = 'auto';
+    tooltip.style.left   = Math.max(4, Math.min(W - 94, tooltipX - 45)) + 'px';
+    tooltip.style.top    = tooltipY + 'px';
+    tooltip.style.transform = 'none';
+    tooltip.classList.add('visible');
+  }
+
+  canvas.onmousemove = e => showTooltip(e.clientX, e.clientY);
+  canvas.onmouseleave = () => tooltip.classList.remove('visible');
+  canvas.ontouchmove = e => { e.preventDefault(); showTooltip(e.touches[0].clientX, e.touches[0].clientY); };
+  canvas.ontouchend = () => setTimeout(() => tooltip.classList.remove('visible'), 1500);
 }
 
 function generateDates() {
