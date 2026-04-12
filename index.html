@@ -1316,6 +1316,7 @@ function updateSlot(id, idx, field, val) {
     updateDaySummary(id, totalCal, totalPro);
     updateCalSummary();
     updateMotivBanner();
+    updateStickyBar();
   }
 }
 
@@ -1420,6 +1421,7 @@ function renderDays() {
   });
   updateCalSummary();
   updateMotivBanner();
+  updateStickyBar();
 }
 
 function updateCalSummary() {
@@ -1924,21 +1926,20 @@ function updateStickyBar() {
   }
 }
 
-// patch updateSlot and renderDays to also update sticky bar
-const _origUpdateSlot = updateSlot;
-updateSlot = function(id, idx, field, val) {
-  _origUpdateSlot(id, idx, field, val);
-  updateStickyBar();
-};
-const _origRenderDays = renderDays;
-renderDays = function() {
-  _origRenderDays();
-  updateStickyBar();
-};
-
 // ─── PWA SERVICE WORKER ───
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/my-tracker/sw.js').then(() => {}).catch(() => {});
+  navigator.serviceWorker.register('/my-tracker/sw.js').then(reg => {
+    // كشف التحديثات التلقائي — يعيد تحميل الصفحة عند توفر نسخة جديدة
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated') {
+          showToast('🔄 تم تحديث التطبيق!');
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      });
+    });
+  }).catch(() => {});
 
   window.addEventListener('offline', () => showToast('📵 أنت غير متصل — يعمل أوف لاين'));
   window.addEventListener('online',  () => showToast('🌐 عاد الاتصال بالإنترنت'));
