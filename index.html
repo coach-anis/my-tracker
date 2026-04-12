@@ -8,519 +8,660 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="My Tracker">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#080808">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#06060A">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --gold: #C9A84C;
-  --gold2: #E8C97A;
-  --dark: #080808;
-  --dark2: #0F0F0F;
-  --dark3: #161616;
-  --dark4: #1C1C1C;
-  --text: #EFEFEF;
-  --dim: #666;
-  --border: rgba(201,168,76,0.15);
-  --border2: rgba(255,255,255,0.05);
-  --orange: #E8A87A;
-  --blue: #7AB8E8;
-  --green: #7AE8B8;
-  --red: #E87A7A;
-  --orange-glow: rgba(232,168,122,0.12);
-  --blue-glow: rgba(122,184,232,0.12);
+  --fire: #FF5F1F;
+  --fire2: #FF8C42;
+  --gold: #F5C842;
+  --gold2: #FFE17A;
+  --teal: #00D4AA;
+  --teal2: #00F5C4;
+  --blue: #4DA6FF;
+  --red: #FF4D6D;
+  --bg: #06060A;
+  --bg2: #0E0E16;
+  --bg3: #15151F;
+  --bg4: #1C1C28;
+  --text: #F0F0F8;
+  --muted: #5A5A72;
+  --border: rgba(255,255,255,0.06);
+  --border-fire: rgba(255,95,31,0.2);
+  --border-gold: rgba(245,200,66,0.2);
+  --border-teal: rgba(0,212,170,0.2);
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 
 body {
-  background: var(--dark);
+  background: var(--bg);
   color: var(--text);
   font-family: 'Cairo', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Noise texture overlay */
+/* ── Animated bg mesh ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 55% 30% at 15% 0%, rgba(255,95,31,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 25% at 85% 5%, rgba(0,212,170,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 20% at 50% 100%, rgba(245,200,66,0.04) 0%, transparent 50%);
+  pointer-events:none;
+}
+
+/* grain */
 body::after {
   content:'';
-  position:fixed; inset:0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events:none; z-index:999;
+  position:fixed; inset:0; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;
 }
 
-.bg-glow {
-  position:fixed; inset:0;
-  background: radial-gradient(ellipse 60% 35% at 50% -5%, rgba(201,168,76,0.08) 0%, transparent 65%);
-  pointer-events:none; z-index:0;
-}
-
-/* ─── HEADER ─── */
-header {
-  text-align:center;
-  padding: 44px 24px 28px;
-  position: relative;
-  z-index: 1;
-  border-bottom: 1px solid var(--border);
-}
-
-.header-tag {
-  font-family:'Bebas Neue', sans-serif;
-  letter-spacing: 6px;
-  font-size: 10px;
-  color: var(--gold);
-  opacity: 0.55;
-  margin-bottom: 10px;
-}
-
-header h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(36px, 9vw, 60px);
-  letter-spacing: 2px;
-  line-height: 0.92;
-  margin-bottom: 8px;
-}
-
-header h1 span { color: var(--gold); }
-
-header p {
-  font-size: 12px;
-  color: var(--dim);
-  letter-spacing: 0.5px;
-}
-
-.header-line {
-  width: 40px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin: 14px auto 0;
-}
-
-/* ─── TABS ─── */
+/* ── TABS ── */
 .tabs {
   display: flex;
-  gap: 0;
-  padding: 24px 20px 0;
-  position: relative;
-  z-index: 1;
-  max-width: 600px;
+  padding: 20px 16px 0;
+  gap: 8px;
+  position: relative; z-index: 1;
+  max-width: 640px;
   margin: 0 auto;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 13px 12px;
+  padding: 14px 10px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--dark2);
-  color: var(--dim);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 15px;
-  letter-spacing: 3px;
+  background: var(--bg2);
+  color: var(--muted);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
   cursor: pointer;
-  transition: all .25s;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
   position: relative;
   overflow: hidden;
+  letter-spacing: 0.5px;
 }
 
-.tab-btn:first-child { border-radius: 10px 0 0 10px; border-left: 1px solid var(--border); }
-.tab-btn:last-child  { border-radius: 0 10px 10px 0; border-right: 1px solid var(--border); border-left: none; }
-
-.tab-btn::before {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--gold);
-  transform: scaleX(0);
-  transition: transform .25s;
+.tab-btn::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition: opacity .3s;
 }
 
 .tab-btn.active-cal {
-  background: rgba(232,168,122,0.08);
-  color: var(--orange);
-  border-color: rgba(232,168,122,0.3);
+  background: rgba(255,95,31,0.1);
+  color: var(--fire2);
+  border-color: rgba(255,95,31,0.35);
+  box-shadow: 0 0 24px rgba(255,95,31,0.12), inset 0 1px 0 rgba(255,95,31,0.15);
 }
-.tab-btn.active-cal::before { transform: scaleX(1); background: var(--orange); }
 
 .tab-btn.active-bud {
-  background: rgba(122,184,232,0.08);
-  color: var(--blue);
-  border-color: rgba(122,184,232,0.3);
+  background: rgba(0,212,170,0.08);
+  color: var(--teal);
+  border-color: rgba(0,212,170,0.3);
+  box-shadow: 0 0 24px rgba(0,212,170,0.1), inset 0 1px 0 rgba(0,212,170,0.12);
 }
-.tab-btn.active-bud::before { transform: scaleX(1); background: var(--blue); }
 
-/* ─── PANELS ─── */
-.panel { display:none; padding: 24px 20px 60px; position:relative; z-index:1; max-width:700px; margin:0 auto; }
-.panel.active { display:block; }
+/* ── PANELS ── */
+.panel { display:none; padding: 20px 16px 80px; position:relative; z-index:1; max-width:640px; margin:0 auto; }
+.panel.active { display:block; animation: fadeUp .35s ease both; }
 
-/* ─── SUMMARY STRIP ─── */
-.summary-strip {
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── GOAL CARDS ── */
+.goals-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
-.strip-card {
-  background: var(--dark2);
+.goal-card {
+  background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 10px;
-  text-align: center;
+  border-radius: 16px;
+  padding: 14px 16px;
+  transition: border-color .2s;
   position: relative;
   overflow: hidden;
 }
 
-.strip-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
+.goal-card.fire-card {
+  border-color: var(--border-fire);
+}
+.goal-card.fire-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--fire), var(--fire2));
+}
+.goal-card.gold-card {
+  border-color: var(--border-gold);
+}
+.goal-card.gold-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
 }
 
-.strip-card.s1::before { background: var(--orange); }
-.strip-card.s2::before { background: var(--green); }
-.strip-card.s3::before { background: var(--blue); }
-.strip-card.s4::before { background: var(--gold); }
+.goal-card label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.goal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  min-width: 0;
+}
+
+.goal-card.fire-card .goal-input:focus {
+  border-color: rgba(255,95,31,0.5);
+  box-shadow: 0 0 0 3px rgba(255,95,31,0.08);
+}
+.goal-card.gold-card .goal-input:focus {
+  border-color: rgba(245,200,66,0.5);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.08);
+}
+.goal-input::placeholder { color: rgba(255,255,255,0.1); }
+
+.goal-unit {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fire-card .goal-unit { color: var(--fire2); }
+.gold-card .goal-unit { color: var(--gold); }
+
+/* ── SUMMARY STRIP ── */
+.summary-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.strip-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.strip-card:active { transform: scale(0.97); }
+
+.strip-card.s1 { border-color: var(--border-fire); }
+.strip-card.s1::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,var(--fire),var(--fire2)); }
+.strip-card.s4 { border-color: var(--border-gold); }
+.strip-card.s4::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,var(--gold),var(--gold2)); }
 
 .strip-card .sv {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 26px;
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  letter-spacing: -1px;
 }
 .strip-card .sl {
-  font-size: 10px;
-  color: var(--dim);
-  letter-spacing: 0.5px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
 }
-.strip-card.s1 .sv { color: var(--orange); }
-.strip-card.s2 .sv { color: var(--green); }
-.strip-card.s3 .sv { color: var(--blue); }
+.strip-card.s1 .sv { color: var(--fire2); }
 .strip-card.s4 .sv { color: var(--gold); }
 
-/* ─── SECTION TITLE ─── */
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: var(--gold);
-  opacity: 0.55;
-  margin-bottom: 14px;
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.section-title::after {
-  content: '';
-  flex: 1; height: 1px;
-  background: var(--border);
-}
+.section-label::after { content:''; flex:1; height:1px; background: var(--border); }
 
-/* ─── DAY CARD ─── */
+/* ── DAY CARD ── */
 .day-card {
-  background: var(--dark2);
+  background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0;
+  border-radius: 18px;
   margin-bottom: 12px;
   overflow: hidden;
-  transition: border-color .2s;
+  transition: border-color .25s, box-shadow .25s;
 }
-.day-card:focus-within { border-color: rgba(232,168,122,0.4); }
+.day-card:focus-within {
+  border-color: rgba(255,95,31,0.3);
+  box-shadow: 0 4px 32px rgba(255,95,31,0.07);
+}
 
 .day-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
-  background: var(--dark3);
-  border-bottom: 1px solid var(--border2);
-  cursor: pointer;
-  user-select: none;
+  padding: 14px 18px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
 }
 
-.day-label {
+.day-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.day-dot {
-  width: 8px; height: 8px;
+.day-pulse {
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--orange);
-  box-shadow: 0 0 8px rgba(232,168,122,0.5);
-  flex-shrink: 0;
+  background: var(--fire);
+  box-shadow: 0 0 10px rgba(255,95,31,0.7);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 10px rgba(255,95,31,0.7); }
+  50%      { box-shadow: 0 0 18px rgba(255,95,31,0.4); }
 }
 
-.day-label-text span {
-  font-weight: 700;
-  font-size: 0.92rem;
-}
-.day-date-sub {
-  font-size: 0.7rem;
-  color: var(--dim);
-  margin-top: 2px;
-}
-
-.day-total-badge {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 15px;
-  letter-spacing: 1px;
-  color: var(--orange);
-  background: rgba(232,168,122,0.1);
-  border: 1px solid rgba(232,168,122,0.25);
-  border-radius: 20px;
-  padding: 4px 14px;
-  min-width: 80px;
+.day-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--fire2);
+  background: rgba(255,95,31,0.1);
+  border: 1px solid rgba(255,95,31,0.2);
+  border-radius: 22px;
+  padding: 5px 14px;
+  min-width: 90px;
   text-align: center;
+  line-height: 1.3;
 }
+
+.btn-rm-day {
+  background: none;
+  border: none;
+  color: var(--red);
+  opacity: .3;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity .2s;
+  margin-right: 4px;
+}
+.btn-rm-day:hover { opacity: 1; }
 
 .day-card-body { padding: 16px 18px; }
 
+/* ── SECTION SUBLABEL inside card ── */
+.sub-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sub-label.fire { color: var(--fire2); }
+.sub-label.gold { color: var(--gold); }
+.sub-label .sub-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sub-label.fire .sub-dot { background: var(--fire); }
+.sub-label.gold .sub-dot { background: var(--gold); }
+
+/* ── SLOTS GRID ── */
 .slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.slot-wrap { position: relative; }
+.slot-wrap { position: relative; padding-top: 14px; }
+
 .slot-label {
   position: absolute;
-  top: -8px; right: 8px;
-  font-size: 9px;
-  letter-spacing: 1px;
-  color: var(--dim);
-  background: var(--dark2);
+  top: 0; right: 6px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  background: var(--bg2);
   padding: 0 4px;
-  font-family: 'Bebas Neue', sans-serif;
+  text-transform: uppercase;
 }
 
 .slot-input-wrap { display: flex; align-items: center; gap: 4px; }
 
-.slot-dual {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.slot-mini-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  color: var(--dim);
-  text-align: center;
-  margin-bottom: 1px;
-}
-
-.slot-input-cal { border-color: rgba(232,168,122,0.2) !important; }
-.slot-input-cal:focus { border-color: rgba(232,168,122,0.5) !important; box-shadow: 0 0 0 3px rgba(232,168,122,0.08) !important; }
-.slot-input-pro { border-color: rgba(201,168,76,0.2) !important; }
-.slot-input-pro:focus { border-color: rgba(201,168,76,0.5) !important; box-shadow: 0 0 0 3px rgba(201,168,76,0.08) !important; }
-
 .slot-input {
   width: 100%;
-  padding: 10px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: var(--dark3);
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
   color: var(--text);
-  font-family: 'Cairo', sans-serif;
+  font-family: 'Syne', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   text-align: center;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
 }
-.slot-input:focus {
-  border-color: rgba(232,168,122,0.4);
-  box-shadow: 0 0 0 3px rgba(232,168,122,0.08);
-}
-.slot-input::placeholder { color: rgba(255,255,255,0.12); }
+.slot-input::placeholder { color: rgba(255,255,255,0.08); }
 
-.day-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-
-.btn-add-slot {
-  background: none;
-  border: 1px dashed rgba(255,255,255,0.1);
-  color: var(--dim);
-  border-radius: 8px;
-  padding: 7px 14px;
-  font-family: 'Cairo', sans-serif;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all .2s;
-  letter-spacing: 0.5px;
+.slot-input.cal:focus {
+  border-color: rgba(255,95,31,0.5);
+  box-shadow: 0 0 0 3px rgba(255,95,31,0.08);
 }
-.btn-add-slot:hover { border-color: var(--orange); color: var(--orange); }
+.slot-input.pro:focus {
+  border-color: rgba(245,200,66,0.5);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.08);
+}
+.slot-input.cal { border-color: rgba(255,95,31,0.15); }
+.slot-input.pro { border-color: rgba(245,200,66,0.15); }
 
 .btn-rm-slot {
   background: none;
   border: none;
   color: var(--red);
-  opacity: .35;
-  font-size: 0.9rem;
+  opacity: .3;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: opacity .2s;
   flex-shrink: 0;
 }
 .btn-rm-slot:hover { opacity: 1; }
 
-/* Progress bar */
-.cal-bar-wrap {
-  height: 3px;
-  background: rgba(255,255,255,0.05);
+/* ── PROGRESS BAR ── */
+.prog-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.04);
   border-radius: 10px;
-  margin-top: 16px;
+  margin-bottom: 18px;
   overflow: hidden;
 }
-.cal-bar {
+.prog-bar {
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(90deg, var(--orange), #E8C97A);
-  transition: width .4s cubic-bezier(.34,1.56,.64,1);
+  transition: width .5s cubic-bezier(.34,1.56,.64,1);
 }
+.prog-bar.fire { background: linear-gradient(90deg, var(--fire), var(--fire2)); }
+.prog-bar.gold { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
 
-/* Add day button */
-.btn-add-day {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px dashed rgba(201,168,76,0.3);
-  background: rgba(201,168,76,0.04);
-  color: var(--gold);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 15px;
-  letter-spacing: 3px;
-  cursor: pointer;
-  transition: all .2s;
+/* ── ACTIONS ROW ── */
+.day-actions {
+  display: flex;
+  gap: 8px;
   margin-top: 4px;
 }
-.btn-add-day:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
 
-.btn-rm-day {
+.btn-add-slot {
   background: none;
-  border: none;
-  color: var(--red);
-  opacity: .35;
-  font-size: 1rem;
+  border: 1px dashed rgba(255,255,255,0.08);
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity .2s;
+  transition: all .2s;
 }
-.btn-rm-day:hover { opacity: 1; }
+.btn-add-slot:hover {
+  border-color: var(--fire2);
+  color: var(--fire2);
+  background: rgba(255,95,31,0.04);
+}
 
-/* ─── WEIGHT PANEL ─── */
-.wgt-goal-wrap {
-  display: flex;
+/* ── RESET BTN ── */
+.btn-reset {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,77,109,0.3);
+  background: rgba(255,77,109,0.04);
+  color: rgba(255,77,109,0.7);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all .25s;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+.btn-reset:hover {
+  background: rgba(255,77,109,0.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ── WEIGHT PANEL ── */
+.wgt-goals-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.wgt-goal-inner {
-  flex: 1;
-  min-width: 130px;
+.wgt-goal-card {
+  background: var(--bg2);
+  border: 1px solid var(--border-teal);
+  border-radius: 16px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.wgt-goal-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--teal), var(--teal2));
 }
 
-.wgt-goal-inner label {
+.wgt-goal-card label {
   display: block;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--dim);
-  margin-bottom: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
 }
 
 .wgt-goal-input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 9px 10px;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--dark2);
+  border: 1px solid rgba(0,212,170,0.2);
+  background: var(--bg3);
   color: var(--text);
-  font-family: 'Cairo', sans-serif;
-  font-size: 1rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
   font-weight: 700;
+  text-align: center;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
 }
 .wgt-goal-input:focus {
-  border-color: rgba(122,184,232,0.4);
-  box-shadow: 0 0 0 3px rgba(122,184,232,0.08);
+  border-color: rgba(0,212,170,0.5);
+  box-shadow: 0 0 0 3px rgba(0,212,170,0.08);
 }
+.wgt-goal-input::placeholder { color: rgba(255,255,255,0.1); }
 
-/* Weight summary */
+/* Summary cards */
 .wgt-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.wgt-sum-card {
-  background: var(--dark2);
+.wgt-card {
+  background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 10px;
+  border-radius: 16px;
+  padding: 16px 12px;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
-.wgt-sum-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-}
-.wgt-sum-card.w1::before { background: var(--blue); }
-.wgt-sum-card.w2::before { background: var(--green); }
-.wgt-sum-card.w3::before { background: var(--gold); }
+.wgt-card.teal { border-color: var(--border-teal); }
+.wgt-card.teal::before { content:''; position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--teal2)); }
+.wgt-card.green { border-color: rgba(0,212,170,0.15); }
+.wgt-card.green::before { content:''; position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00D4AA,#7AE8B8); }
+.wgt-card.gold-c { border-color: var(--border-gold); }
+.wgt-card.gold-c::before { content:''; position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2)); }
+.wgt-card.orange-c { border-color: rgba(255,95,31,0.2); }
+.wgt-card.orange-c::before { content:''; position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--fire),var(--fire2)); }
 
-.wgt-sum-card .wv {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px; line-height: 1;
-  margin-bottom: 4px;
+.wgt-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 5px;
+  letter-spacing: -0.5px;
 }
-.wgt-sum-card .wl { font-size: 10px; color: var(--dim); }
-.wgt-sum-card.w1 .wv { color: var(--blue); }
-.wgt-sum-card.w2 .wv.loss { color: var(--green); }
-.wgt-sum-card.w2 .wv.gain { color: var(--red); }
-.wgt-sum-card.w3 .wv { color: var(--gold); }
+.wgt-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform:uppercase; font-weight:700; }
+.wgt-card.teal .wgt-val { color: var(--teal); }
+.wgt-card.green .wgt-val.loss { color: var(--teal2); }
+.wgt-card.green .wgt-val.gain { color: var(--red); }
+.wgt-card.green .wgt-val { color: var(--muted); }
+.wgt-card.gold-c .wgt-val { color: var(--gold); }
+.wgt-card.orange-c .wgt-val { color: var(--fire2); }
 
-/* Chart */
-.wgt-chart-wrap {
-  background: var(--dark2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 20px;
+/* Journey */
+.journey-card {
+  background: var(--bg2);
+  border: 1px solid rgba(0,212,170,0.2);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
   position: relative;
-  height: 155px;
   overflow: hidden;
 }
-.wgt-chart-wrap canvas { width:100% !important; height:100% !important; }
-.wgt-chart-empty {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--dim); font-size: 0.82rem;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2px; font-size: 11px;
+.journey-card::before {
+  content:''; position:absolute; top:0;left:0;right:0; height:2px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+.journey-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.journey-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.journey-pct {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.journey-bar-bg {
+  height: 6px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.journey-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width .7s cubic-bezier(.34,1.56,.64,1);
+}
+.journey-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-/* Month groups */
-.month-group { margin-bottom: 20px; }
-.month-header {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 11px;
-  letter-spacing: 4px;
-  color: var(--blue);
-  opacity: 0.7;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* weight chart */
+.wgt-chart-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  height: 150px;
+  overflow: hidden;
 }
-.month-header::after {
-  content:''; flex:1; height:1px; background: var(--border);
+.wgt-chart-wrap canvas { width:100%!important; height:100%!important; }
+.wgt-chart-empty {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 9px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase;
+  color: var(--muted);
+}
+
+/* weight log rows */
+.wgt-list-wrap {
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,212,170,0.15) transparent;
 }
 
 .wgt-row {
@@ -528,195 +669,61 @@ header p {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: var(--dark2);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   margin-bottom: 6px;
   transition: border-color .2s;
 }
-.wgt-row:focus-within { border-color: rgba(122,184,232,0.3); }
-
+.wgt-row:focus-within { border-color: rgba(0,212,170,0.3); }
 .wgt-row-date {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  min-width: 68px;
-  color: var(--dim);
+  min-width: 64px;
+  color: var(--muted);
 }
-.wgt-row-date span {
-  display: block;
-  font-size: 0.64rem;
-  color: rgba(255,255,255,0.15);
-  margin-top: 1px;
-}
-
 .wgt-row-input {
-  flex: 1;
+  flex:1;
   padding: 7px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: var(--dark3);
+  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg3);
   color: var(--text);
-  font-family: 'Cairo', sans-serif;
+  font-family: 'Syne', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
   text-align: center;
   outline: none;
   transition: border-color .2s;
 }
-.wgt-row-input:focus { border-color: rgba(122,184,232,0.4); }
-.wgt-row-input::placeholder { color: rgba(255,255,255,0.1); }
+.wgt-row-input:focus { border-color: rgba(0,212,170,0.4); }
+.wgt-row-input::placeholder { color: rgba(255,255,255,0.08); }
 
 .wgt-row-diff {
-  min-width: 68px;
+  min-width: 64px;
   text-align: center;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 13px;
-  letter-spacing: 1px;
-  border-radius: 6px;
-  padding: 5px 7px;
-}
-.wgt-row-diff.loss { color: var(--green); background: rgba(122,232,184,0.1); }
-.wgt-row-diff.gain { color: var(--red);   background: rgba(232,122,122,0.1); }
-.wgt-row-diff.same { color: var(--dim); }
-.wgt-row-diff.empty { color: rgba(255,255,255,0.1); }
-
-.wgt-list-wrap {
-  max-height: 420px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(201,168,76,0.2) transparent;
-}
-
-/* ─── CALORIE GOAL ─── */
-.cal-goal-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--dark2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
-}
-.cal-goal-wrap label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--dim);
-  white-space: nowrap;
-}
-.cal-goal-input {
-  flex: 1;
-  padding: 9px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(232,168,122,0.2);
-  background: var(--dark3);
-  color: var(--text);
-  font-family: 'Cairo', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  text-align: center;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-  max-width: 120px;
-}
-.cal-goal-input:focus {
-  border-color: rgba(232,168,122,0.5);
-  box-shadow: 0 0 0 3px rgba(232,168,122,0.08);
-}
-.cal-goal-badge {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Syne', sans-serif;
   font-size: 12px;
-  letter-spacing: 1px;
-  color: var(--orange);
-  opacity: 0.7;
-  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  padding: 5px 6px;
 }
-/* ─── CALORIE CHART ─── */
-.cal-chart-wrap {
-  background: var(--dark2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 20px;
-  position: relative;
-  height: 155px;
-  overflow: hidden;
-}
-.cal-chart-wrap canvas { width:100% !important; height:100% !important; }
-.cal-chart-empty {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--dim);
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2px; font-size: 11px;
-}
-/* ─── JOURNEY PROGRESS ─── */
-.journey-wrap {
-  background: var(--dark2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 20px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.journey-wrap::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-  background: linear-gradient(90deg, var(--green), var(--gold));
-}
-.journey-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.journey-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: var(--dim);
-}
-.journey-pct {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  color: var(--green);
-  line-height: 1;
-}
-.journey-bar-bg {
-  height: 8px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.journey-bar-fill {
-  height: 100%;
-  border-radius: 10px;
-  background: linear-gradient(90deg, var(--green), var(--gold));
-  transition: width .6s cubic-bezier(.34,1.56,.64,1);
-}
-.journey-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--dim);
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 1px;
-}
-/* ─── Responsive ─── */
+.wgt-row-diff.loss { color: var(--teal2); background: rgba(0,212,170,0.1); }
+.wgt-row-diff.gain { color: var(--red); background: rgba(255,77,109,0.1); }
+.wgt-row-diff.same { color: var(--muted); }
+.wgt-row-diff.empty { color: rgba(255,255,255,0.08); }
+
+/* ── Responsive ── */
 @media(max-width:480px) {
-  .tabs { padding: 20px 14px 0; }
-  .panel { padding-left: 14px; padding-right: 14px; }
-  .summary-strip { grid-template-columns: repeat(2, 1fr); }
-  .wgt-summary { grid-template-columns: 1fr 1fr; }
-  .wgt-summary .wgt-sum-card:last-child { grid-column: span 2; }
+  .tabs { padding: 16px 12px 0; gap:6px; }
+  .panel { padding-left: 12px; padding-right: 12px; }
+  .goals-row { grid-template-columns: 1fr; }
+  .wgt-goals-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
-<div class="bg-glow"></div>
-
 
 <div class="tabs">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
@@ -725,81 +732,79 @@ header p {
 
 <!-- ═══ CALORIES PANEL ═══ -->
 <div class="panel active" id="panel-cal">
+  <div style="height:16px"></div>
 
-  <div style="height:20px"></div>
-
-  <!-- Calorie Goal -->
-  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-    <div class="cal-goal-wrap" style="flex:1;margin-bottom:0;">
+  <div class="goals-row">
+    <div class="goal-card fire-card">
       <label>هدف السعرات اليومي</label>
-      <input class="cal-goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
-      <span class="cal-goal-badge">KCAL / يوم</span>
+      <div class="goal-input-row">
+        <input class="goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
+        <span class="goal-unit">KCAL</span>
+      </div>
     </div>
-    <div class="cal-goal-wrap" style="flex:1;margin-bottom:0;">
+    <div class="goal-card gold-card">
       <label>هدف البروتين اليومي</label>
-      <input class="cal-goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" style="border-color:rgba(201,168,76,0.2);" />
-      <span class="cal-goal-badge" style="color:var(--gold);">G / يوم</span>
+      <div class="goal-input-row">
+        <input class="goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" />
+        <span class="goal-unit">G</span>
+      </div>
     </div>
   </div>
 
-  <div class="summary-strip" style="grid-template-columns: repeat(2,1fr);">
+  <div class="summary-strip">
     <div class="strip-card s1">
       <div class="sv" id="sum-total">0</div>
       <div class="sl">إجمالي السعرات</div>
     </div>
     <div class="strip-card s4">
-      <div class="sv" id="sum-protein">0<span style="font-size:14px">g</span></div>
+      <div class="sv" id="sum-protein">0<span style="font-size:15px;font-weight:700">g</span></div>
       <div class="sl">إجمالي البروتين</div>
     </div>
   </div>
 
-
-  <div class="section-title">أيامي · MY DAYS</div>
+  <div class="section-label">أيامي · MY DAYS</div>
 
   <div id="days-container"></div>
 
-  <button class="btn-add-day" onclick="resetDay()" style="border-color:rgba(232,122,122,0.3);background:rgba(232,122,122,0.04);color:var(--red);">↺ إعادة الضبط</button>
+  <button class="btn-reset" onclick="resetDay()">↺ إعادة الضبط</button>
 </div>
 
 <!-- ═══ WEIGHT PANEL ═══ -->
 <div class="panel" id="panel-bud">
+  <div style="height:16px"></div>
 
-  <div style="height:20px"></div>
-
-  <div class="wgt-goal-wrap">
-    <div class="wgt-goal-inner">
+  <div class="wgt-goals-row">
+    <div class="wgt-goal-card">
       <label>وزني الحالي · KG</label>
       <input class="wgt-goal-input" type="number" id="start-weight" placeholder="مثال: 80" step="0.1" oninput="saveGoals()" />
     </div>
-    <div class="wgt-goal-inner">
+    <div class="wgt-goal-card">
       <label>وزني المستهدف · KG</label>
       <input class="wgt-goal-input" type="number" id="target-weight" placeholder="مثال: 70" step="0.1" oninput="saveGoals(); updateWgtSummary()" />
     </div>
   </div>
 
-  <div class="wgt-summary" style="grid-template-columns: repeat(2,1fr);">
-    <div class="wgt-sum-card w1">
-      <div class="wv" id="w-current">--</div>
-      <div class="wl">آخر وزن مسجل</div>
+  <div class="wgt-summary">
+    <div class="wgt-card teal">
+      <div class="wgt-val" id="w-current">--</div>
+      <div class="wgt-lbl">آخر وزن مسجل</div>
     </div>
-    <div class="wgt-sum-card w2">
-      <div class="wv" id="w-diff">--</div>
-      <div class="wl">الفرق عن البداية</div>
+    <div class="wgt-card green">
+      <div class="wgt-val" id="w-diff">--</div>
+      <div class="wgt-lbl">الفرق عن البداية</div>
     </div>
-    <div class="wgt-sum-card w3">
-      <div class="wv" id="w-remaining">--</div>
-      <div class="wl">المتبقي للهدف</div>
+    <div class="wgt-card gold-c">
+      <div class="wgt-val" id="w-remaining">--</div>
+      <div class="wgt-lbl">المتبقي للهدف</div>
     </div>
-    <div class="wgt-sum-card" style="border-top:2px solid var(--orange); position:relative; overflow:hidden; background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:16px 10px; text-align:center;">
-      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange)"></div>
-      <div class="wv" id="w-weekly" style="color:var(--orange); font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; margin-bottom:4px;">--</div>
-      <div class="wl" style="font-size:10px;color:var(--dim);">خسارة أسبوعية</div>
+    <div class="wgt-card orange-c">
+      <div class="wgt-val" id="w-weekly">--</div>
+      <div class="wgt-lbl">خسارة أسبوعية</div>
     </div>
   </div>
 
-  <!-- Journey Progress -->
-  <div class="journey-wrap">
-    <div class="journey-header">
+  <div class="journey-card">
+    <div class="journey-top">
       <span class="journey-title">🎯 تقدمك نحو الهدف</span>
       <span class="journey-pct" id="journey-pct">0%</span>
     </div>
@@ -818,8 +823,7 @@ header p {
     <div class="wgt-chart-empty" id="chart-empty">سجّل وزنك لترى منحنى التطور</div>
   </div>
 
-  <div class="section-title">سجلاتي · MY LOG</div>
-
+  <div class="section-label">سجلاتي · MY LOG</div>
   <div class="wgt-list-wrap" id="wgt-list"></div>
 </div>
 
@@ -835,7 +839,6 @@ const loadWgtData = () => { try { return JSON.parse(localStorage.getItem(KEY_WGT
 // ─── DATES ───
 const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const AR_DAYS   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-
 function todayStr() { return new Date().toISOString().split('T')[0]; }
 function formatDate(s) {
   const d = new Date(s + 'T00:00:00');
@@ -855,23 +858,36 @@ function switchTab(tab) {
   }
 }
 
+// ─── CALORIE GOAL ───
+const KEY_GOAL = 'trackerCalGoal_v1';
+let calGoal = parseInt(localStorage.getItem(KEY_GOAL)) || 2500;
+function saveCalGoal() {
+  const v = parseInt(document.getElementById('cal-goal').value);
+  calGoal = isNaN(v) ? 2500 : v;
+  localStorage.setItem(KEY_GOAL, calGoal);
+  renderDays();
+}
+
+// ─── PROTEIN GOAL ───
+const KEY_PRO_GOAL = 'trackerProGoal_v1';
+let proGoal = parseInt(localStorage.getItem(KEY_PRO_GOAL)) || 150;
+function saveProGoal() {
+  const v = parseInt(document.getElementById('pro-goal').value);
+  proGoal = isNaN(v) ? 150 : v;
+  localStorage.setItem(KEY_PRO_GOAL, proGoal);
+}
+
 // ─── CALORIES ───
 let calDays = loadCalData();
-// migrate old format (slots as numbers) to new format (slots as objects)
 calDays = calDays.map(day => ({
   ...day,
   slots: day.slots.map(s => (typeof s === 'object' && s !== null) ? s : { cal: s, pro: '' })
 }));
 if(!calDays.length) {
-  calDays = [{ id: Date.now(), date: '2026-04-10', slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) }];
+  calDays = [{ id: Date.now(), date: todayStr(), slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) }];
   saveCalData(calDays);
 }
 
-function addDay() {
-  calDays.unshift({ id: Date.now(), date: '2026-04-10', slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) });
-  saveCalData(calDays);
-  renderDays();
-}
 function removeDay(id) {
   calDays = calDays.filter(d => d.id !== id);
   saveCalData(calDays);
@@ -899,17 +915,15 @@ function updateSlot(id, idx, field, val) {
     saveCalData(calDays);
     const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
     const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
-    const badge = document.querySelector(`[data-badge="${id}"]`);
-    const bar   = document.querySelector(`[data-bar="${id}"]`);
+    const badge  = document.querySelector(`[data-badge="${id}"]`);
+    const bar    = document.querySelector(`[data-bar="${id}"]`);
+    const barPro = document.querySelector(`[data-bar-pro="${id}"]`);
     if(badge) badge.innerHTML = (totalCal > 0 ? totalCal.toLocaleString() : '0') + ' CAL' +
-      (totalPro > 0 ? `<span style="color:var(--gold);font-size:12px;display:block;margin-top:1px">${totalPro}g PRO</span>` : '');
-    if(bar) bar.style.width = Math.min((totalCal/3000)*100, 100) + '%';
+      (totalPro > 0 ? `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>` : '');
+    if(bar)    bar.style.width    = Math.min((totalCal / (calGoal || 2500)) * 100, 100) + '%';
+    if(barPro) barPro.style.width = Math.min((totalPro / (proGoal || 150))  * 100, 100) + '%';
     updateCalSummary();
   }
-}
-function updateDateForDay(id, val) {
-  const day = calDays.find(d => d.id === id);
-  if(day) { day.date = val; saveCalData(calDays); }
 }
 
 function renderDays() {
@@ -918,52 +932,69 @@ function renderDays() {
   calDays.forEach(day => {
     const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
     const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
-    const pct = Math.min((totalCal/3000)*100, 100);
+    const pct    = Math.min((totalCal / (calGoal || 2500)) * 100, 100);
+    const proPct = Math.min((totalPro / (proGoal || 150))  * 100, 100);
+    const dayNum = calDays.indexOf(day) + 1;
+
     const card = document.createElement('div');
     card.className = 'day-card';
-    const dayNum = calDays.indexOf(day) + 1;
     card.innerHTML = `
       <div class="day-card-header">
-        <div class="day-label">
-          <div class="day-dot"></div>
-          <div class="day-label-text">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span>يوم ${dayNum}</span>
-            </div>
-          </div>
+        <div class="day-num">
+          <div class="day-pulse"></div>
+          يوم ${dayNum}
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="day-total-badge" data-badge="${day.id}">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="day-badge" data-badge="${day.id}">
             ${totalCal > 0 ? totalCal.toLocaleString() : '0'} CAL
-            ${totalPro > 0 ? `<span style="color:var(--gold);font-size:12px;display:block;margin-top:1px">${totalPro}g PRO</span>` : ''}
+            ${totalPro > 0 ? `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>` : ''}
           </div>
           <button class="btn-rm-day" onclick="removeDay(${day.id})">✕</button>
         </div>
       </div>
       <div class="day-card-body">
+
+        <div class="sub-label fire">
+          <div class="sub-dot"></div>
+          السعرات · CALORIES
+        </div>
         <div class="slots-grid" id="slots-${day.id}">
           ${day.slots.map((s, i) => `
             <div class="slot-wrap">
               <span class="slot-label">وجبة ${i+1}</span>
               <div class="slot-input-wrap">
-                <div class="slot-dual">
-                  <div class="slot-mini-label" style="color:var(--orange);opacity:0.7">CAL</div>
-                  <input class="slot-input slot-input-cal" type="number" value="${s.cal}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
-                  <div class="slot-mini-label" style="color:var(--gold);opacity:0.7">PRO g</div>
-                  <input class="slot-input slot-input-pro" type="number" value="${s.pro}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
-                </div>
+                <input class="slot-input cal" type="number" value="${s.cal}" placeholder="0"
+                  oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
                 ${day.slots.length > 1 ? `<button class="btn-rm-slot" onclick="removeSlot(${day.id},${i})">✕</button>` : ''}
               </div>
             </div>
           `).join('')}
         </div>
+        <div class="prog-wrap">
+          <div class="prog-bar fire" data-bar="${day.id}" style="width:${pct}%"></div>
+        </div>
+
+        <div class="sub-label gold">
+          <div class="sub-dot"></div>
+          البروتين · PROTEIN
+        </div>
+        <div class="slots-grid" id="pro-slots-${day.id}">
+          ${day.slots.map((s, i) => `
+            <div class="slot-wrap">
+              <span class="slot-label" style="color:var(--gold)">وجبة ${i+1}</span>
+              <div class="slot-input-wrap">
+                <input class="slot-input pro" type="number" value="${s.pro}" placeholder="0"
+                  oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar gold" data-bar-pro="${day.id}" style="width:${proPct}%"></div>
+        </div>
+
         <div class="day-actions">
           <button class="btn-add-slot" onclick="addSlot(${day.id})">+ وجبة</button>
-        </div>
-        <div class="cal-bar-wrap">
-          <div class="cal-bar" data-bar="${day.id}" style="width:${pct}%"></div>
         </div>
       </div>
     `;
@@ -976,8 +1007,7 @@ function updateCalSummary() {
   const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.cal)||0), 0), 0);
   const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
   document.getElementById('sum-total').textContent = totalCals.toLocaleString();
-  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:14px">g</span>';
-  setTimeout(drawCalChart, 50);
+  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:15px;font-weight:700">g</span>';
 }
 
 // ─── WEIGHT ───
@@ -1024,9 +1054,9 @@ function getSortedEntries() {
 
 function updateWgtSummary() {
   const entries = getSortedEntries();
-  const last    = entries.length ? entries[entries.length-1][1] : null;
-  const start   = wgtData.startWeight;
-  const target  = wgtData.targetWeight;
+  const last   = entries.length ? entries[entries.length-1][1] : null;
+  const start  = wgtData.startWeight;
+  const target = wgtData.targetWeight;
 
   document.getElementById('w-current').textContent = last !== null ? last + ' KG' : '--';
 
@@ -1034,36 +1064,27 @@ function updateWgtSummary() {
   if(last !== null && start !== null) {
     const d = +(last - start).toFixed(1);
     diffEl.textContent = (d > 0 ? '+' : '') + d + ' KG';
-    diffEl.className = 'wv ' + (d < 0 ? 'loss' : d > 0 ? 'gain' : '');
-  } else { diffEl.textContent = '--'; diffEl.className = 'wv'; }
+    diffEl.className = 'wgt-val ' + (d < 0 ? 'loss' : d > 0 ? 'gain' : '');
+  } else { diffEl.textContent = '--'; diffEl.className = 'wgt-val'; }
 
   const remEl = document.getElementById('w-remaining');
   if(last !== null && target !== null) {
     const r = +(last - target).toFixed(1);
-    if(r <= 0) { remEl.textContent = '🎉 وصلت!'; remEl.className = 'wv'; }
-    else { remEl.textContent = r + ' KG'; remEl.className = 'wv'; }
-  } else { remEl.textContent = '--'; remEl.className = 'wv'; }
+    if(r <= 0) { remEl.textContent = '🎉 وصلت!'; remEl.className = 'wgt-val'; }
+    else { remEl.textContent = r + ' KG'; remEl.className = 'wgt-val'; }
+  } else { remEl.textContent = '--'; remEl.className = 'wgt-val'; }
 
-  // ─ Weekly loss rate ─
   const weeklyEl = document.getElementById('w-weekly');
   if(entries.length >= 2) {
     const first = entries[0], lastE = entries[entries.length-1];
     const daysDiff = Math.max(1, (new Date(lastE[0]) - new Date(first[0])) / 86400000);
     const totalLoss = first[1] - lastE[1];
     const weeklyLoss = +((totalLoss / daysDiff) * 7).toFixed(2);
-    if(weeklyLoss > 0) {
-      weeklyEl.textContent = '-' + weeklyLoss + ' KG';
-      weeklyEl.style.color = 'var(--green)';
-    } else if(weeklyLoss < 0) {
-      weeklyEl.textContent = '+' + Math.abs(weeklyLoss) + ' KG';
-      weeklyEl.style.color = 'var(--red)';
-    } else {
-      weeklyEl.textContent = '0 KG';
-      weeklyEl.style.color = 'var(--dim)';
-    }
-  } else { weeklyEl.textContent = '--'; weeklyEl.style.color = 'var(--orange)'; }
+    if(weeklyLoss > 0) { weeklyEl.textContent = '-' + weeklyLoss + ' KG'; weeklyEl.style.color = 'var(--teal2)'; }
+    else if(weeklyLoss < 0) { weeklyEl.textContent = '+' + Math.abs(weeklyLoss) + ' KG'; weeklyEl.style.color = 'var(--red)'; }
+    else { weeklyEl.textContent = '0 KG'; weeklyEl.style.color = 'var(--muted)'; }
+  } else { weeklyEl.textContent = '--'; weeklyEl.style.color = ''; }
 
-  // ─ Journey progress ─
   const pctEl  = document.getElementById('journey-pct');
   const barEl  = document.getElementById('journey-bar');
   const startM = document.getElementById('journey-start');
@@ -1079,7 +1100,7 @@ function updateWgtSummary() {
     startM.textContent = 'البداية: ' + start + ' KG';
     nowM.textContent   = 'الآن: ' + last + ' KG';
     targM.textContent  = 'الهدف: ' + target + ' KG';
-    pctEl.style.color = pct >= 100 ? 'var(--gold)' : 'var(--green)';
+    pctEl.style.color = pct >= 100 ? 'var(--gold)' : 'var(--teal)';
   } else {
     pctEl.textContent = '0%'; barEl.style.width = '0%';
     startM.textContent = 'البداية: --';
@@ -1107,8 +1128,7 @@ function drawChart() {
   const tx   = i => pad.l + (i/(entries.length-1)) * cw;
   const ty   = v => pad.t + ch - ((v-minV)/(maxV-minV)) * ch;
 
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
   for(let i=0; i<=4; i++) {
     const y = pad.t + (i/4)*ch;
     ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
@@ -1116,36 +1136,32 @@ function drawChart() {
     ctx.fillText((maxV - i*(maxV-minV)/4).toFixed(1), pad.l-4, y+4);
   }
 
-  // Target line
   if(wgtData.targetWeight) {
     const ty2 = ty(wgtData.targetWeight);
     if(ty2 >= pad.t && ty2 <= pad.t+ch) {
-      ctx.setLineDash([4,4]); ctx.strokeStyle = '#7AE8B8'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([4,4]); ctx.strokeStyle = '#00D4AA'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(pad.l, ty2); ctx.lineTo(pad.l+cw, ty2); ctx.stroke();
       ctx.setLineDash([]);
     }
   }
 
-  // Area
   const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t+ch);
-  grad.addColorStop(0, 'rgba(122,184,232,0.22)');
-  grad.addColorStop(1, 'rgba(122,184,232,0)');
+  grad.addColorStop(0, 'rgba(0,212,170,0.18)');
+  grad.addColorStop(1, 'rgba(0,212,170,0)');
   ctx.beginPath();
   entries.forEach(([,v],i) => i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v)));
   ctx.lineTo(tx(entries.length-1), pad.t+ch);
   ctx.lineTo(tx(0), pad.t+ch);
   ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
 
-  // Line
-  ctx.beginPath(); ctx.strokeStyle = '#7AB8E8'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.strokeStyle = '#00D4AA'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
   entries.forEach(([,v],i) => i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v)));
   ctx.stroke();
 
-  // Dots
   entries.forEach(([,v],i) => {
     ctx.beginPath(); ctx.arc(tx(i), ty(v), 4, 0, Math.PI*2);
-    ctx.fillStyle = '#7AB8E8'; ctx.fill();
-    ctx.strokeStyle = '#080808'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#00D4AA'; ctx.fill();
+    ctx.strokeStyle = '#06060A'; ctx.lineWidth = 2; ctx.stroke();
   });
 }
 
@@ -1182,10 +1198,7 @@ function renderWeight() {
     const row = document.createElement('div');
     row.className = 'wgt-row';
     row.innerHTML = `
-      <div class="wgt-row-date">
-        يوم ${dayNum}
-      </div>
-
+      <div class="wgt-row-date">يوم ${dayNum}</div>
       <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined ? w : ''}"
         step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
       ${diffHtml}
@@ -1197,107 +1210,11 @@ function renderWeight() {
   setTimeout(drawChart, 50);
 }
 
-// ─── CALORIE GOAL ───
-const KEY_GOAL = 'trackerCalGoal_v1';
-let calGoal = parseInt(localStorage.getItem(KEY_GOAL)) || 2500;
-
-function saveCalGoal() {
-  const v = parseInt(document.getElementById('cal-goal').value);
-  calGoal = isNaN(v) ? 2500 : v;
-  localStorage.setItem(KEY_GOAL, calGoal);
-  renderDays();
-  drawCalChart();
-}
-
-// ─── PROTEIN GOAL ───
-const KEY_PRO_GOAL = 'trackerProGoal_v1';
-let proGoal = parseInt(localStorage.getItem(KEY_PRO_GOAL)) || 150;
-
-function saveProGoal() {
-  const v = parseInt(document.getElementById('pro-goal').value);
-  proGoal = isNaN(v) ? 150 : v;
-  localStorage.setItem(KEY_PRO_GOAL, proGoal);
-}
-
-// ─── CALORIE CHART ───
-function drawCalChart() {
-  return; // chart removed
-  const canvas  = document.getElementById('cal-canvas');
-  const emptyEl = document.getElementById('cal-chart-empty');
-  const daysWithData = calDays.filter(d => d.slots.some(s => parseFloat(s.cal) > 0));
-  if(daysWithData.length < 2) { emptyEl.style.display = 'flex'; canvas.style.display='none'; return; }
-  emptyEl.style.display = 'none'; canvas.style.display='block';
-
-  const ctx = canvas.getContext('2d');
-  const W = canvas.offsetWidth, H = canvas.offsetHeight;
-  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
-  ctx.scale(devicePixelRatio, devicePixelRatio);
-
-  const vals = daysWithData.map(d => d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0));
-  const minV = Math.max(0, Math.min(...vals) - 200);
-  const maxV = Math.max(...vals, calGoal) + 200;
-  const pad  = { t:10, r:10, b:28, l:40 };
-  const cw   = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-  const tx   = i => pad.l + (i/(daysWithData.length-1||1)) * cw;
-  const ty   = v => pad.t + ch - ((v-minV)/(maxV-minV)) * ch;
-
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
-  for(let i=0; i<=4; i++) {
-    const y = pad.t + (i/4)*ch;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '10px Cairo'; ctx.textAlign = 'right';
-    ctx.fillText(Math.round(maxV - i*(maxV-minV)/4), pad.l-4, y+4);
-  }
-
-  // Goal line
-  if(calGoal) {
-    const gy = ty(calGoal);
-    if(gy >= pad.t && gy <= pad.t+ch) {
-      ctx.setLineDash([4,4]); ctx.strokeStyle = 'rgba(232,168,122,0.6)'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l+cw, gy); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(232,168,122,0.7)'; ctx.font = '9px Bebas Neue'; ctx.textAlign = 'left';
-      ctx.fillText('GOAL', pad.l+4, gy-3);
-    }
-  }
-
-  // Area
-  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t+ch);
-  grad.addColorStop(0, 'rgba(232,168,122,0.22)');
-  grad.addColorStop(1, 'rgba(232,168,122,0)');
-  ctx.beginPath();
-  daysWithData.forEach((d,i) => {
-    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
-    i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v));
-  });
-  ctx.lineTo(tx(daysWithData.length-1), pad.t+ch);
-  ctx.lineTo(tx(0), pad.t+ch);
-  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
-
-  // Line
-  ctx.beginPath(); ctx.strokeStyle = '#E8A87A'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-  daysWithData.forEach((d,i) => {
-    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
-    i===0 ? ctx.moveTo(tx(i),ty(v)) : ctx.lineTo(tx(i),ty(v));
-  });
-  ctx.stroke();
-
-  // Dots
-  daysWithData.forEach((d,i) => {
-    const v = d.slots.reduce((a,s)=>a+(parseFloat(s.cal)||0),0);
-    ctx.beginPath(); ctx.arc(tx(i), ty(v), 4, 0, Math.PI*2);
-    ctx.fillStyle = '#E8A87A'; ctx.fill();
-    ctx.strokeStyle = '#080808'; ctx.lineWidth = 2; ctx.stroke();
-  });
-}
-
 // ─── INIT ───
 document.getElementById('cal-goal').value = calGoal || '';
 document.getElementById('pro-goal').value = proGoal || '';
 renderDays();
 renderWeight();
-setTimeout(drawCalChart, 80);
 </script>
 </body>
 </html>
