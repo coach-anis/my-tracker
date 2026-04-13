@@ -1054,6 +1054,80 @@ body::after {
   border-color: var(--blue);
   color: var(--blue);
 }
+
+/* ── BACKUP SECTION ── */
+.backup-section {
+  background: var(--bg2);
+  border: 1px solid rgba(0,212,170,0.2);
+  border-radius: 18px;
+  padding: 18px;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.backup-section::before {
+  content:''; position:absolute; top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+.backup-title {
+  font-size: 9px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--muted);
+  margin-bottom: 14px; display:flex; align-items:center; gap:8px;
+}
+.backup-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.backup-btns { display:flex; gap:8px; }
+.btn-backup {
+  flex:1; padding:13px 10px; border-radius:12px;
+  border:1px solid rgba(0,212,170,0.3);
+  background:rgba(0,212,170,0.07);
+  color:var(--teal2); font-family:'Cairo',sans-serif;
+  font-weight:700; font-size:0.82rem; cursor:pointer;
+  transition:all .2s; display:flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.btn-backup:hover { background:rgba(0,212,170,0.14); border-color:var(--teal); }
+.btn-restore {
+  flex:1; padding:13px 10px; border-radius:12px;
+  border:1px solid rgba(245,200,66,0.3);
+  background:rgba(245,200,66,0.07);
+  color:var(--gold2); font-family:'Cairo',sans-serif;
+  font-weight:700; font-size:0.82rem; cursor:pointer;
+  transition:all .2s; display:flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.btn-restore:hover { background:rgba(245,200,66,0.14); border-color:var(--gold); }
+.backup-last {
+  margin-top:10px; font-size:0.72rem; color:var(--muted);
+  font-weight:600; text-align:center; letter-spacing:0.5px;
+}
+
+/* ── BACKUP REMINDER BANNER ── */
+.backup-reminder {
+  position:fixed; bottom:80px; left:16px; right:16px;
+  z-index:200; background:var(--bg3);
+  border:1px solid rgba(245,200,66,0.35);
+  border-radius:16px; padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  animation:slideUp .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+.backup-reminder.hidden { display:none; }
+.backup-reminder-icon { font-size:24px; flex-shrink:0; }
+.backup-reminder-text { flex:1; }
+.backup-reminder-title { font-size:0.82rem; font-weight:700; color:var(--text); }
+.backup-reminder-sub   { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+.backup-reminder-btns  { display:flex; flex-direction:column; gap:5px; align-items:flex-end; flex-shrink:0; }
+.btn-reminder-backup {
+  padding:7px 14px; border-radius:9px; border:none;
+  background:var(--gold); color:#000;
+  font-family:'Cairo',sans-serif; font-weight:700;
+  font-size:0.78rem; cursor:pointer; white-space:nowrap;
+}
+.btn-reminder-dismiss {
+  background:none; border:none; color:var(--muted);
+  font-size:0.72rem; cursor:pointer;
+  font-family:'Cairo',sans-serif; font-weight:600;
+}
 </style>
 </head>
 <body>
@@ -1102,6 +1176,19 @@ body::after {
 <!-- ── PWA OFFLINE TOAST ── -->
 <div class="pwa-toast" id="pwa-toast"></div>
 
+<!-- ── BACKUP REMINDER BANNER ── -->
+<div class="backup-reminder hidden" id="backup-reminder">
+  <div class="backup-reminder-icon">⚠️</div>
+  <div class="backup-reminder-text">
+    <div class="backup-reminder-title">لم تنسخ بياناتك منذ فترة!</div>
+    <div class="backup-reminder-sub" id="reminder-sub">احفظ نسخة الآن حتى لا تضيع</div>
+  </div>
+  <div class="backup-reminder-btns">
+    <button class="btn-reminder-backup" onclick="backupData(); dismissReminder()">💾 نسخ الآن</button>
+    <button class="btn-reminder-dismiss" onclick="dismissReminder()">لاحقاً</button>
+  </div>
+</div>
+
 <div class="tabs" style="margin-top:58px">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
@@ -1147,6 +1234,17 @@ body::after {
 
   <button class="btn-reset" onclick="resetDay()">↺ إعادة الضبط</button>
   <button class="btn-export" id="btn-export" onclick="exportData()">📋 نسخ البيانات · JSON</button>
+
+  <!-- نسخ احتياطي -->
+  <div class="backup-section">
+    <div class="backup-title">💾 النسخ الاحتياطي · BACKUP</div>
+    <div class="backup-btns">
+      <button class="btn-backup" onclick="backupData()">💾 حفظ نسخة</button>
+      <button class="btn-restore" onclick="document.getElementById('restore-input').click()">📥 استعادة</button>
+    </div>
+    <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)" />
+    <div class="backup-last" id="backup-last-label">لم يتم حفظ نسخة بعد</div>
+  </div>
 </div>
 
 <!-- ═══ WEIGHT PANEL ═══ -->
@@ -1316,7 +1414,6 @@ function updateSlot(id, idx, field, val) {
     updateDaySummary(id, totalCal, totalPro);
     updateCalSummary();
     updateMotivBanner();
-    updateStickyBar();
   }
 }
 
@@ -1421,7 +1518,6 @@ function renderDays() {
   });
   updateCalSummary();
   updateMotivBanner();
-  updateStickyBar();
 }
 
 function updateCalSummary() {
@@ -1926,20 +2022,21 @@ function updateStickyBar() {
   }
 }
 
+// patch updateSlot and renderDays to also update sticky bar
+const _origUpdateSlot = updateSlot;
+updateSlot = function(id, idx, field, val) {
+  _origUpdateSlot(id, idx, field, val);
+  updateStickyBar();
+};
+const _origRenderDays = renderDays;
+renderDays = function() {
+  _origRenderDays();
+  updateStickyBar();
+};
+
 // ─── PWA SERVICE WORKER ───
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/my-tracker/sw.js').then(reg => {
-    // كشف التحديثات التلقائي — يعيد تحميل الصفحة عند توفر نسخة جديدة
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'activated') {
-          showToast('🔄 تم تحديث التطبيق!');
-          setTimeout(() => window.location.reload(), 1500);
-        }
-      });
-    });
-  }).catch(() => {});
+  navigator.serviceWorker.register('/my-tracker/sw.js').then(() => {}).catch(() => {});
 
   window.addEventListener('offline', () => showToast('📵 أنت غير متصل — يعمل أوف لاين'));
   window.addEventListener('online',  () => showToast('🌐 عاد الاتصال بالإنترنت'));
@@ -1995,12 +2092,118 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ─── BACKUP & RESTORE ───
+const KEY_LAST_BACKUP = 'trackerLastBackup';
+
+function backupData() {
+  const payload = {
+    version: 1,
+    date: new Date().toISOString(),
+    calDays,
+    wgtData,
+    calGoal,
+    proGoal
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const dateStr = new Date().toISOString().split('T')[0];
+  a.href     = url;
+  a.download = `coach-anis-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // سجّل وقت آخر نسخة
+  const now = Date.now();
+  localStorage.setItem(KEY_LAST_BACKUP, now);
+  updateBackupLabel();
+  showToast('💾 تم حفظ النسخة الاحتياطية!');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.calDays || !payload.wgtData) {
+        showToast('⚠️ الملف غير صحيح!'); return;
+      }
+      // تأكيد قبل الاستعادة
+      if (!confirm('هل تريد استعادة البيانات؟ سيتم استبدال البيانات الحالية.')) return;
+
+      calDays = payload.calDays.map(day => ({
+        ...day,
+        slots: day.slots.map(s => (typeof s === 'object' && s !== null) ? s : { cal: s, pro: '' })
+      }));
+      wgtData = payload.wgtData;
+      if (!wgtData.weights) wgtData.weights = {};
+      calGoal = payload.calGoal || 2500;
+      proGoal = payload.proGoal || 150;
+
+      saveCalData(calDays);
+      saveWgtData(wgtData);
+      localStorage.setItem(KEY_GOAL, calGoal);
+      localStorage.setItem(KEY_PRO_GOAL, proGoal);
+
+      document.getElementById('cal-goal').value = calGoal || '';
+      document.getElementById('pro-goal').value = proGoal || '';
+      renderDays();
+      renderWeight();
+      updateStickyBar();
+      showToast('✅ تمت الاستعادة بنجاح!');
+    } catch(err) {
+      showToast('⚠️ خطأ في قراءة الملف!');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function updateBackupLabel() {
+  const last = localStorage.getItem(KEY_LAST_BACKUP);
+  const el   = document.getElementById('backup-last-label');
+  if (!el) return;
+  if (!last) { el.textContent = 'لم يتم حفظ نسخة بعد'; el.style.color = 'var(--red)'; return; }
+  const diff = Math.floor((Date.now() - parseInt(last)) / 86400000);
+  if (diff === 0) { el.textContent = 'آخر نسخة: اليوم ✅'; el.style.color = 'var(--teal2)'; }
+  else if (diff === 1) { el.textContent = 'آخر نسخة: أمس'; el.style.color = 'var(--gold)'; }
+  else { el.textContent = `آخر نسخة: منذ ${diff} أيام`; el.style.color = diff >= 5 ? 'var(--red)' : 'var(--gold)'; }
+}
+
+function checkBackupReminder() {
+  const last = localStorage.getItem(KEY_LAST_BACKUP);
+  const reminder = document.getElementById('backup-reminder');
+  const sub      = document.getElementById('reminder-sub');
+  if (!reminder) return;
+  if (!last) {
+    sub.textContent = 'لم تنسخ بياناتك أبداً — انسخ الآن!';
+    setTimeout(() => reminder.classList.remove('hidden'), 4000);
+    return;
+  }
+  const diff = Math.floor((Date.now() - parseInt(last)) / 86400000);
+  if (diff >= 3) {
+    sub.textContent = `مضت ${diff} أيام بدون نسخة احتياطية`;
+    setTimeout(() => reminder.classList.remove('hidden'), 4000);
+  }
+}
+
+function dismissReminder() {
+  document.getElementById('backup-reminder').classList.add('hidden');
+}
+
 // ─── INIT ───
 document.getElementById('cal-goal').value = calGoal || '';
 document.getElementById('pro-goal').value = proGoal || '';
 renderDays();
 renderWeight();
 updateStickyBar();
+updateBackupLabel();
+checkBackupReminder();
 </script>
 </body>
 </html>
