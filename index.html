@@ -114,6 +114,13 @@ body::after {
   box-shadow: 0 0 24px rgba(0,212,170,0.1), inset 0 1px 0 rgba(0,212,170,0.12);
 }
 
+.tab-btn.active-adv {
+  background: rgba(77,166,255,0.08);
+  color: #4DA6FF;
+  border-color: rgba(77,166,255,0.3);
+  box-shadow: 0 0 24px rgba(77,166,255,0.1), inset 0 1px 0 rgba(77,166,255,0.12);
+}
+
 /* ── PANELS ── */
 .panel { display:none; padding: 20px 16px 80px; position:relative; z-index:1; max-width:640px; margin:0 auto; }
 .panel.active { display:block; animation: fadeUp .35s ease both; }
@@ -1166,6 +1173,226 @@ body::after {
   font-size:0.72rem; cursor:pointer;
   font-family:'Cairo',sans-serif; font-weight:600;
 }
+
+/* ── PREDICTION CARD ── */
+.predict-card {
+  background: var(--bg2);
+  border: 1px solid rgba(77,166,255,0.3);
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.predict-card::before {
+  content:''; position:absolute; top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, #4DA6FF, var(--teal));
+}
+.predict-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.predict-title {
+  font-size: 9px; font-weight:700; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--muted);
+}
+.predict-badge {
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:800;
+  color:#4DA6FF; background:rgba(77,166,255,0.1);
+  border:1px solid rgba(77,166,255,0.25); border-radius:20px;
+  padding:4px 12px; letter-spacing:0.5px;
+}
+.predict-body {
+  display:flex; align-items:center; justify-content:space-around;
+  gap:8px;
+}
+.predict-item { text-align:center; flex:1; }
+.predict-val {
+  font-family:'Syne',sans-serif; font-size:20px; font-weight:800;
+  color:#4DA6FF; letter-spacing:-0.5px; line-height:1;
+  margin-bottom:5px;
+}
+.predict-lbl {
+  font-size:9px; color:var(--muted); letter-spacing:1.5px;
+  text-transform:uppercase; font-weight:700;
+}
+.predict-divider {
+  width:1px; height:36px;
+  background:rgba(255,255,255,0.06); flex-shrink:0;
+}
+.predict-warn-card {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(245,200,66,0.05);
+  border:1px solid rgba(245,200,66,0.2);
+  border-radius:14px; padding:12px 16px;
+  margin-bottom:14px;
+  font-size:0.78rem; color:var(--muted); font-weight:600;
+}
+
+/* ── CALORIE ADVISOR CARD ── */
+.advisor-card {
+  background: var(--bg2);
+  border: 1px solid rgba(77,166,255,0.25);
+  border-radius: 20px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  position: relative;
+}
+.advisor-card::before {
+  content:''; position:absolute; top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, #4DA6FF, var(--teal), var(--gold));
+}
+.advisor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 0;
+}
+.advisor-title {
+  font-size: 9px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--muted);
+}
+.advisor-toggle {
+  background: none; border: 1px solid rgba(77,166,255,0.25);
+  border-radius: 20px; color: #4DA6FF;
+  font-family:'Cairo',sans-serif; font-size:0.72rem;
+  font-weight:700; padding:4px 12px; cursor:pointer;
+  transition: all .2s;
+}
+.advisor-toggle:hover { background: rgba(77,166,255,0.1); }
+
+.advisor-body { padding: 14px 18px 18px; }
+
+/* mode tabs */
+.advisor-modes {
+  display: flex; gap:6px; margin-bottom:14px;
+}
+.advisor-mode-btn {
+  flex:1; padding:9px 6px; border-radius:10px;
+  border:1px solid var(--border); background:var(--bg3);
+  color:var(--muted); font-family:'Cairo',sans-serif;
+  font-size:0.78rem; font-weight:700; cursor:pointer;
+  transition:all .25s; text-align:center;
+}
+.advisor-mode-btn.cut.active {
+  background:rgba(0,212,170,0.1); color:var(--teal2);
+  border-color:rgba(0,212,170,0.35);
+  box-shadow: 0 0 16px rgba(0,212,170,0.1);
+}
+.advisor-mode-btn.bulk.active {
+  background:rgba(255,95,31,0.1); color:var(--fire2);
+  border-color:rgba(255,95,31,0.35);
+  box-shadow: 0 0 16px rgba(255,95,31,0.1);
+}
+.advisor-mode-btn.maintain.active {
+  background:rgba(77,166,255,0.1); color:#4DA6FF;
+  border-color:rgba(77,166,255,0.35);
+  box-shadow: 0 0 16px rgba(77,166,255,0.1);
+}
+
+/* result row */
+.advisor-result {
+  display:flex; gap:8px; margin-bottom:12px;
+}
+.advisor-result-main {
+  flex:1.4; background:var(--bg3);
+  border-radius:14px; padding:14px 12px; text-align:center;
+  border:1px solid rgba(77,166,255,0.15);
+}
+.advisor-result-main .ar-val {
+  font-family:'Syne',sans-serif; font-size:32px;
+  font-weight:800; letter-spacing:-1.5px; line-height:1;
+  margin-bottom:4px;
+}
+.advisor-result-main .ar-lbl {
+  font-size:9px; color:var(--muted);
+  letter-spacing:2px; text-transform:uppercase; font-weight:700;
+}
+.advisor-result-side { flex:1; display:flex; flex-direction:column; gap:8px; }
+.advisor-result-item {
+  flex:1; background:var(--bg3); border-radius:12px;
+  padding:10px 10px; text-align:center;
+  border:1px solid var(--border);
+}
+.advisor-result-item .ari-val {
+  font-family:'Syne',sans-serif; font-size:16px;
+  font-weight:800; letter-spacing:-0.5px; line-height:1;
+  margin-bottom:3px;
+}
+.advisor-result-item .ari-lbl {
+  font-size:8px; color:var(--muted);
+  letter-spacing:1.5px; text-transform:uppercase; font-weight:700;
+}
+
+/* TDEE breakdown */
+.advisor-breakdown {
+  background:var(--bg3); border-radius:12px;
+  padding:12px 14px; margin-bottom:12px;
+  border:1px solid var(--border);
+}
+.advisor-breakdown-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:4px 0; font-size:0.78rem;
+}
+.advisor-breakdown-row:not(:last-child) {
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.abd-label { color:var(--muted); font-weight:600; }
+.abd-val { font-family:'Syne',sans-serif; font-weight:700; font-size:0.82rem; }
+
+/* apply btn */
+.advisor-apply-btn {
+  width:100%; padding:13px; border-radius:12px;
+  border:none; font-family:'Cairo',sans-serif;
+  font-size:0.88rem; font-weight:700; cursor:pointer;
+  transition:all .25s; letter-spacing:0.5px;
+}
+.advisor-apply-btn.cut-btn {
+  background:linear-gradient(135deg, rgba(0,212,170,0.2), rgba(0,245,196,0.1));
+  color:var(--teal2); border:1px solid rgba(0,212,170,0.3);
+}
+.advisor-apply-btn.cut-btn:hover { background:rgba(0,212,170,0.25); }
+.advisor-apply-btn.bulk-btn {
+  background:linear-gradient(135deg, rgba(255,95,31,0.2), rgba(255,140,66,0.1));
+  color:var(--fire2); border:1px solid rgba(255,95,31,0.3);
+}
+.advisor-apply-btn.bulk-btn:hover { background:rgba(255,95,31,0.25); }
+.advisor-apply-btn.maintain-btn {
+  background:linear-gradient(135deg, rgba(77,166,255,0.2), rgba(77,166,255,0.1));
+  color:#4DA6FF; border:1px solid rgba(77,166,255,0.3);
+}
+.advisor-apply-btn.maintain-btn:hover { background:rgba(77,166,255,0.25); }
+
+/* input fields */
+.advisor-inputs {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;
+}
+.advisor-input-wrap { display:flex; flex-direction:column; gap:5px; }
+.advisor-input-wrap label {
+  font-size:8px; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:var(--muted);
+}
+.advisor-input {
+  padding:9px 10px; border-radius:10px;
+  border:1px solid rgba(77,166,255,0.2);
+  background:var(--bg3); color:var(--text);
+  font-family:'Syne',sans-serif; font-size:0.95rem;
+  font-weight:700; text-align:center; outline:none;
+  transition:border-color .2s;
+}
+.advisor-input:focus { border-color:rgba(77,166,255,0.5); }
+.advisor-input::placeholder { color:rgba(255,255,255,0.1); }
+.advisor-calc-btn {
+  grid-column:1/-1; padding:11px;
+  border-radius:10px; border:1px solid rgba(77,166,255,0.3);
+  background:rgba(77,166,255,0.08); color:#4DA6FF;
+  font-family:'Cairo',sans-serif; font-weight:700;
+  font-size:0.85rem; cursor:pointer; transition:all .2s;
+}
+.advisor-calc-btn:hover { background:rgba(77,166,255,0.16); }
+.advisor-hidden { display:none; }
 </style>
 </head>
 <body>
@@ -1230,6 +1457,7 @@ body::after {
 <div class="tabs" style="margin-top:58px">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
+  <button class="tab-btn" onclick="switchTab('adv')">🧬 TDEE</button>
 </div>
 
 <!-- ═══ CALORIES PANEL ═══ -->
@@ -1285,6 +1513,102 @@ body::after {
   </div>
 </div>
 
+
+
+<!-- ═══ ADVISOR PANEL ═══ -->
+<div class="panel" id="panel-adv">
+  <div style="height:16px"></div>
+<!-- ══ CALORIE ADVISOR ══ -->
+  <div class="advisor-card" id="advisor-card">
+    <div class="advisor-header">
+      <span class="advisor-title">&#x1F9EC; &#x062D;&#x0627;&#x0633;&#x0628;&#x0629; &#x0627;&#x0644;&#x0633;&#x0639;&#x0631;&#x0627;&#x062A; &#x0627;&#x0644;&#x0630;&#x0643;&#x064A;&#x0629; &middot; TDEE</span>
+
+    </div>
+    <div class="advisor-body" id="advisor-body">
+      <!-- inputs -->
+      <div class="advisor-inputs" id="advisor-inputs-section">
+        <div class="advisor-input-wrap">
+          <label>&#x0627;&#x0644;&#x0639;&#x0645;&#x0631; (&#x0633;&#x0646;&#x0629;)</label>
+          <input class="advisor-input" type="number" id="adv-age" placeholder="22" min="10" max="80" oninput="calcAdvisor()" />
+        </div>
+        <div class="advisor-input-wrap">
+          <label>&#x0627;&#x0644;&#x0637;&#x0648;&#x0644; (&#x0633;&#x0645;)</label>
+          <input class="advisor-input" type="number" id="adv-height" placeholder="188" min="140" max="220" oninput="calcAdvisor()" />
+        </div>
+        <div class="advisor-input-wrap">
+          <label>&#x0627;&#x0644;&#x0648;&#x0632;&#x0646; (&#x0643;&#x063A;)</label>
+          <input class="advisor-input" type="number" id="adv-weight" placeholder="115" min="30" max="300" oninput="calcAdvisor()" />
+        </div>
+        <div class="advisor-input-wrap">
+          <label>&#x0627;&#x0644;&#x062C;&#x0646;&#x0633;</label>
+          <select class="advisor-input" id="adv-gender" onchange="calcAdvisor()" style="cursor:pointer">
+            <option value="m">&#x0630;&#x0643;&#x0631;</option>
+            <option value="f">&#x0623;&#x0646;&#x062B;&#x0649;</option>
+          </select>
+        </div>
+        <div class="advisor-input-wrap" style="grid-column:1/-1">
+          <label>&#x0645;&#x0633;&#x062A;&#x0648;&#x0649; &#x0627;&#x0644;&#x0646;&#x0634;&#x0627;&#x0637;</label>
+          <select class="advisor-input" id="adv-activity" onchange="calcAdvisor()" style="cursor:pointer;font-family:Cairo,sans-serif;font-size:0.78rem">
+            <option value="1.2">&#x062C;&#x0627;&#x0644;&#x0633; &#x0623;&#x063A;&#x0644;&#x0628; &#x0627;&#x0644;&#x064A;&#x0648;&#x0645; (&#x0645;&#x0643;&#x062A;&#x0628; / &#x062F;&#x0631;&#x0627;&#x0633;&#x0629;)</option>
+            <option value="1.375">&#x0646;&#x0634;&#x0627;&#x0637; &#x062E;&#x0641;&#x064A;&#x0641; (&#x062A;&#x0645;&#x0631;&#x064A;&#x0646; 1-3 &#x0645;&#x0631;&#x0627;&#x062A;/&#x0623;&#x0633;&#x0628;&#x0648;&#x0639;)</option>
+            <option value="1.55">&#x0646;&#x0634;&#x0627;&#x0637; &#x0645;&#x062A;&#x0648;&#x0633;&#x0637; (3-5 &#x0645;&#x0631;&#x0627;&#x062A;/&#x0623;&#x0633;&#x0628;&#x0648;&#x0639;)</option>
+            <option value="1.725">&#x0646;&#x0634;&#x0627;&#x0637; &#x0639;&#x0627;&#x0644;&#x064A; (6-7 &#x0645;&#x0631;&#x0627;&#x062A;/&#x0623;&#x0633;&#x0628;&#x0648;&#x0639;)</option>
+            <option value="1.9">&#x0646;&#x0634;&#x0627;&#x0637; &#x0634;&#x062F;&#x064A;&#x062F; (&#x0639;&#x0645;&#x0644; &#x062D;&#x0631;&#x0643;&#x064A; + &#x062A;&#x0645;&#x0631;&#x064A;&#x0646;)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- results (hidden until calc) -->
+      <div id="advisor-results">
+        <!-- mode selector -->
+        <div class="advisor-modes">
+          <button class="advisor-mode-btn cut active" id="adv-mode-cut" onclick="setAdvMode('cut')">&#x2702;&#xFE0F; Cutting</button>
+          <button class="advisor-mode-btn maintain" id="adv-mode-maintain" onclick="setAdvMode('maintain')">&#x2696;&#xFE0F; &#x062B;&#x0628;&#x0627;&#x062A;</button>
+          <button class="advisor-mode-btn bulk" id="adv-mode-bulk" onclick="setAdvMode('bulk')">&#x1F4AA; Bulking</button>
+        </div>
+
+        <!-- main numbers -->
+        <div class="advisor-result">
+          <div class="advisor-result-main">
+            <div class="ar-val" id="adv-cal-val">--</div>
+            <div class="ar-lbl">KCAL / &#x064A;&#x0648;&#x0645;</div>
+          </div>
+          <div class="advisor-result-side">
+            <div class="advisor-result-item">
+              <div class="ari-val" id="adv-pro-val" style="color:var(--gold)">--</div>
+              <div class="ari-lbl">&#x0628;&#x0631;&#x0648;&#x062A;&#x064A;&#x0646; (G)</div>
+            </div>
+            <div class="advisor-result-item">
+              <div class="ari-val" id="adv-deficit-val" style="color:var(--teal2)">--</div>
+              <div class="ari-lbl" id="adv-deficit-lbl">&#x0639;&#x062C;&#x0632; / &#x064A;&#x0648;&#x0645;</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- breakdown -->
+        <div class="advisor-breakdown">
+          <div class="advisor-breakdown-row">
+            <span class="abd-label">&#x1F4A4; BMR (&#x0627;&#x0644;&#x062D;&#x0631;&#x0642; &#x0627;&#x0644;&#x0623;&#x0633;&#x0627;&#x0633;&#x064A;)</span>
+            <span class="abd-val" id="adv-bmr">--</span>
+          </div>
+          <div class="advisor-breakdown-row">
+            <span class="abd-label">&#x26A1; TDEE (&#x0645;&#x0639; &#x0627;&#x0644;&#x0646;&#x0634;&#x0627;&#x0637;)</span>
+            <span class="abd-val" id="adv-tdee">--</span>
+          </div>
+          <div class="advisor-breakdown-row">
+            <span class="abd-label">&#x1F4C9; &#x062E;&#x0633;&#x0627;&#x0631;&#x0629; &#x0645;&#x062A;&#x0648;&#x0642;&#x0639;&#x0629; / &#x0623;&#x0633;&#x0628;&#x0648;&#x0639;</span>
+            <span class="abd-val" id="adv-weekly-loss" style="color:var(--teal2)">--</span>
+          </div>
+        </div>
+
+        <button class="advisor-apply-btn cut-btn" id="adv-apply-btn" onclick="applyAdvisorGoals()">
+          &#x2705; &#x062A;&#x0637;&#x0628;&#x064A;&#x0642; &#x0639;&#x0644;&#x0649; &#x0647;&#x062F;&#x0641; &#x0627;&#x0644;&#x0633;&#x0639;&#x0631;&#x0627;&#x062A; &#x0648;&#x0627;&#x0644;&#x0628;&#x0631;&#x0648;&#x062A;&#x064A;&#x0646;
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ WEIGHT PANEL ═══ -->
 <div class="panel" id="panel-bud">
   <div style="height:16px"></div>
@@ -1334,6 +1658,34 @@ body::after {
     </div>
   </div>
 
+  <!-- GOAL PREDICTION CARD -->
+  <div class="predict-card" id="predict-card" style="display:none">
+    <div class="predict-top">
+      <span class="predict-title">&#x1F4C5; &#x062A;&#x0648;&#x0642;&#x0639; &#x0627;&#x0644;&#x0648;&#x0635;&#x0648;&#x0644; &#x0644;&#x0644;&#x0647;&#x062F;&#x0641;</span>
+      <span class="predict-badge" id="predict-badge">--</span>
+    </div>
+    <div class="predict-body">
+      <div class="predict-item">
+        <div class="predict-val" id="predict-days">--</div>
+        <div class="predict-lbl">&#x064A;&#x0648;&#x0645; &#x0645;&#x062A;&#x0628;&#x0642;&#x064A;</div>
+      </div>
+      <div class="predict-divider"></div>
+      <div class="predict-item">
+        <div class="predict-val" id="predict-rate">--</div>
+        <div class="predict-lbl">&#x0643;&#x063A; / &#x0623;&#x0633;&#x0628;&#x0648;&#x0639;</div>
+      </div>
+      <div class="predict-divider"></div>
+      <div class="predict-item">
+        <div class="predict-val" id="predict-remain">--</div>
+        <div class="predict-lbl">&#x0643;&#x063A; &#x0645;&#x062A;&#x0628;&#x0642;&#x064A;&#x0629;</div>
+      </div>
+    </div>
+  </div>
+  <div class="predict-warn-card" id="predict-warn" style="display:none">
+    <span>&#x26A0;&#xFE0F;</span>
+    <span id="predict-warn-msg">&#x0633;&#x062C;&#x0651;&#x0644; &#x0648;&#x0632;&#x0646;&#x0643; &#x0644;&#x0623;&#x0643;&#x062B;&#x0631; &#x0645;&#x0646; &#x064A;&#x0648;&#x0645; &#x0648;&#x062D;&#x062F;&#x062F; &#x0627;&#x0644;&#x0647;&#x062F;&#x0641; &#x0644;&#x062A;&#x0641;&#x0639;&#x064A;&#x0644; &#x0627;&#x0644;&#x062A;&#x0648;&#x0642;&#x0639;</span>
+  </div>
+
   <div class="wgt-chart-wrap" id="chart-container">
     <div class="wgt-chart-header">
       <span class="wgt-chart-title">منحنى الوزن · WEIGHT CURVE</span>
@@ -1379,9 +1731,13 @@ function switchTab(tab) {
   if(tab === 'cal') {
     document.querySelectorAll('.tab-btn')[0].className = 'tab-btn active-cal';
     document.getElementById('panel-cal').classList.add('active');
-  } else {
+  } else if(tab === 'bud') {
     document.querySelectorAll('.tab-btn')[1].className = 'tab-btn active-bud';
     document.getElementById('panel-bud').classList.add('active');
+  } else {
+    document.querySelectorAll('.tab-btn')[2].className = 'tab-btn active-adv';
+    document.getElementById('panel-adv').classList.add('active');
+    calcAdvisor();
   }
 }
 
@@ -1796,6 +2152,61 @@ function updateWgtSummary() {
     startM.textContent = 'البداية: --';
     nowM.textContent   = 'الآن: --';
     targM.textContent  = 'الهدف: --';
+  }
+
+  // ── PREDICTION CARD ──
+  const predCard  = document.getElementById('predict-card');
+  const predWarn  = document.getElementById('predict-warn');
+  const predDays  = document.getElementById('predict-days');
+  const predRate  = document.getElementById('predict-rate');
+  const predRem   = document.getElementById('predict-remain');
+  const predBadge = document.getElementById('predict-badge');
+
+  const remaining = last !== null && target !== null ? +(last - target).toFixed(1) : null;
+
+  if(entries.length >= 2 && last !== null && target !== null && remaining > 0) {
+    // weekly rate from all logged entries
+    const firstE = entries[0], lastE = entries[entries.length - 1];
+    const daysDiff = Math.max(1, (new Date(lastE[0]) - new Date(firstE[0])) / 86400000);
+    const totalLoss = firstE[1] - lastE[1];
+    const weeklyRate = +((totalLoss / daysDiff) * 7).toFixed(2);
+
+    predWarn.style.display = 'none';
+
+    if(weeklyRate <= 0) {
+      predCard.style.display = 'block';
+      predDays.textContent  = '∞';
+      predRate.textContent  = weeklyRate + ' KG';
+      predRate.style.color  = 'var(--red)';
+      predRem.textContent   = remaining + ' KG';
+      predBadge.textContent = 'لا تقدم';
+      predBadge.style.color = 'var(--red)';
+      predBadge.style.background = 'rgba(255,77,109,0.1)';
+      predBadge.style.borderColor = 'rgba(255,77,109,0.25)';
+    } else {
+      const daysLeft = Math.ceil((remaining / weeklyRate) * 7);
+      const arrivalDate = new Date();
+      arrivalDate.setDate(arrivalDate.getDate() + daysLeft);
+      const AR_M = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      const dateLabel = arrivalDate.getDate() + ' ' + AR_M[arrivalDate.getMonth()] + ' ' + arrivalDate.getFullYear();
+
+      predCard.style.display = 'block';
+      predDays.textContent  = daysLeft;
+      predDays.style.color  = '#4DA6FF';
+      predRate.textContent  = weeklyRate + ' KG';
+      predRate.style.color  = 'var(--teal2)';
+      predRem.textContent   = remaining + ' KG';
+      predBadge.textContent = dateLabel;
+      predBadge.style.color = '#4DA6FF';
+      predBadge.style.background = 'rgba(77,166,255,0.1)';
+      predBadge.style.borderColor = 'rgba(77,166,255,0.25)';
+    }
+  } else if(last !== null && target !== null && remaining <= 0) {
+    predCard.style.display = 'none';
+    predWarn.style.display = 'none';
+  } else {
+    predCard.style.display = 'none';
+    predWarn.style.display = 'flex';
   }
 }
 
@@ -2255,6 +2666,167 @@ renderWeight();
 updateStickyBar();
 updateBackupLabel();
 checkBackupReminder();
+
+// ─── CALORIE ADVISOR ───
+const KEY_ADV = 'trackerAdvisor_v1';
+let advData = {};
+try { advData = JSON.parse(localStorage.getItem(KEY_ADV)) || {}; } catch(e) {}
+let advMode = advData.mode || 'cut';
+let advTDEE = 0, advBMR = 0;
+
+function toggleAdvisor() {
+  const body = document.getElementById('advisor-body');
+  const btn  = document.querySelector('.advisor-toggle');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? 'block' : 'none';
+  btn.textContent = hidden ? '▲ طي' : '▼ توسيع';
+}
+
+// Pre-fill from saved data
+(function initAdvisor() {
+  if(advData.age)    document.getElementById('adv-age').value    = advData.age;
+  if(advData.height) document.getElementById('adv-height').value = advData.height;
+  if(advData.weight) document.getElementById('adv-weight').value = advData.weight;
+  if(advData.gender) document.getElementById('adv-gender').value = advData.gender;
+  if(advData.activity) document.getElementById('adv-activity').value = advData.activity;
+  calcAdvisor();
+})();
+
+function calcAdvisor() {
+  const age      = parseFloat(document.getElementById('adv-age').value);
+  const height   = parseFloat(document.getElementById('adv-height').value);
+  const weight   = parseFloat(document.getElementById('adv-weight').value);
+  const gender   = document.getElementById('adv-gender').value;
+  const activity = parseFloat(document.getElementById('adv-activity').value);
+
+  if(!age || !height || !weight) {
+    document.getElementById('advisor-results').classList.add('advisor-hidden');
+    return;
+  }
+
+  // Mifflin-St Jeor
+  let bmr;
+  if(gender === 'm') {
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+  } else {
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+  }
+  const tdee = Math.round(bmr * activity);
+  advBMR  = Math.round(bmr);
+  advTDEE = tdee;
+
+  // Save inputs
+  advData = { age, height, weight, gender, activity, mode: advMode };
+  localStorage.setItem(KEY_ADV, JSON.stringify(advData));
+
+  document.getElementById('adv-bmr').textContent  = advBMR.toLocaleString() + ' kcal';
+  document.getElementById('adv-tdee').textContent = advTDEE.toLocaleString() + ' kcal';
+  document.getElementById('advisor-results').classList.remove('advisor-hidden');
+
+  renderAdvMode();
+}
+
+function setAdvMode(mode) {
+  advMode = mode;
+  advData.mode = mode;
+  localStorage.setItem(KEY_ADV, JSON.stringify(advData));
+  ['cut','maintain','bulk'].forEach(m => {
+    document.getElementById('adv-mode-' + m).classList.remove('active');
+  });
+  document.getElementById('adv-mode-' + mode).classList.add('active');
+  renderAdvMode();
+}
+
+function renderAdvMode() {
+  if(!advTDEE) return;
+  const weight = parseFloat(document.getElementById('adv-weight').value) || 80;
+  // Protein: 2.2g per kg bodyweight (evidence-based for resistance training)
+  const protein = Math.round(weight * 2.2);
+
+  let targetCal, deficitLabel, deficitVal, weeklyLoss, applyClass, applyText, deficitColor;
+
+  if(advMode === 'cut') {
+    // 500 kcal deficit → ~0.45 kg/week fat loss (safe, evidence-based)
+    targetCal   = advTDEE - 500;
+    deficitVal  = '-500';
+    deficitLabel = 'عجز / يوم';
+    weeklyLoss  = '~0.45 كغ / أسبوع';
+    applyClass  = 'advisor-apply-btn cut-btn';
+    applyText   = '✂️ تطبيق هدف الـ Cutting';
+    deficitColor = 'var(--teal2)';
+    document.getElementById('adv-cal-val').style.color = 'var(--teal2)';
+  } else if(advMode === 'bulk') {
+    // 250-300 kcal surplus → lean bulk, minimize fat gain
+    targetCal   = advTDEE + 300;
+    deficitVal  = '+300';
+    deficitLabel = 'فائض / يوم';
+    weeklyLoss  = '~0.3 كغ عضل / أسبوع';
+    applyClass  = 'advisor-apply-btn bulk-btn';
+    applyText   = '💪 تطبيق هدف الـ Bulking';
+    deficitColor = 'var(--fire2)';
+    document.getElementById('adv-cal-val').style.color = 'var(--fire2)';
+  } else {
+    // maintenance
+    targetCal   = advTDEE;
+    deficitVal  = '0';
+    deficitLabel = 'ثبات / يوم';
+    weeklyLoss  = 'لا تغيير في الوزن';
+    applyClass  = 'advisor-apply-btn maintain-btn';
+    applyText   = '⚖️ تطبيق هدف الثبات';
+    deficitColor = '#4DA6FF';
+    document.getElementById('adv-cal-val').style.color = '#4DA6FF';
+  }
+
+  // Ensure minimum safe calories
+  const minCal = 1500;
+  if(targetCal < minCal) {
+    targetCal = minCal;
+    document.getElementById('adv-cal-val').style.color = 'var(--red)';
+  }
+
+  document.getElementById('adv-cal-val').textContent      = targetCal.toLocaleString();
+  document.getElementById('adv-pro-val').textContent      = protein + 'g';
+  document.getElementById('adv-deficit-val').textContent  = deficitVal + ' kcal';
+  document.getElementById('adv-deficit-val').style.color  = deficitColor;
+  document.getElementById('adv-deficit-lbl').textContent  = deficitLabel;
+  document.getElementById('adv-weekly-loss').textContent  = weeklyLoss;
+
+  const applyBtn = document.getElementById('adv-apply-btn');
+  applyBtn.className = applyClass;
+  applyBtn.innerHTML = applyText;
+
+  // Store computed targets for apply
+  applyBtn.dataset.cal = targetCal;
+  applyBtn.dataset.pro = protein;
+}
+
+function applyAdvisorGoals() {
+  const btn = document.getElementById('adv-apply-btn');
+  const cal = parseInt(btn.dataset.cal);
+  const pro = parseInt(btn.dataset.pro);
+  if(!cal || !pro) return;
+
+  document.getElementById('cal-goal').value = cal;
+  document.getElementById('pro-goal').value = pro;
+  calGoal = cal;
+  proGoal = pro;
+  localStorage.setItem(KEY_GOAL, cal);
+  localStorage.setItem(KEY_PRO_GOAL, pro);
+  renderDays();
+  updateStickyBar && updateStickyBar();
+
+  // Flash confirmation
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ تم التطبيق!';
+  btn.style.background = 'rgba(0,212,170,0.2)';
+  btn.style.color = 'var(--teal2)';
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 2000);
+}
+
 </script>
 </body>
 </html>
