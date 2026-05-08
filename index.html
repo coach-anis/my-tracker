@@ -724,6 +724,29 @@ body::after {
   scrollbar-color: rgba(0,212,170,0.15) transparent;
 }
 
+/* ── WEEK SEPARATOR ── */
+.week-separator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 6px;
+}
+.week-separator-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--teal);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.week-separator-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,212,170,0.4), transparent);
+}
+
+/* ── WEEK START ROW ── */
 .wgt-row {
   display: flex;
   align-items: center;
@@ -735,12 +758,27 @@ body::after {
   margin-bottom: 6px;
   transition: border-color .2s;
 }
+.wgt-row.week-start {
+  border-color: rgba(0,212,170,0.35);
+  background: rgba(0,212,170,0.04);
+  box-shadow: 0 0 0 1px rgba(0,212,170,0.1), inset 0 0 20px rgba(0,212,170,0.02);
+}
+.wgt-row.week-end {
+  border-color: rgba(245,200,66,0.3);
+  background: rgba(245,200,66,0.03);
+}
 .wgt-row:focus-within { border-color: rgba(0,212,170,0.3); }
 .wgt-row-date {
   font-size: 0.78rem;
   font-weight: 700;
   min-width: 64px;
   color: var(--muted);
+}
+.wgt-row.week-start .wgt-row-date {
+  color: var(--teal2);
+}
+.wgt-row.week-end .wgt-row-date {
+  color: var(--gold);
 }
 .wgt-row-input {
   flex:1;
@@ -1958,6 +1996,17 @@ function renderWeight() {
     const sortedIdx = entries.findIndex(e => e[0] === dateStr);
     const dayNum = index + 1;
 
+    const isWeekStart = (dayNum - 1) % 7 === 0;
+    const isWeekEnd   = dayNum % 7 === 0;
+    const weekNum = Math.ceil(dayNum / 7);
+
+    if (isWeekStart) {
+      const sep = document.createElement('div');
+      sep.className = 'week-separator';
+      sep.innerHTML = '<span class="week-separator-label">\u0627\u0644\u0623\u0633\u0628\u0648\u0639 ' + weekNum + '</span><span class="week-separator-line"></span>';
+      list.appendChild(sep);
+    }
+
     let diffHtml = `<div class="wgt-row-diff empty" data-wdiff="${dateStr}">--</div>`;
     if(w !== undefined && sortedIdx > 0) {
       const diff = +(w - entries[sortedIdx-1][1]).toFixed(1);
@@ -1967,10 +2016,12 @@ function renderWeight() {
       diffHtml = `<div class="wgt-row-diff same" data-wdiff="${dateStr}">--</div>`;
     }
 
+    const rowCls = isWeekStart ? 'wgt-row week-start' : isWeekEnd ? 'wgt-row week-end' : 'wgt-row';
+    const dayLabel = '\u064a\u0648\u0645 ' + dayNum + (isWeekStart ? ' \ud83d\udfe2' : isWeekEnd ? ' \ud83d\udfe1' : '');
     const row = document.createElement('div');
-    row.className = 'wgt-row';
+    row.className = rowCls;
     row.innerHTML = `
-      <div class="wgt-row-date">يوم ${dayNum}</div>
+      <div class="wgt-row-date">${dayLabel}</div>
       <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined ? w : ''}"
         step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
       ${diffHtml}
