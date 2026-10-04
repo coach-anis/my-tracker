@@ -1,7 +1,7 @@
 {
   "name": "My Tracker - Coach Anis",
   "short_name": "Coach Anis",
-  "description": "تتبع السعرات والوزن يومياً",
+  "description": "تتبع السعرات والماكروز والوزن والماء يومياً",
   "start_url": "/my-tracker/",
   "scope": "/my-tracker/",
   "display": "standalone",
@@ -13,7 +13,19 @@
       "src": "/my-tracker/icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/my-tracker/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/my-tracker/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/my-tracker/icon.svg",
