@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Coach Anis">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#06060A">
+<meta name="theme-color" content="#06060A" id="meta-theme">
 <meta name="description" content="تتبع السعرات والوزن يومياً">
 <link rel="apple-touch-icon" sizes="180x180" href="/my-tracker/apple-touch-icon.png">
 <link rel="manifest" href="/my-tracker/manifest.json">
@@ -1393,9 +1393,97 @@ body::after {
 }
 .advisor-calc-btn:hover { background:rgba(77,166,255,0.16); }
 .advisor-hidden { display:none; }
+
+[data-theme="light"] {
+  --bg: #F5F5F8;
+  --bg2: #FFFFFF;
+  --bg3: #EEF0F5;
+  --bg4: #E4E6ED;
+  --text: #1A1A2E;
+  --muted: #6B6B80;
+  --border: rgba(0,0,0,0.08);
+  --border-fire: rgba(255,95,31,0.25);
+  --border-gold: rgba(200,150,20,0.25);
+  --border-teal: rgba(0,180,140,0.25);
+  --fire: #E04E10;
+  --fire2: #F07030;
+  --gold: #C9A020;
+  --gold2: #E0B830;
+  --teal: #00B090;
+  --teal2: #00C8A0;
+}
+body { transition: background .3s, color .3s; }
+.theme-btn {
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text); font-size: 1.15rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  transition: transform .2s;
+}
+.theme-btn:active { transform: scale(0.92); }
+.tab-btn.active-tools {
+  background: rgba(77,166,255,0.08); color: #4DA6FF;
+  border-color: rgba(77,166,255,0.3);
+  box-shadow: 0 0 24px rgba(77,166,255,0.1);
+}
+.share-modal {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.share-modal.show { opacity: 1; pointer-events: auto; }
+.share-modal-box {
+  background: var(--bg2); border-radius: 20px; padding: 20px;
+  max-width: 360px; width: 100%; text-align: center;
+  border: 1px solid var(--border);
+}
+.share-modal-box canvas { width: 100%; border-radius: 12px; margin-bottom: 14px; }
+.share-modal-btns { display: flex; gap: 8px; }
+.share-modal-btns button {
+  flex: 1; padding: 12px; border-radius: 12px; border: none;
+  font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+}
+.btn-share-do { background: var(--teal); color: #06060A; }
+.btn-share-dl { background: var(--bg3); color: var(--text); border: 1px solid var(--border) !important; }
+.btn-share-close {
+  background: transparent; color: var(--muted); margin-top: 8px; width: 100%;
+  border: none; padding: 8px; font-family: 'Cairo', sans-serif; cursor: pointer;
+}
+.tools-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; padding: 18px 16px; margin-bottom: 14px;
+}
+.tools-card-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+}
+.btn-share {
+  width: 100%; padding: 13px; border-radius: 14px; margin-top: 0;
+  font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.85rem;
+  cursor: pointer; border: 1px solid rgba(0,212,170,0.3);
+  background: rgba(0,212,170,0.08); color: var(--teal);
+}
+.btn-share:hover { background: rgba(0,212,170,0.15); }
+
 </style>
 </head>
 <body>
+
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="تبديل الوضع">🌙</button>
+
+<div class="share-modal" id="share-modal">
+  <div class="share-modal-box">
+    <canvas id="share-canvas" width="600" height="700"></canvas>
+    <div class="share-modal-btns">
+      <button class="btn-share-do" id="btn-share-native">📤 مشاركة</button>
+      <button class="btn-share-dl" id="btn-share-dl">⬇️ تحميل</button>
+    </div>
+    <button class="btn-share-close" onclick="closeShareModal()">إغلاق</button>
+  </div>
+</div>
+
 
 <!-- ── WELCOME OVERLAY ── -->
 <div class="welcome-overlay" id="welcome-overlay">
@@ -1442,21 +1530,10 @@ body::after {
 <div class="pwa-toast" id="pwa-toast"></div>
 
 <!-- ── BACKUP REMINDER BANNER ── -->
-<div class="backup-reminder hidden" id="backup-reminder">
-  <div class="backup-reminder-icon">⚠️</div>
-  <div class="backup-reminder-text">
-    <div class="backup-reminder-title">لم تنسخ بياناتك منذ فترة!</div>
-    <div class="backup-reminder-sub" id="reminder-sub">احفظ نسخة الآن حتى لا تضيع</div>
-  </div>
-  <div class="backup-reminder-btns">
-    <button class="btn-reminder-backup" onclick="backupData(); dismissReminder()">💾 نسخ الآن</button>
-    <button class="btn-reminder-dismiss" onclick="dismissReminder()">لاحقاً</button>
-  </div>
-</div>
-
 <div class="tabs" style="margin-top:58px">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
+  <button class="tab-btn" onclick="switchTab('tools')">⚙️ أدوات</button>
 </div>
 
 <!-- ═══ CALORIES PANEL ═══ -->
@@ -1495,11 +1572,27 @@ body::after {
 
   <div id="days-container"></div>
 
-  <button class="btn-reset" onclick="resetDay()">↺ إعادة الضبط</button>
-  <button class="btn-export" id="btn-export" onclick="exportData()">📋 نسخ البيانات · JSON</button>
+</div>
 
-  <!-- نسخ احتياطي -->
-  <div class="backup-section">
+
+
+
+<!-- ═══ TOOLS PANEL ═══ -->
+<div class="panel" id="panel-tools">
+  <div style="height:16px"></div>
+
+  <div class="tools-card">
+    <div class="tools-card-title">📸 مشاركة التقدم · SHARE</div>
+    <button class="btn-share" onclick="openShareCard()">📸 مشاركة بطاقة التقدم</button>
+  </div>
+
+  <div class="tools-card">
+    <div class="tools-card-title">📋 البيانات · DATA</div>
+    <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0">📋 نسخ البيانات · JSON</button>
+    <button class="btn-reset" onclick="resetDay()" style="margin-top:10px">↺ إعادة ضبط اليوم</button>
+  </div>
+
+  <div class="backup-section" style="margin-top:0">
     <div class="backup-title">💾 النسخ الاحتياطي · BACKUP</div>
     <div class="backup-btns">
       <button class="btn-backup" onclick="backupData()">💾 حفظ نسخة</button>
@@ -1510,15 +1603,13 @@ body::after {
   </div>
 </div>
 
-
-
 <!-- ═══ WEIGHT PANEL ═══ -->
 <div class="panel" id="panel-bud">
   <div style="height:16px"></div>
 
   <div class="wgt-goals-row">
     <div class="wgt-goal-card">
-      <label>وزني الحالي · KG</label>
+      <label>وزن البداية · KG</label>
       <input class="wgt-goal-input" type="number" id="start-weight" placeholder="مثال: 80" step="0.1" oninput="saveGoals()" />
     </div>
     <div class="wgt-goal-card">
@@ -1542,7 +1633,7 @@ body::after {
     </div>
     <div class="wgt-card orange-c">
       <div class="wgt-val" id="w-weekly">--</div>
-      <div class="wgt-lbl">خسارة أسبوعية</div>
+      <div class="wgt-lbl">المعدل الأسبوعي</div>
     </div>
   </div>
 
@@ -1634,9 +1725,12 @@ function switchTab(tab) {
   if(tab === 'cal') {
     document.querySelectorAll('.tab-btn')[0].className = 'tab-btn active-cal';
     document.getElementById('panel-cal').classList.add('active');
-  } else {
+  } else if(tab === 'bud') {
     document.querySelectorAll('.tab-btn')[1].className = 'tab-btn active-bud';
     document.getElementById('panel-bud').classList.add('active');
+  } else {
+    document.querySelectorAll('.tab-btn')[2].className = 'tab-btn active-tools';
+    document.getElementById('panel-tools').classList.add('active');
   }
 }
 
@@ -1918,151 +2012,252 @@ if(!wgtData.weights) wgtData.weights = {};
 if(!wgtData.startWeight) wgtData.startWeight = null;
 if(!wgtData.targetWeight) wgtData.targetWeight = null;
 
+
+function toLocalDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+function parseWeightVal(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n) || !isFinite(n)) return null;
+  // نطاق وزن منطقي لإنسان بالغ — خارج هذا يُتجاهل في الملخص والفروقات
+  if (n < 40 || n > 300) return null;
+  return Math.round(n * 10) / 10;
+}
+
+function fmtKg(n) {
+  if (n === null || n === undefined || isNaN(n)) return '--';
+  const t = Math.round(n * 10) / 10;
+  return (t % 1 === 0 ? String(t) : t.toFixed(1)) + ' KG';
+}
+
 function saveGoals() {
-  wgtData.startWeight  = parseFloat(document.getElementById('start-weight').value) || null;
-  wgtData.targetWeight = parseFloat(document.getElementById('target-weight').value) || null;
+  const s = parseFloat(document.getElementById('start-weight').value);
+  const t = parseFloat(document.getElementById('target-weight').value);
+  wgtData.startWeight  = (!isNaN(s) && s >= 40 && s <= 300) ? Math.round(s * 10) / 10 : null;
+  wgtData.targetWeight = (!isNaN(t) && t >= 40 && t <= 300) ? Math.round(t * 10) / 10 : null;
   saveWgtData(wgtData);
   updateWgtSummary();
   drawChart();
 }
 
 function updateWeight(dateStr, val) {
-  const v = parseFloat(val);
-  if(val === '' || isNaN(v)) delete wgtData.weights[dateStr];
-  else wgtData.weights[dateStr] = v;
-  saveWgtData(wgtData);
-  updateWgtSummary();
-  drawChart();
-  const entries = getSortedEntries();
-  const idx = entries.findIndex(e => e[0] === dateStr);
-  const diffEl = document.querySelector(`[data-wdiff="${dateStr}"]`);
-  if(diffEl) {
-    if(idx > 0 && val !== '') {
-      const diff = +(v - entries[idx-1][1]).toFixed(1);
-      diffEl.textContent = (diff > 0 ? '+' : '') + diff + ' KG';
-      diffEl.className = 'wgt-row-diff ' + (diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same');
-    } else {
-      diffEl.textContent = '--';
-      diffEl.className = 'wgt-row-diff empty';
-    }
+  if (val === '' || val === null) {
+    delete wgtData.weights[dateStr];
+  } else {
+    const n = parseFloat(String(val).replace(',', '.'));
+    if (isNaN(n) || !isFinite(n) || n <= 0) delete wgtData.weights[dateStr];
+    else wgtData.weights[dateStr] = Math.round(n * 10) / 10;
   }
+  saveWgtData(wgtData);
+  renderWeight();
 }
 
 function getSortedEntries() {
-  return Object.entries(wgtData.weights)
-    .filter(([,v]) => v !== null && !isNaN(v))
-    .sort((a,b) => a[0].localeCompare(b[0]));
+  return Object.entries(wgtData.weights || {})
+    .map(([d, v]) => [d, parseWeightVal(v)])
+    .filter(([, v]) => v !== null)
+    .sort((a, b) => a[0].localeCompare(b[0]));
 }
 
 function updateWgtSummary() {
   const entries = getSortedEntries();
-  const last   = entries.length ? entries[entries.length-1][1] : null;
-  const start  = wgtData.startWeight;
-  const target = wgtData.targetWeight;
+  const last   = entries.length ? entries[entries.length - 1][1] : null;
+  const start  = parseWeightVal(wgtData.startWeight);
+  const target = parseWeightVal(wgtData.targetWeight);
 
-  document.getElementById('w-current').textContent = last !== null ? last + ' KG' : '--';
+  // 1) آخر وزن مسجّل
+  const curEl = document.getElementById('w-current');
+  if (curEl) curEl.textContent = last !== null ? fmtKg(last) : '--';
 
+  // 2) الفرق عن البداية = آخر وزن − البداية
   const diffEl = document.getElementById('w-diff');
-  if(last !== null && start !== null) {
-    const d = +(last - start).toFixed(1);
-    diffEl.textContent = (d > 0 ? '+' : '') + d + ' KG';
+  if (last !== null && start !== null) {
+    const d = Math.round((last - start) * 10) / 10;
+    diffEl.textContent = (d > 0 ? '+' : '') + (d % 1 === 0 ? d : d.toFixed(1)) + ' KG';
     diffEl.className = 'wgt-val ' + (d < 0 ? 'loss' : d > 0 ? 'gain' : '');
-  } else { diffEl.textContent = '--'; diffEl.className = 'wgt-val'; }
+  } else {
+    diffEl.textContent = '--';
+    diffEl.className = 'wgt-val';
+  }
 
+  // 3) المتبقي للهدف
+  //   تنقيص (البداية > الهدف): المتبقي = آخر وزن − الهدف  (يجب أن يكون > 0 حتى تصل)
+  //   زيادة  (البداية < الهدف): المتبقي = الهدف − آخر وزن
+  //   إذا البداية == الهدف أو غير محددة: نفترض تنقيص إذا last > target وإلا زيادة
   const remEl = document.getElementById('w-remaining');
-  if(last !== null && target !== null) {
-    const r = +(last - target).toFixed(1);
-    if(r <= 0) { remEl.textContent = '🎉 وصلت!'; remEl.className = 'wgt-val'; }
-    else { remEl.textContent = r + ' KG'; remEl.className = 'wgt-val'; }
-  } else { remEl.textContent = '--'; remEl.className = 'wgt-val'; }
+  if (last !== null && target !== null) {
+    let isCut;
+    if (start !== null && start !== target) isCut = start > target;
+    else isCut = last >= target; // افتراضي
 
+    if (isCut) {
+      const remain = Math.round((last - target) * 10) / 10;
+      if (remain <= 0) {
+        remEl.textContent = '🎉 وصلت!';
+        remEl.className = 'wgt-val';
+      } else {
+        remEl.textContent = fmtKg(remain);
+        remEl.className = 'wgt-val';
+      }
+    } else {
+      const remain = Math.round((target - last) * 10) / 10;
+      if (remain <= 0) {
+        remEl.textContent = '🎉 وصلت!';
+        remEl.className = 'wgt-val';
+      } else {
+        remEl.textContent = fmtKg(remain);
+        remEl.className = 'wgt-val';
+      }
+    }
+  } else {
+    remEl.textContent = '--';
+    remEl.className = 'wgt-val';
+  }
+
+  // 4) المعدل الأسبوعي — فقط مع بيانات على ≥ 7 أيام
   const weeklyEl = document.getElementById('w-weekly');
-  if(entries.length >= 2) {
-    const first = entries[0], lastE = entries[entries.length-1];
-    const daysDiff = Math.max(1, (new Date(lastE[0]) - new Date(first[0])) / 86400000);
-    const totalLoss = first[1] - lastE[1];
-    const weeklyLoss = +((totalLoss / daysDiff) * 7).toFixed(2);
-    if(weeklyLoss > 0) { weeklyEl.textContent = '-' + weeklyLoss + ' KG'; weeklyEl.style.color = 'var(--teal2)'; }
-    else if(weeklyLoss < 0) { weeklyEl.textContent = '+' + Math.abs(weeklyLoss) + ' KG'; weeklyEl.style.color = 'var(--red)'; }
-    else { weeklyEl.textContent = '0 KG'; weeklyEl.style.color = 'var(--muted)'; }
-  } else { weeklyEl.textContent = '--'; weeklyEl.style.color = ''; }
+  if (entries.length >= 2) {
+    const first = entries[0], lastE = entries[entries.length - 1];
+    const t0 = new Date(first[0] + 'T12:00:00').getTime();
+    const t1 = new Date(lastE[0] + 'T12:00:00').getTime();
+    const daysDiff = (t1 - t0) / 86400000;
+    const totalLoss = Math.round((first[1] - lastE[1]) * 10) / 10; // + = فقدان
 
+    if (daysDiff >= 7) {
+      const weekly = Math.round((totalLoss / daysDiff) * 7 * 10) / 10;
+      weeklyEl.title = 'خلال ' + Math.round(daysDiff) + ' يوماً';
+      if (weekly > 0) {
+        weeklyEl.textContent = '-' + weekly + ' KG';
+        weeklyEl.style.color = 'var(--teal2)';
+      } else if (weekly < 0) {
+        weeklyEl.textContent = '+' + Math.abs(weekly) + ' KG';
+        weeklyEl.style.color = 'var(--red)';
+      } else {
+        weeklyEl.textContent = '0 KG';
+        weeklyEl.style.color = 'var(--muted)';
+      }
+    } else if (daysDiff > 0) {
+      // أقل من أسبوع: اعرض التغيّر الكلي فقط
+      weeklyEl.title = 'تغيّر خلال ' + Math.round(daysDiff) + ' يوم (يلزم 7 أيام للمعدل الأسبوعي)';
+      if (totalLoss > 0) {
+        weeklyEl.textContent = '-' + totalLoss + ' KG';
+        weeklyEl.style.color = 'var(--teal2)';
+      } else if (totalLoss < 0) {
+        weeklyEl.textContent = '+' + Math.abs(totalLoss) + ' KG';
+        weeklyEl.style.color = 'var(--red)';
+      } else {
+        weeklyEl.textContent = '0 KG';
+        weeklyEl.style.color = 'var(--muted)';
+      }
+    } else {
+      weeklyEl.textContent = '--';
+      weeklyEl.style.color = '';
+      weeklyEl.title = 'قياسان في نفس اليوم';
+    }
+  } else {
+    weeklyEl.textContent = '--';
+    weeklyEl.style.color = '';
+    weeklyEl.title = '';
+  }
+
+  // 5) شريط التقدم — فقط نحو الهدف
   const pctEl  = document.getElementById('journey-pct');
   const barEl  = document.getElementById('journey-bar');
   const startM = document.getElementById('journey-start');
   const nowM   = document.getElementById('journey-now');
   const targM  = document.getElementById('journey-target');
 
-  if(start !== null && target !== null && last !== null && start !== target) {
+  if (start !== null && target !== null && last !== null && start !== target) {
     const totalNeeded = Math.abs(start - target);
-    const done = Math.abs(start - last);
-    const pct = Math.min(100, Math.round((done / totalNeeded) * 100));
+    let done = 0;
+    if (start > target) {
+      // تنقيص
+      done = Math.max(0, Math.min(start - last, totalNeeded));
+    } else {
+      // زيادة
+      done = Math.max(0, Math.min(last - start, totalNeeded));
+    }
+    const pct = totalNeeded > 0 ? Math.min(100, Math.max(0, Math.round((done / totalNeeded) * 100))) : 0;
     pctEl.textContent = pct + '%';
     barEl.style.width = pct + '%';
-    startM.textContent = 'البداية: ' + start + ' KG';
-    nowM.textContent   = 'الآن: ' + last + ' KG';
-    targM.textContent  = 'الهدف: ' + target + ' KG';
+    startM.textContent = 'البداية: ' + fmtKg(start);
+    nowM.textContent   = 'الآن: ' + fmtKg(last);
+    targM.textContent  = 'الهدف: ' + fmtKg(target);
     pctEl.style.color = pct >= 100 ? 'var(--gold)' : 'var(--teal)';
   } else {
-    pctEl.textContent = '0%'; barEl.style.width = '0%';
+    pctEl.textContent = '0%';
+    barEl.style.width = '0%';
     startM.textContent = 'البداية: --';
     nowM.textContent   = 'الآن: --';
     targM.textContent  = 'الهدف: --';
   }
 
-  // ── PREDICTION CARD ──
+  // 6) التوقع
   const predCard  = document.getElementById('predict-card');
   const predWarn  = document.getElementById('predict-warn');
   const predDays  = document.getElementById('predict-days');
   const predRate  = document.getElementById('predict-rate');
   const predRem   = document.getElementById('predict-remain');
   const predBadge = document.getElementById('predict-badge');
+  if (!predCard) return;
 
-  const remaining = last !== null && target !== null ? +(last - target).toFixed(1) : null;
+  let isCut = true;
+  if (start !== null && target !== null && start !== target) isCut = start > target;
 
-  if(entries.length >= 2 && last !== null && target !== null && remaining > 0) {
-    // weekly rate from all logged entries
+  let remaining = null;
+  if (last !== null && target !== null) {
+    remaining = isCut
+      ? Math.round((last - target) * 10) / 10
+      : Math.round((target - last) * 10) / 10;
+  }
+
+  if (entries.length >= 2 && remaining !== null && remaining > 0) {
     const firstE = entries[0], lastE = entries[entries.length - 1];
-    const daysDiff = Math.max(1, (new Date(lastE[0]) - new Date(firstE[0])) / 86400000);
+    const t0 = new Date(firstE[0] + 'T12:00:00').getTime();
+    const t1 = new Date(lastE[0] + 'T12:00:00').getTime();
+    const daysDiff = Math.max(1, (t1 - t0) / 86400000);
     const totalLoss = firstE[1] - lastE[1];
-    const weeklyRate = +((totalLoss / daysDiff) * 7).toFixed(2);
+    const weeklyRate = Math.round((totalLoss / daysDiff) * 7 * 10) / 10;
+    const rateTowardGoal = isCut ? weeklyRate : -weeklyRate;
 
     predWarn.style.display = 'none';
+    predCard.style.display = 'block';
 
-    if(weeklyRate <= 0) {
-      predCard.style.display = 'block';
-      predDays.textContent  = '∞';
-      predRate.textContent  = weeklyRate + ' KG';
-      predRate.style.color  = 'var(--red)';
-      predRem.textContent   = remaining + ' KG';
-      predBadge.textContent = 'لا تقدم';
-      predBadge.style.color = 'var(--red)';
-      predBadge.style.background = 'rgba(255,77,109,0.1)';
-      predBadge.style.borderColor = 'rgba(255,77,109,0.25)';
+    if (rateTowardGoal <= 0.05 || daysDiff < 7) {
+      predDays.textContent = daysDiff < 7 ? '—' : '∞';
+      predRate.textContent = weeklyRate + ' KG';
+      predRate.style.color = 'var(--muted)';
+      predRem.textContent  = remaining + ' KG';
+      predBadge.textContent = daysDiff < 7 ? 'بيانات غير كافية' : 'لا تقدم';
+      predBadge.style.color = 'var(--muted)';
+      predBadge.style.background = 'rgba(90,90,114,0.15)';
+      predBadge.style.borderColor = 'rgba(90,90,114,0.3)';
     } else {
-      const daysLeft = Math.ceil((remaining / weeklyRate) * 7);
+      const daysLeft = Math.ceil((remaining / rateTowardGoal) * 7);
       const arrivalDate = new Date();
       arrivalDate.setDate(arrivalDate.getDate() + daysLeft);
       const AR_M = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      const dateLabel = arrivalDate.getDate() + ' ' + AR_M[arrivalDate.getMonth()] + ' ' + arrivalDate.getFullYear();
-
-      predCard.style.display = 'block';
-      predDays.textContent  = daysLeft;
+      predDays.textContent  = String(daysLeft);
       predDays.style.color  = '#4DA6FF';
-      predRate.textContent  = weeklyRate + ' KG';
+      predRate.textContent  = rateTowardGoal + ' KG';
       predRate.style.color  = 'var(--teal2)';
       predRem.textContent   = remaining + ' KG';
-      predBadge.textContent = dateLabel;
+      predBadge.textContent = arrivalDate.getDate() + ' ' + AR_M[arrivalDate.getMonth()] + ' ' + arrivalDate.getFullYear();
       predBadge.style.color = '#4DA6FF';
       predBadge.style.background = 'rgba(77,166,255,0.1)';
       predBadge.style.borderColor = 'rgba(77,166,255,0.25)';
     }
-  } else if(last !== null && target !== null && remaining <= 0) {
+  } else if (remaining !== null && remaining <= 0) {
     predCard.style.display = 'none';
     predWarn.style.display = 'none';
   } else {
     predCard.style.display = 'none';
-    predWarn.style.display = 'flex';
+    if (predWarn) predWarn.style.display = 'flex';
   }
 }
 
@@ -2243,9 +2438,14 @@ function drawChart() {
 }
 
 function generateDates() {
-  const dates = [], start = new Date('2026-04-10T00:00:00'), end = new Date('2026-12-31T00:00:00');
-  const cur = new Date(start);
-  while(cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+  const dates = [];
+  const start = new Date(2026, 3, 10); // 10 أبريل 2026 (شهر 0-indexed)
+  const end   = new Date(2026, 11, 31);
+  const cur   = new Date(start);
+  while (cur <= end) {
+    dates.push(toLocalDateStr(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
   return dates;
 }
 const ALL_DATES = generateDates();
@@ -2274,13 +2474,15 @@ function renderWeight() {
       list.appendChild(sep);
     }
 
-    let diffHtml = `<div class="wgt-row-diff empty" data-wdiff="${dateStr}">--</div>`;
-    if(w !== undefined && sortedIdx > 0) {
-      const diff = +(w - entries[sortedIdx-1][1]).toFixed(1);
+    const wNum = parseWeightVal(w);
+    let diffHtml = '<div class="wgt-row-diff empty" data-wdiff="' + dateStr + '">--</div>';
+    if (wNum !== null && sortedIdx > 0) {
+      const prev = entries[sortedIdx - 1][1];
+      const diff = Math.round((wNum - prev) * 10) / 10;
       const cls  = diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same';
-      diffHtml = `<div class="wgt-row-diff ${cls}" data-wdiff="${dateStr}">${diff>0?'+':''}${diff} KG</div>`;
-    } else if(w !== undefined) {
-      diffHtml = `<div class="wgt-row-diff same" data-wdiff="${dateStr}">--</div>`;
+      diffHtml = '<div class="wgt-row-diff ' + cls + '" data-wdiff="' + dateStr + '">' + (diff > 0 ? '+' : '') + diff + ' KG</div>';
+    } else if (wNum !== null) {
+      diffHtml = '<div class="wgt-row-diff same" data-wdiff="' + dateStr + '">--</div>';
     }
 
     const rowCls = isWeekStart ? 'wgt-row week-start' : isWeekEnd ? 'wgt-row week-end' : 'wgt-row';
@@ -2289,7 +2491,7 @@ function renderWeight() {
     row.className = rowCls;
     row.innerHTML = `
       <div class="wgt-row-date">${dayLabel}</div>
-      <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined ? w : ''}"
+      <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
         step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
       ${diffHtml}
     `;
@@ -2514,6 +2716,108 @@ function dismissReminder() {
   document.getElementById('backup-reminder').classList.add('hidden');
 }
 
+
+// ─── THEME ───
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'light' ? '☀️' : '🌙';
+  const meta = document.getElementById('meta-theme');
+  if (meta) meta.content = t === 'light' ? '#F5F5F8' : '#06060A';
+  localStorage.setItem('trackerTheme', t);
+  if (typeof drawChart === 'function') setTimeout(drawChart, 50);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+(function(){ applyTheme(localStorage.getItem('trackerTheme') || 'dark'); })();
+
+// ─── SHARE PROGRESS CARD ───
+function openShareCard() {
+  const canvas = document.getElementById('share-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 600, H = 700;
+  canvas.width = W; canvas.height = H;
+
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const bg1 = isLight ? '#FFFFFF' : '#0E0E16';
+  const bg2 = isLight ? '#F0F0F5' : '#06060A';
+  const textCol = isLight ? '#1A1A2E' : '#F0F0F8';
+  const mutedCol = isLight ? '#6B6B80' : '#5A5A72';
+  const cardBg = isLight ? '#EEF0F5' : '#15151F';
+
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, bg1);
+  grad.addColorStop(1, bg2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#FF5F1F';
+  ctx.fillRect(0, 0, W, 6);
+
+  ctx.fillStyle = textCol;
+  ctx.font = 'bold 28px Cairo, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔥 Coach Anis Tracker', W/2, 55);
+
+  const today = new Date();
+  const AR_M = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const AR_D = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  ctx.font = '15px Cairo, sans-serif';
+  ctx.fillStyle = mutedCol;
+  ctx.fillText(AR_D[today.getDay()] + ' ' + today.getDate() + ' ' + AR_M[today.getMonth()], W/2, 85);
+
+  const todayCal = calDays[0] ? calDays[0].slots.reduce((a,s) => a+(parseFloat(s.cal)||0),0) : 0;
+  const todayPro = calDays[0] ? calDays[0].slots.reduce((a,s) => a+(parseFloat(s.pro)||0),0) : 0;
+  const entries = (typeof getSortedEntries === 'function') ? getSortedEntries() : [];
+  const lastW = entries.length ? entries[entries.length-1][1] : null;
+  const startW = wgtData.startWeight;
+  const targetW = wgtData.targetWeight;
+  let diffW = null;
+  if (lastW !== null && startW !== null) diffW = +(lastW - startW).toFixed(1);
+
+  const stats = [
+    { label: 'السعرات اليوم', value: Math.round(todayCal) + ' / ' + (calGoal||2500), color: '#FF8C42' },
+    { label: 'البروتين اليوم', value: Math.round(todayPro) + 'g / ' + (proGoal||150) + 'g', color: '#F5C842' },
+    { label: 'الوزن الحالي', value: lastW !== null ? lastW + ' KG' : '--', color: '#00D4AA' },
+    { label: 'التغيّر', value: diffW !== null ? ((diffW>0?'+':'') + diffW + ' KG') : '--', color: diffW !== null && diffW < 0 ? '#00D4AA' : '#FF4D6D' },
+    { label: 'الهدف', value: targetW !== null ? targetW + ' KG' : '--', color: '#4DA6FF' }
+  ];
+
+  stats.forEach((s, i) => {
+    const y = 120 + i * 95;
+    ctx.fillStyle = cardBg;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(40, y, W-80, 80, 16);
+    else ctx.rect(40, y, W-80, 80);
+    ctx.fill();
+    ctx.fillStyle = mutedCol;
+    ctx.font = 'bold 14px Cairo, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(s.label, W - 60, y + 30);
+    ctx.fillStyle = s.color;
+    ctx.font = 'bold 26px Syne, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(s.value, 60, y + 58);
+  });
+
+  ctx.fillStyle = mutedCol;
+  ctx.font = '13px Cairo, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('تطبيق المدرب أنيس · My Tracker', W/2, H - 30);
+
+  document.getElementById('share-modal').classList.add('show');
+  window._shareBlob = null;
+  canvas.toBlob(b => { window._shareBlob = b; }, 'image/png');
+}
+function closeShareModal() {
+  const m = document.getElementById('share-modal');
+  if (m) m.classList.remove('show');
+}
+
+
 // ─── INIT ───
 document.getElementById('cal-goal').value = calGoal || '';
 document.getElementById('pro-goal').value = proGoal || '';
@@ -2521,7 +2825,26 @@ renderDays();
 renderWeight();
 updateStickyBar();
 updateBackupLabel();
-checkBackupReminder();
+/* checkBackupReminder disabled */
+
+document.getElementById('btn-share-dl') && document.getElementById('btn-share-dl').addEventListener('click', () => {
+  const canvas = document.getElementById('share-canvas');
+  const a = document.createElement('a');
+  a.download = 'coach-anis-progress.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  if (typeof showToast === 'function') showToast('📥 تم تحميل الصورة!');
+});
+document.getElementById('btn-share-native') && document.getElementById('btn-share-native').addEventListener('click', async () => {
+  if (!window._shareBlob) { if (typeof showToast === 'function') showToast('انتظر قليلاً...'); return; }
+  const file = new File([window._shareBlob], 'coach-anis-progress.png', { type: 'image/png' });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'تقدمي مع Coach Anis', text: 'تقدمي اليومي' }); } catch(e) {}
+  } else if (navigator.share) {
+    try { await navigator.share({ title: 'تقدمي مع Coach Anis', text: 'تقدمي اليومي' }); } catch(e) {}
+  } else if (typeof showToast === 'function') showToast('المشاركة غير مدعومة — استخدم التحميل');
+});
+
 
 // ─── CALORIE ADVISOR ───
 </script>
