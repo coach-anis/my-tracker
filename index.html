@@ -1610,11 +1610,11 @@ body { transition: background .3s, color .3s; }
   <div class="wgt-goals-row">
     <div class="wgt-goal-card">
       <label>وزن البداية · KG</label>
-      <input class="wgt-goal-input" type="number" id="start-weight" placeholder="مثال: 80" step="0.1" oninput="saveGoals()" />
+      <input class="wgt-goal-input" type="text" inputmode="decimal" id="start-weight" placeholder="مثال: 80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
     <div class="wgt-goal-card">
       <label>وزني المستهدف · KG</label>
-      <input class="wgt-goal-input" type="number" id="target-weight" placeholder="مثال: 70" step="0.1" oninput="saveGoals(); updateWgtSummary()" />
+      <input class="wgt-goal-input" type="text" inputmode="decimal" id="target-weight" placeholder="مثال: 70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
   </div>
 
@@ -1712,7 +1712,7 @@ const loadWgtData = () => { try { return JSON.parse(localStorage.getItem(KEY_WGT
 // ─── DATES ───
 const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const AR_DAYS   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-function todayStr() { return new Date().toISOString().split('T')[0]; }
+function todayStr() { return toLocalDateStr(new Date()); }
 function formatDate(s) {
   const d = new Date(s + 'T00:00:00');
   return `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]}`;
@@ -1952,9 +1952,10 @@ function exportData() {
   else                  calStatus = `تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal ⚠️`;
 
   let wgtLines = '';
-  if (lastWgt) {
-    const diff = start ? +((lastWgt - start).toFixed(1)) : null;
-    const rem  = target ? +((lastWgt - target).toFixed(1)) : null;
+  if (lastWgt !== null) {
+    const dir  = getGoalDirection(entries, start, target);
+    const diff = start != null ? Math.round((lastWgt - start) * 10) / 10 : null;
+    const rem  = (target != null && dir) ? Math.round((dir === 'cut' ? lastWgt - target : target - lastWgt) * 10) / 10 : null;
     wgtLines = `
 ${line}
 ⚖️ الوزن الحالي: ${lastWgt} KG${diff !== null ? `\n📉 التغيّر: ${diff > 0 ? '+' : ''}${diff} KG` : ''}${rem !== null && rem > 0 ? `\n🏁 المتبقي للهدف: ${rem} KG` : rem !== null && rem <= 0 ? `\n🏁 وصلت للهدف! 🎉` : ''}`;
@@ -2013,6 +2014,7 @@ if(!wgtData.startWeight) wgtData.startWeight = null;
 if(!wgtData.targetWeight) wgtData.targetWeight = null;
 
 
+
 function toLocalDateStr(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -2020,237 +2022,276 @@ function toLocalDateStr(d) {
   return y + '-' + m + '-' + day;
 }
 
-function parseWeightVal(v) {
+function fmtKg(n) {
+  if (n === null || n === undefined || isNaN(n)) return '--';
+  const x = Math.round(Number(n) * 10) / 10;
+  return (Object.is(x, -0) ? 0 : x) + ' KG';
+}
+
+function fmtDiff(n) {
+  if (n === null || n === undefined || isNaN(n)) return '--';
+  const x = Math.round(Number(n) * 10) / 10;
+  if (x === 0) return '0 KG';
+  return (x > 0 ? '+' : '') + x + ' KG';
+}
+
+/** تحويل نص الإدخال إلى رقم: يقبل الفاصلة والنقطة والفاصلة العربية (٫ ،) والأرقام العربية/الفارسية */
+function parseNum(v) {
+  if (v === null || v === undefined) return NaN;
+  if (typeof v === 'number') return isFinite(v) ? v : NaN;
+  let t = String(v).trim()
+    .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))   // ٠-٩
+    .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))   // ۰-۹
+    .replace(/[\u066B\u066C\u060C,،]/g, '.')                              // ٫ ٬ ، ,
+    .replace(/\s+/g, '');
+  if (!/^\d+(\.\d*)?$|^\.\d+$/.test(t)) return NaN;
+  const n = parseFloat(t);
+  return isFinite(n) ? n : NaN;
+}
+
+/** قراءة وزن صالح للملخص: 40–300 كغ فقط */
+function readWeight(v) {
   if (v === '' || v === null || v === undefined) return null;
-  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+  const n = parseNum(v);
   if (isNaN(n) || !isFinite(n)) return null;
-  // نطاق وزن منطقي لإنسان بالغ — خارج هذا يُتجاهل في الملخص والفروقات
   if (n < 40 || n > 300) return null;
   return Math.round(n * 10) / 10;
 }
 
-function fmtKg(n) {
-  if (n === null || n === undefined || isNaN(n)) return '--';
-  const t = Math.round(n * 10) / 10;
-  return (t % 1 === 0 ? String(t) : t.toFixed(1)) + ' KG';
+/** تنظيف السجل من قيم غير منطقية عند التشغيل */
+function cleanWeightLog() {
+  if (!wgtData.weights) wgtData.weights = {};
+  let changed = false;
+  Object.keys(wgtData.weights).forEach(k => {
+    const n = parseFloat(wgtData.weights[k]);
+    if (isNaN(n) || n < 40 || n > 300) {
+      delete wgtData.weights[k];
+      changed = true;
+    }
+  });
+  if (wgtData.startWeight != null) {
+    const s = readWeight(wgtData.startWeight);
+    if (s === null) { wgtData.startWeight = null; changed = true; }
+    else wgtData.startWeight = s;
+  }
+  if (wgtData.targetWeight != null) {
+    const t = readWeight(wgtData.targetWeight);
+    if (t === null) { wgtData.targetWeight = null; changed = true; }
+    else wgtData.targetWeight = t;
+  }
+  if (changed) saveWgtData(wgtData);
 }
 
 function saveGoals() {
-  const s = parseFloat(document.getElementById('start-weight').value);
-  const t = parseFloat(document.getElementById('target-weight').value);
-  wgtData.startWeight  = (!isNaN(s) && s >= 40 && s <= 300) ? Math.round(s * 10) / 10 : null;
-  wgtData.targetWeight = (!isNaN(t) && t >= 40 && t <= 300) ? Math.round(t * 10) / 10 : null;
+  const sRaw = document.getElementById('start-weight').value;
+  const tRaw = document.getElementById('target-weight').value;
+  // نحفظ فقط القيم الصالحة (40–300). القيمة الخاطئة لا تُحفظ حتى لا تُحذف لاحقاً بصمت
+  wgtData.startWeight  = sRaw === '' ? null : readWeight(sRaw);
+  wgtData.targetWeight = tRaw === '' ? null : readWeight(tRaw);
   saveWgtData(wgtData);
   updateWgtSummary();
-  drawChart();
+  if (typeof drawChart === 'function') drawChart();
 }
 
-function updateWeight(dateStr, val) {
-  if (val === '' || val === null) {
-    delete wgtData.weights[dateStr];
+/** اتجاه الهدف: 'cut' = تنقيص، 'gain' = زيادة. إذا لم يُحدَّد وزن البداية نستخدم أول وزن مسجّل */
+/** عند مغادرة حقل البداية/الهدف: نعرض الرقم المعتمد (مثلاً 72,5 ← 72.5) أو ننبّه إن كان غير صالح */
+function fixGoalInput(el) {
+  const raw = el.value;
+  if (raw.trim() === '') return;
+  const v = readWeight(raw);
+  if (v === null) { el.value = ''; showToast('⚠️ الوزن يجب أن يكون بين 40 و 300 كغ'); }
+  else el.value = v;
+  saveGoals();
+}
+
+function getGoalDirection(entries, start, target) {
+  if (target === null || target === undefined) return null;
+  const base = (start !== null && start !== undefined) ? start : (entries.length ? entries[0][1] : null);
+  if (base === null) return null;
+  if (base > target) return 'cut';
+  if (base < target) return 'gain';
+  const last = entries.length ? entries[entries.length - 1][1] : base;
+  return last < target ? 'gain' : 'cut';
+}
+
+function updateWeight(dateStr, val, inputEl) {
+  // أثناء الكتابة: احفظ فقط بدون إعادة رسم القائمة (حتى لا يُغلق الكيبورد)
+  const n = parseNum(val);
+  const r = isNaN(n) ? null : Math.round(n * 10) / 10;
+  if (r !== null && r >= 40 && r <= 300) {
+    wgtData.weights[dateStr] = r;
+    if (inputEl) inputEl.value = r;
   } else {
-    const n = parseFloat(String(val).replace(',', '.'));
-    if (isNaN(n) || !isFinite(n) || n <= 0) delete wgtData.weights[dateStr];
-    else wgtData.weights[dateStr] = Math.round(n * 10) / 10;
+    delete wgtData.weights[dateStr];
+    // عند مغادرة الحقل برقم غير منطقي: نبلّغ المستخدم وننظّف الحقل
+    if (inputEl && String(val).trim() !== '') {
+      inputEl.value = '';
+      showToast('⚠️ الوزن يجب أن يكون بين 40 و 300 كغ');
+    }
   }
   saveWgtData(wgtData);
-  renderWeight();
+  // حدّث الملخص والفرق لهذا الصف فقط — بدون renderWeight
+  updateRowDiffs();
+  updateWgtSummary();
+  if (typeof drawChart === 'function') drawChart();
+}
+
+/** تحديث فروقات الصفوف فقط دون لمس حقول الإدخال */
+function updateRowDiffs() {
+  const entries = getSortedEntries();
+  document.querySelectorAll('[data-wdiff]').forEach(el => {
+    const dateStr = el.getAttribute('data-wdiff');
+    const idx = entries.findIndex(e => e[0] === dateStr);
+    if (idx > 0) {
+      const diff = Math.round((entries[idx][1] - entries[idx - 1][1]) * 10) / 10;
+      el.textContent = (diff > 0 ? '+' : '') + diff + ' KG';
+      el.className = 'wgt-row-diff ' + (diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same');
+    } else if (idx === 0) {
+      el.textContent = '--';
+      el.className = 'wgt-row-diff same';
+    } else {
+      el.textContent = '--';
+      el.className = 'wgt-row-diff empty';
+    }
+  });
 }
 
 function getSortedEntries() {
   return Object.entries(wgtData.weights || {})
-    .map(([d, v]) => [d, parseWeightVal(v)])
-    .filter(([, v]) => v !== null)
+    .map(([d, v]) => {
+      const n = parseFloat(v);
+      if (isNaN(n) || n < 40 || n > 300) return null;
+      return [d, Math.round(n * 10) / 10];
+    })
+    .filter(Boolean)
     .sort((a, b) => a[0].localeCompare(b[0]));
 }
 
 function updateWgtSummary() {
   const entries = getSortedEntries();
-  const last   = entries.length ? entries[entries.length - 1][1] : null;
-  const start  = parseWeightVal(wgtData.startWeight);
-  const target = parseWeightVal(wgtData.targetWeight);
+  const last = entries.length ? entries[entries.length - 1][1] : null;
+  const start = wgtData.startWeight != null && !isNaN(Number(wgtData.startWeight))
+    ? Math.round(Number(wgtData.startWeight) * 10) / 10 : null;
+  const target = wgtData.targetWeight != null && !isNaN(Number(wgtData.targetWeight))
+    ? Math.round(Number(wgtData.targetWeight) * 10) / 10 : null;
 
-  // 1) آخر وزن مسجّل
-  const curEl = document.getElementById('w-current');
-  if (curEl) curEl.textContent = last !== null ? fmtKg(last) : '--';
+  // ——— آخر وزن مسجّل ———
+  document.getElementById('w-current').textContent = last !== null ? fmtKg(last) : '--';
 
-  // 2) الفرق عن البداية = آخر وزن − البداية
+  // ——— الفرق عن البداية = آخر − بداية ———
   const diffEl = document.getElementById('w-diff');
   if (last !== null && start !== null) {
     const d = Math.round((last - start) * 10) / 10;
-    diffEl.textContent = (d > 0 ? '+' : '') + (d % 1 === 0 ? d : d.toFixed(1)) + ' KG';
+    diffEl.textContent = fmtDiff(d);
     diffEl.className = 'wgt-val ' + (d < 0 ? 'loss' : d > 0 ? 'gain' : '');
   } else {
     diffEl.textContent = '--';
     diffEl.className = 'wgt-val';
   }
 
-  // 3) المتبقي للهدف
-  //   تنقيص (البداية > الهدف): المتبقي = آخر وزن − الهدف  (يجب أن يكون > 0 حتى تصل)
-  //   زيادة  (البداية < الهدف): المتبقي = الهدف − آخر وزن
-  //   إذا البداية == الهدف أو غير محددة: نفترض تنقيص إذا last > target وإلا زيادة
+  // ——— المتبقي للهدف ———
+  // الاتجاه (تنقيص/زيادة) يُستنتج من وزن البداية، أو من أول وزن مسجّل إن لم يُحدَّد
+  const dir = getGoalDirection(entries, start, target);
   const remEl = document.getElementById('w-remaining');
-  if (last !== null && target !== null) {
-    let isCut;
-    if (start !== null && start !== target) isCut = start > target;
-    else isCut = last >= target; // افتراضي
-
-    if (isCut) {
-      const remain = Math.round((last - target) * 10) / 10;
-      if (remain <= 0) {
-        remEl.textContent = '🎉 وصلت!';
-        remEl.className = 'wgt-val';
-      } else {
-        remEl.textContent = fmtKg(remain);
-        remEl.className = 'wgt-val';
-      }
-    } else {
-      const remain = Math.round((target - last) * 10) / 10;
-      if (remain <= 0) {
-        remEl.textContent = '🎉 وصلت!';
-        remEl.className = 'wgt-val';
-      } else {
-        remEl.textContent = fmtKg(remain);
-        remEl.className = 'wgt-val';
-      }
-    }
+  remEl.className = 'wgt-val';
+  if (target !== null && dir && (last !== null || start !== null)) {
+    // إذا لم يُسجَّل أي وزن بعد، نحسب المتبقي من وزن البداية
+    const ref = last !== null ? last : start;
+    const remain = Math.round((dir === 'cut' ? ref - target : target - ref) * 10) / 10;
+    remEl.textContent = (remain <= 0 && last !== null) ? '🎉 وصلت!' : fmtKg(Math.max(0, remain));
   } else {
     remEl.textContent = '--';
-    remEl.className = 'wgt-val';
   }
 
-  // 4) المعدل الأسبوعي — فقط مع بيانات على ≥ 7 أيام
+  // ——— المعدل الأسبوعي ———
+  // التغيّر الفعلي بين أول وآخر تسجيل مقسوماً على عدد الأيام × 7 (لا يُحسب قبل مرور 7 أيام)
   const weeklyEl = document.getElementById('w-weekly');
+  weeklyEl.title = '';
+  weeklyEl.style.color = '';
   if (entries.length >= 2) {
-    const first = entries[0], lastE = entries[entries.length - 1];
-    const t0 = new Date(first[0] + 'T12:00:00').getTime();
-    const t1 = new Date(lastE[0] + 'T12:00:00').getTime();
-    const daysDiff = (t1 - t0) / 86400000;
-    const totalLoss = Math.round((first[1] - lastE[1]) * 10) / 10; // + = فقدان
-
-    if (daysDiff >= 7) {
-      const weekly = Math.round((totalLoss / daysDiff) * 7 * 10) / 10;
-      weeklyEl.title = 'خلال ' + Math.round(daysDiff) + ' يوماً';
-      if (weekly > 0) {
-        weeklyEl.textContent = '-' + weekly + ' KG';
-        weeklyEl.style.color = 'var(--teal2)';
-      } else if (weekly < 0) {
-        weeklyEl.textContent = '+' + Math.abs(weekly) + ' KG';
-        weeklyEl.style.color = 'var(--red)';
-      } else {
-        weeklyEl.textContent = '0 KG';
-        weeklyEl.style.color = 'var(--muted)';
-      }
-    } else if (daysDiff > 0) {
-      // أقل من أسبوع: اعرض التغيّر الكلي فقط
-      weeklyEl.title = 'تغيّر خلال ' + Math.round(daysDiff) + ' يوم (يلزم 7 أيام للمعدل الأسبوعي)';
-      if (totalLoss > 0) {
-        weeklyEl.textContent = '-' + totalLoss + ' KG';
-        weeklyEl.style.color = 'var(--teal2)';
-      } else if (totalLoss < 0) {
-        weeklyEl.textContent = '+' + Math.abs(totalLoss) + ' KG';
-        weeklyEl.style.color = 'var(--red)';
-      } else {
-        weeklyEl.textContent = '0 KG';
-        weeklyEl.style.color = 'var(--muted)';
-      }
+    const first = entries[0];
+    const lastE = entries[entries.length - 1];
+    const days = Math.round(
+      (new Date(lastE[0] + 'T12:00:00') - new Date(first[0] + 'T12:00:00')) / 86400000
+    );
+    if (days >= 7) {
+      const change = ((lastE[1] - first[1]) / days) * 7;   // سالب = نزول
+      const weekly = Math.round(change * 10) / 10;
+      weeklyEl.textContent = fmtDiff(weekly);
+      const good = dir === 'gain' ? weekly > 0 : weekly < 0;
+      weeklyEl.style.color = weekly === 0 ? 'var(--muted)' : (good ? 'var(--teal2)' : 'var(--red)');
     } else {
       weeklyEl.textContent = '--';
-      weeklyEl.style.color = '';
-      weeklyEl.title = 'قياسان في نفس اليوم';
+      weeklyEl.title = 'يلزم 7 أيام على الأقل بين أول وآخر تسجيل لحساب المعدل الأسبوعي';
     }
   } else {
     weeklyEl.textContent = '--';
-    weeklyEl.style.color = '';
-    weeklyEl.title = '';
   }
 
-  // 5) شريط التقدم — فقط نحو الهدف
-  const pctEl  = document.getElementById('journey-pct');
-  const barEl  = document.getElementById('journey-bar');
+  // ——— شريط التقدم ———
+  const pctEl = document.getElementById('journey-pct');
+  const barEl = document.getElementById('journey-bar');
   const startM = document.getElementById('journey-start');
-  const nowM   = document.getElementById('journey-now');
-  const targM  = document.getElementById('journey-target');
+  const nowM = document.getElementById('journey-now');
+  const targM = document.getElementById('journey-target');
 
-  if (start !== null && target !== null && last !== null && start !== target) {
-    const totalNeeded = Math.abs(start - target);
-    let done = 0;
-    if (start > target) {
-      // تنقيص
-      done = Math.max(0, Math.min(start - last, totalNeeded));
-    } else {
-      // زيادة
-      done = Math.max(0, Math.min(last - start, totalNeeded));
-    }
-    const pct = totalNeeded > 0 ? Math.min(100, Math.max(0, Math.round((done / totalNeeded) * 100))) : 0;
+  startM.textContent  = 'البداية: ' + (start  !== null ? start  + ' KG' : '--');
+  targM.textContent   = 'الهدف: '   + (target !== null ? target + ' KG' : '--');
+  nowM.textContent    = 'الآن: '    + (last   !== null ? last   + ' KG' : (start !== null ? start + ' KG' : '--'));
+
+  if (start !== null && target !== null && start !== target) {
+    const cur  = last !== null ? last : start;   // قبل أول تسجيل: الوزن الحالي = وزن البداية
+    const need = Math.abs(start - target);
+    const done = start > target
+      ? Math.min(need, Math.max(0, start - cur))   // تنقيص: كلما قلّ الوزن اقتربنا
+      : Math.min(need, Math.max(0, cur - start));  // زيادة
+    const pct = Math.min(100, Math.round((done / need) * 100));
     pctEl.textContent = pct + '%';
     barEl.style.width = pct + '%';
-    startM.textContent = 'البداية: ' + fmtKg(start);
-    nowM.textContent   = 'الآن: ' + fmtKg(last);
-    targM.textContent  = 'الهدف: ' + fmtKg(target);
     pctEl.style.color = pct >= 100 ? 'var(--gold)' : 'var(--teal)';
   } else {
     pctEl.textContent = '0%';
     barEl.style.width = '0%';
-    startM.textContent = 'البداية: --';
-    nowM.textContent   = 'الآن: --';
-    targM.textContent  = 'الهدف: --';
   }
 
-  // 6) التوقع
-  const predCard  = document.getElementById('predict-card');
-  const predWarn  = document.getElementById('predict-warn');
-  const predDays  = document.getElementById('predict-days');
-  const predRate  = document.getElementById('predict-rate');
-  const predRem   = document.getElementById('predict-remain');
-  const predBadge = document.getElementById('predict-badge');
+  // ——— التوقع ———
+  const predCard = document.getElementById('predict-card');
+  const predWarn = document.getElementById('predict-warn');
   if (!predCard) return;
 
-  let isCut = true;
-  if (start !== null && target !== null && start !== target) isCut = start > target;
-
   let remaining = null;
-  if (last !== null && target !== null) {
-    remaining = isCut
-      ? Math.round((last - target) * 10) / 10
-      : Math.round((target - last) * 10) / 10;
+  if (last !== null && target !== null && dir) {
+    remaining = Math.round((dir === 'cut' ? last - target : target - last) * 10) / 10;
   }
 
   if (entries.length >= 2 && remaining !== null && remaining > 0) {
     const firstE = entries[0], lastE = entries[entries.length - 1];
-    const t0 = new Date(firstE[0] + 'T12:00:00').getTime();
-    const t1 = new Date(lastE[0] + 'T12:00:00').getTime();
-    const daysDiff = Math.max(1, (t1 - t0) / 86400000);
-    const totalLoss = firstE[1] - lastE[1];
-    const weeklyRate = Math.round((totalLoss / daysDiff) * 7 * 10) / 10;
-    const rateTowardGoal = isCut ? weeklyRate : -weeklyRate;
+    const days = Math.max(1, Math.round(
+      (new Date(lastE[0] + 'T12:00:00') - new Date(firstE[0] + 'T12:00:00')) / 86400000
+    ));
+    // المعدل بدون تقريب مسبق حتى لا تضيع القيم الصغيرة؛ "toward" موجب = نتحرك نحو الهدف
+    const weeklyChange = ((lastE[1] - firstE[1]) / days) * 7;
+    const toward = Math.round((dir === 'cut' ? -weeklyChange : weeklyChange) * 100) / 100;
 
     predWarn.style.display = 'none';
     predCard.style.display = 'block';
+    const predDays = document.getElementById('predict-days');
+    const predRate = document.getElementById('predict-rate');
+    const predRem = document.getElementById('predict-remain');
+    const predBadge = document.getElementById('predict-badge');
 
-    if (rateTowardGoal <= 0.05 || daysDiff < 7) {
-      predDays.textContent = daysDiff < 7 ? '—' : '∞';
-      predRate.textContent = weeklyRate + ' KG';
-      predRate.style.color = 'var(--muted)';
-      predRem.textContent  = remaining + ' KG';
-      predBadge.textContent = daysDiff < 7 ? 'بيانات غير كافية' : 'لا تقدم';
-      predBadge.style.color = 'var(--muted)';
-      predBadge.style.background = 'rgba(90,90,114,0.15)';
-      predBadge.style.borderColor = 'rgba(90,90,114,0.3)';
+    predRem.textContent = remaining + ' KG';
+    if (days < 7 || toward <= 0.05) {
+      predDays.textContent = '—';
+      predRate.textContent = days < 7 ? '--' : ((toward > 0 ? '+' : '') + toward + ' KG');
+      predBadge.textContent = days < 7 ? 'بيانات غير كافية' : 'لا تقدم';
     } else {
-      const daysLeft = Math.ceil((remaining / rateTowardGoal) * 7);
-      const arrivalDate = new Date();
-      arrivalDate.setDate(arrivalDate.getDate() + daysLeft);
-      const AR_M = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      predDays.textContent  = String(daysLeft);
-      predDays.style.color  = '#4DA6FF';
-      predRate.textContent  = rateTowardGoal + ' KG';
-      predRate.style.color  = 'var(--teal2)';
-      predRem.textContent   = remaining + ' KG';
-      predBadge.textContent = arrivalDate.getDate() + ' ' + AR_M[arrivalDate.getMonth()] + ' ' + arrivalDate.getFullYear();
-      predBadge.style.color = '#4DA6FF';
-      predBadge.style.background = 'rgba(77,166,255,0.1)';
-      predBadge.style.borderColor = 'rgba(77,166,255,0.25)';
+      const daysLeft = Math.ceil((remaining / toward) * 7);
+      const arr = new Date();
+      arr.setDate(arr.getDate() + daysLeft);
+      predDays.textContent = String(daysLeft);
+      predRate.textContent = (Math.round(toward * 10) / 10) + ' KG';
+      predBadge.textContent = arr.getDate() + ' ' + AR_MONTHS[arr.getMonth()] + ' ' + arr.getFullYear();
     }
   } else if (remaining !== null && remaining <= 0) {
     predCard.style.display = 'none';
@@ -2421,7 +2462,8 @@ function drawChart() {
     const [date, val] = entries[closest];
     const d = new Date(date + 'T00:00:00');
     tipVal.textContent = val + ' KG';
-    tipDay.textContent = `يوم ${closest + 1}  ·  ${d.getDate()}/${d.getMonth() + 1}`;
+    const progDay = ALL_DATES.indexOf(date) + 1;
+    tipDay.textContent = (progDay > 0 ? `يوم ${progDay}  ·  ` : '') + `${d.getDate()}/${d.getMonth() + 1}`;
     const tooltipX = pts[closest].x;
     const tooltipY = Math.max(pad.t + 4, ty(val) - 56);
     tooltip.style.right  = 'auto';
@@ -2474,14 +2516,15 @@ function renderWeight() {
       list.appendChild(sep);
     }
 
-    const wNum = parseWeightVal(w);
+    // الفرق = وزن هذا اليوم − آخر وزن مسجّل قبله في السجل
     let diffHtml = '<div class="wgt-row-diff empty" data-wdiff="' + dateStr + '">--</div>';
-    if (wNum !== null && sortedIdx > 0) {
+    const wValid = (w !== undefined && w !== null && w !== '') ? parseFloat(w) : NaN;
+    if (!isNaN(wValid) && wValid >= 40 && wValid <= 300 && sortedIdx > 0) {
       const prev = entries[sortedIdx - 1][1];
-      const diff = Math.round((wNum - prev) * 10) / 10;
+      const diff = Math.round((wValid - prev) * 10) / 10;
       const cls  = diff < 0 ? 'loss' : diff > 0 ? 'gain' : 'same';
       diffHtml = '<div class="wgt-row-diff ' + cls + '" data-wdiff="' + dateStr + '">' + (diff > 0 ? '+' : '') + diff + ' KG</div>';
-    } else if (wNum !== null) {
+    } else if (!isNaN(wValid) && wValid >= 40 && wValid <= 300) {
       diffHtml = '<div class="wgt-row-diff same" data-wdiff="' + dateStr + '">--</div>';
     }
 
@@ -2491,8 +2534,8 @@ function renderWeight() {
     row.className = rowCls;
     row.innerHTML = `
       <div class="wgt-row-date">${dayLabel}</div>
-      <input class="wgt-row-input" type="number" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
-        step="0.1" min="0" oninput="updateWeight('${dateStr}', this.value)" />
+      <input class="wgt-row-input" type="text" inputmode="decimal" autocomplete="off" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
+        oninput="updateWeight('${dateStr}', this.value)" onblur="updateWeight('${dateStr}', this.value, this)" />
       ${diffHtml}
     `;
     list.appendChild(row);
@@ -2662,6 +2705,9 @@ function restoreData(event) {
       }));
       wgtData = payload.wgtData;
       if (!wgtData.weights) wgtData.weights = {};
+      if (wgtData.startWeight === undefined) wgtData.startWeight = null;
+      if (wgtData.targetWeight === undefined) wgtData.targetWeight = null;
+      cleanWeightLog();
       calGoal = payload.calGoal || 2500;
       proGoal = payload.proGoal || 150;
 
@@ -2773,16 +2819,17 @@ function openShareCard() {
   const todayPro = calDays[0] ? calDays[0].slots.reduce((a,s) => a+(parseFloat(s.pro)||0),0) : 0;
   const entries = (typeof getSortedEntries === 'function') ? getSortedEntries() : [];
   const lastW = entries.length ? entries[entries.length-1][1] : null;
-  const startW = wgtData.startWeight;
-  const targetW = wgtData.targetWeight;
+  const startW = wgtData.startWeight != null ? wgtData.startWeight : null;
+  const targetW = wgtData.targetWeight != null ? wgtData.targetWeight : null;
+  const shareDir = getGoalDirection(entries, startW, targetW);
   let diffW = null;
-  if (lastW !== null && startW !== null) diffW = +(lastW - startW).toFixed(1);
+  if (lastW !== null && startW !== null) diffW = Math.round((lastW - startW) * 10) / 10;
 
   const stats = [
     { label: 'السعرات اليوم', value: Math.round(todayCal) + ' / ' + (calGoal||2500), color: '#FF8C42' },
     { label: 'البروتين اليوم', value: Math.round(todayPro) + 'g / ' + (proGoal||150) + 'g', color: '#F5C842' },
     { label: 'الوزن الحالي', value: lastW !== null ? lastW + ' KG' : '--', color: '#00D4AA' },
-    { label: 'التغيّر', value: diffW !== null ? ((diffW>0?'+':'') + diffW + ' KG') : '--', color: diffW !== null && diffW < 0 ? '#00D4AA' : '#FF4D6D' },
+    { label: 'التغيّر', value: diffW !== null ? ((diffW>0?'+':'') + diffW + ' KG') : '--', color: diffW !== null && (shareDir === 'gain' ? diffW > 0 : diffW < 0) ? '#00D4AA' : '#FF4D6D' },
     { label: 'الهدف', value: targetW !== null ? targetW + ' KG' : '--', color: '#4DA6FF' }
   ];
 
@@ -2822,6 +2869,7 @@ function closeShareModal() {
 document.getElementById('cal-goal').value = calGoal || '';
 document.getElementById('pro-goal').value = proGoal || '';
 renderDays();
+cleanWeightLog();
 renderWeight();
 updateStickyBar();
 updateBackupLabel();
