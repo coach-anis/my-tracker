@@ -819,6 +819,29 @@ body::after {
 .wgt-row-diff.same { color: var(--muted); }
 .wgt-row-diff.empty { color: rgba(255,255,255,0.08); }
 
+
+/* ── WEEKLY AVERAGE CARD ── */
+.wk-avg-card {
+  margin: 8px 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(245,200,66,0.35);
+  background: linear-gradient(135deg, rgba(245,200,66,0.08), rgba(245,200,66,0.02));
+}
+.wk-avg-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.wk-avg-title { font-size:0.78rem; font-weight:800; color:var(--gold); }
+.wk-avg-badge { font-size:9px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:20px; color:var(--muted); background:rgba(255,255,255,0.05); }
+.wk-avg-badge.ok  { color:var(--teal2); background:rgba(0,212,170,0.1); }
+.wk-avg-badge.low { color:var(--gold); background:rgba(245,200,66,0.12); }
+.wk-avg-body { display:flex; align-items:center; gap:10px; }
+.wk-avg-item { flex:1; text-align:center; }
+.wk-avg-val { font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:800; color:var(--text); }
+.wk-avg-val.loss { color:var(--teal2); }
+.wk-avg-val.gain { color:var(--red); }
+.wk-avg-lbl { font-size:9px; color:var(--muted); margin-top:2px; font-weight:700; }
+.wk-avg-div { width:1px; height:28px; background:rgba(255,255,255,0.08); }
+.wk-avg-card.empty { opacity:.55; }
+
 /* ── STICKY CALORIE BAR ── */
 .cal-sticky-bar {
   position: fixed;
@@ -2132,11 +2155,72 @@ function updateWeight(dateStr, val, inputEl) {
   saveWgtData(wgtData);
   // حدّث الملخص والفرق لهذا الصف فقط — بدون renderWeight
   updateRowDiffs();
+  updateWeeklyAverages();
   updateWgtSummary();
   if (typeof drawChart === 'function') drawChart();
 }
 
 /** تحديث فروقات الصفوف فقط دون لمس حقول الإدخال */
+/**
+ * متوسط الوزن الأسبوعي — المتوسط الحسابي لكل القياسات المسجّلة في الأسبوع (7 أيام).
+ * - يُحسب من القيم الخام دون تقريب وسيط، ثم يُقرّب للعرض فقط.
+ * - الأيام الفارغة تُتجاهل (لا تُحتسب صفراً).
+ * - الموثوقية: 3 قياسات فأكثر = موثوق، أقل = تقديري.
+ * - التغيّر = متوسط هذا الأسبوع − متوسط آخر أسبوع سابق موثوق (مقارنة متوسطات وليس أوزاناً يومية).
+ */
+function updateWeeklyAverages() {
+  const MIN_RELIABLE = 3;
+  const weeks = {};
+  ALL_DATES.forEach((d, i) => {
+    const wk = Math.floor(i / 7) + 1;
+    if (!weeks[wk]) weeks[wk] = [];
+    const n = parseFloat(wgtData.weights && wgtData.weights[d]);
+    if (!isNaN(n) && n >= 40 && n <= 300) weeks[wk].push(n);
+  });
+
+  const avgs = {};
+  Object.keys(weeks).forEach(k => {
+    const a = weeks[k];
+    avgs[k] = a.length ? { avg: a.reduce((x, y) => x + y, 0) / a.length, n: a.length } : null;
+  });
+
+  let prev = null; // آخر أسبوع سابق موثوق
+  document.querySelectorAll('.wk-avg-card').forEach(card => {
+    const wk = parseInt(card.getAttribute('data-wk'), 10);
+    const cur = avgs[wk];
+    const T = 'الأسبوع ' + wk;
+
+    if (!cur) {
+      card.className = 'wk-avg-card empty';
+      card.innerHTML = '<div class="wk-avg-top"><span class="wk-avg-title">📊 متوسط ' + T + '</span><span class="wk-avg-badge">لا بيانات</span></div>';
+      return;
+    }
+
+    const reliable = cur.n >= MIN_RELIABLE;
+    let changeHtml = '--', changeCls = '', ref = '';
+    if (reliable && prev) {
+      const d = cur.avg - prev.avg;
+      const dr = Math.round(d * 100) / 100;
+      const pct = Math.round((d / prev.avg) * 1000) / 10;
+      changeHtml = (dr > 0 ? '+' : '') + dr.toFixed(2) + ' KG';
+      changeCls = dr < 0 ? 'loss' : dr > 0 ? 'gain' : '';
+      ref = (pct > 0 ? '+' : '') + pct + '%';
+    }
+
+    card.className = 'wk-avg-card';
+    card.innerHTML =
+      '<div class="wk-avg-top"><span class="wk-avg-title">📊 متوسط ' + T + '</span>' +
+      '<span class="wk-avg-badge ' + (reliable ? 'ok' : 'low') + '">' + cur.n + '/7 أيام' + (reliable ? '' : ' · تقديري') + '</span></div>' +
+      '<div class="wk-avg-body">' +
+        '<div class="wk-avg-item"><div class="wk-avg-val">' + (Math.round(cur.avg * 100) / 100).toFixed(2) + ' KG</div><div class="wk-avg-lbl">المتوسط</div></div>' +
+        '<div class="wk-avg-div"></div>' +
+        '<div class="wk-avg-item"><div class="wk-avg-val ' + changeCls + '">' + changeHtml + '</div><div class="wk-avg-lbl">عن الأسبوع السابق' + (ref ? ' (' + ref + ')' : '') + '</div></div>' +
+      '</div>';
+
+    if (reliable) prev = cur;
+  });
+}
+
 function updateRowDiffs() {
   const entries = getSortedEntries();
   document.querySelectorAll('[data-wdiff]').forEach(el => {
@@ -2539,8 +2623,16 @@ function renderWeight() {
       ${diffHtml}
     `;
     list.appendChild(row);
+
+    if (isWeekEnd) {
+      const card = document.createElement('div');
+      card.className = 'wk-avg-card empty';
+      card.setAttribute('data-wk', weekNum);
+      list.appendChild(card);
+    }
   });
 
+  updateWeeklyAverages();
   updateWgtSummary();
   setTimeout(drawChart, 50);
 }
