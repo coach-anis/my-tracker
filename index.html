@@ -1547,19 +1547,45 @@ body::after {
   --teal2: #00C8A0;
 }
 body { transition: background .3s, color .3s; }
-.theme-btn {
+.theme-btn, .lang-btn {
   position: fixed;
   top: calc(12px + env(safe-area-inset-top));
-  left: 12px;
   z-index: 200;
   width: 40px; height: 40px; border-radius: 12px;
   border: 1px solid var(--border); background: var(--bg2);
-  color: var(--text); font-size: 1.15rem; cursor: pointer;
+  color: var(--text); font-size: 1.05rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   transition: transform .2s;
+  font-family: 'Cairo', sans-serif; font-weight: 700;
 }
-.theme-btn:active { transform: scale(0.92); }
+.theme-btn { left: 12px; }
+.lang-btn { left: 58px; font-size: 0.72rem; letter-spacing: 0.5px; }
+html[dir="ltr"] .theme-btn { left: auto; right: 12px; }
+html[dir="ltr"] .lang-btn { left: auto; right: 58px; }
+.theme-btn:active, .lang-btn:active { transform: scale(0.92); }
+.lang-menu {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top));
+  left: 12px;
+  z-index: 210;
+  background: var(--bg2);
+  border-radius: 14px;
+  box-shadow: var(--sh);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+}
+html[dir="ltr"] .lang-menu { left: auto; right: 12px; }
+.lang-menu.show { display: flex; }
+.lang-opt {
+  border: 0; background: transparent; color: var(--text);
+  font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.85rem;
+  padding: 10px 14px; border-radius: 10px; cursor: pointer; text-align: start;
+}
+.lang-opt:hover, .lang-opt.active { background: var(--bg4); color: var(--teal); }
 .tab-btn.active-tools {
   background: rgba(77,166,255,0.08); color: #4DA6FF;
   border-color: rgba(77,166,255,0.3);
@@ -1634,7 +1660,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .tabs{background:var(--bg2);padding:4px;border-radius:18px;box-shadow:var(--sh-sm);gap:4px;width:calc(100% - 32px);}
 .tab-btn{border:0;background:transparent;box-shadow:none;color:var(--muted);border-radius:14px;padding:11px 6px;font-size:.85rem;}
 .tab-btn[class*="active-"]{background:var(--bg4);color:var(--text);box-shadow:var(--sh-sm);}
-.theme-btn{border:0;box-shadow:var(--sh-sm);}
+.theme-btn,.lang-btn{border:0;box-shadow:var(--sh-sm);}
 .panel{padding-top:16px;}
 
 /* dashboard */
@@ -1727,16 +1753,22 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 </head>
 <body>
 
-<button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="تبديل الوضع">🌙</button>
+<button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="تبديل الوضع" data-i18n-title="theme_toggle">🌙</button>
+<button class="lang-btn" id="lang-btn" onclick="toggleLangMenu()" title="Language / اللغة">AR</button>
+<div class="lang-menu" id="lang-menu">
+  <button class="lang-opt" data-lang="ar" onclick="setLanguage('ar')">العربية</button>
+  <button class="lang-opt" data-lang="en" onclick="setLanguage('en')">English</button>
+  <button class="lang-opt" data-lang="fr" onclick="setLanguage('fr')">Français</button>
+</div>
 
 <div class="share-modal" id="share-modal">
   <div class="share-modal-box">
     <canvas id="share-canvas" width="600" height="700"></canvas>
     <div class="share-modal-btns">
-      <button class="btn-share-do" id="btn-share-native">📤 مشاركة</button>
-      <button class="btn-share-dl" id="btn-share-dl">⬇️ تحميل</button>
+      <button class="btn-share-do" id="btn-share-native" data-i18n="share">📤 مشاركة</button>
+      <button class="btn-share-dl" id="btn-share-dl" data-i18n="download">⬇️ تحميل</button>
     </div>
-    <button class="btn-share-close" onclick="closeShareModal()">إغلاق</button>
+    <button class="btn-share-close" onclick="closeShareModal()" data-i18n="close">إغلاق</button>
   </div>
 </div>
 
@@ -1745,8 +1777,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <div class="welcome-overlay" id="welcome-overlay">
   <div class="welcome-box">
     <span class="welcome-emoji">🔥</span>
-    <div class="welcome-title">تطبيق المدرب أنيس</div>
-    <div class="welcome-sub">تتبع سعراتك ووزنك يومياً</div>
+    <div class="welcome-title" data-i18n="welcome_title">تطبيق المدرب أنيس</div>
+    <div class="welcome-sub" data-i18n="welcome_sub">تتبع سعراتك ووزنك يومياً</div>
     <div class="welcome-line"></div>
   </div>
 </div>
@@ -1754,17 +1786,17 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <!-- ── STICKY CALORIE BAR ── -->
 <div class="cal-sticky-bar hidden" id="cal-sticky-bar">
   <div>
-    <div class="csb-label">السعرات</div>
+    <div class="csb-label" data-i18n="calories">السعرات</div>
     <div class="csb-val ok" id="csb-val">-- kcal</div>
   </div>
   <div class="csb-center">
-    <div class="csb-label" id="csb-sub">متبقي اليوم</div>
+    <div class="csb-label" id="csb-sub" data-i18n="remaining_today">متبقي اليوم</div>
     <div class="csb-track">
       <div class="csb-fill ok" id="csb-fill" style="width:0%"></div>
     </div>
   </div>
   <div style="text-align:left">
-    <div class="csb-label">البروتين</div>
+    <div class="csb-label" data-i18n="protein">البروتين</div>
     <div class="csb-val ok" id="csb-pro">-- g</div>
   </div>
 </div>
@@ -1773,12 +1805,12 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <div class="pwa-banner hidden" id="pwa-banner">
   <div class="pwa-icon">📲</div>
   <div class="pwa-text">
-    <div class="pwa-title">ثبّت التطبيق على هاتفك</div>
-    <div class="pwa-sub">يعمل بدون إنترنت · أسرع · مثل تطبيق حقيقي</div>
+    <div class="pwa-title" data-i18n="pwa_title">ثبّت التطبيق على هاتفك</div>
+    <div class="pwa-sub" data-i18n="pwa_sub">يعمل بدون إنترنت · أسرع · مثل تطبيق حقيقي</div>
   </div>
   <div class="pwa-actions">
-    <button class="btn-pwa-install" id="btn-pwa-install">تثبيت</button>
-    <button class="btn-pwa-dismiss" id="btn-pwa-dismiss">لاحقاً</button>
+    <button class="btn-pwa-install" id="btn-pwa-install" data-i18n="install">تثبيت</button>
+    <button class="btn-pwa-dismiss" id="btn-pwa-dismiss" data-i18n="later">لاحقاً</button>
   </div>
 </div>
 
@@ -1787,15 +1819,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 <!-- ── BACKUP REMINDER BANNER ── -->
 <div class="tabs" style="margin-top: calc(58px + env(safe-area-inset-top))">
-  <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
-  <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
-  <button class="tab-btn" onclick="switchTab('tools')">⚙️ أدوات</button>
+  <button class="tab-btn active-cal" onclick="switchTab('cal')" data-i18n="tab_cal">🔥 السعرات</button>
+  <button class="tab-btn" onclick="switchTab('bud')" data-i18n="tab_weight">⚖️ الوزن</button>
+  <button class="tab-btn" onclick="switchTab('tools')" data-i18n="tab_tools">⚙️ أدوات</button>
 </div>
 
 <!-- ═══ CALORIES PANEL ═══ -->
 <div class="panel active" id="panel-cal">
   <section class="dash ok" id="dash">
-    <div class="dash-date" id="dash-date">--</div>
     <div class="dash-hero">
       <div class="ring-wrap">
         <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
@@ -1803,27 +1834,27 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
           <circle class="ring-bg" cx="70" cy="70" r="58"/>
           <circle class="ring-fg" id="ring-fg" cx="70" cy="70" r="58" transform="rotate(-90 70 70)"/>
         </svg>
-        <div class="ring-center"><div class="ring-num" id="ring-num">0</div><div class="ring-lbl" id="ring-lbl">kcal متبقي</div></div>
+        <div class="ring-center"><div class="ring-num" id="ring-num">0</div><div class="ring-lbl" id="ring-lbl" data-i18n="kcal_left">kcal متبقي</div></div>
       </div>
       <div class="dash-stats">
-        <div class="dstat"><span>تناولت</span><b><span id="dash-eaten" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
-        <div class="dstat"><span>الهدف</span><b><span id="dash-goal" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
+        <div class="dstat"><span data-i18n="eaten">تناولت</span><b><span id="dash-eaten" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
+        <div class="dstat"><span data-i18n="goal">الهدف</span><b><span id="dash-goal" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
       </div>
     </div>
     <div class="dash-pro">
-      <div class="dp-top"><span>البروتين</span><b id="m-pro">0 / 150g</b></div>
+      <div class="dp-top"><span data-i18n="protein">البروتين</span><b id="m-pro">0 / 150g</b></div>
       <div class="dp-bar"><i id="m-pro-bar"></i></div>
     </div>
     <div class="dash-sub">
-      <div class="ds" style="--dc:var(--c-carb)"><b id="m-carb">0g</b><span>كارب</span></div>
-      <div class="ds" style="--dc:var(--c-fat)"><b id="m-fat">0g</b><span>دهون</span></div>
-      <div class="ds" style="--dc:var(--c-fiber)"><b id="m-fiber">0g</b><span>ألياف</span></div>
+      <div class="ds" style="--dc:var(--c-carb)"><b id="m-carb">0g</b><span data-i18n="carb">كارب</span></div>
+      <div class="ds" style="--dc:var(--c-fat)"><b id="m-fat">0g</b><span data-i18n="fat">دهون</span></div>
+      <div class="ds" style="--dc:var(--c-fiber)"><b id="m-fiber">0g</b><span data-i18n="fiber">ألياف</span></div>
     </div>
     <details class="goals-fold">
-      <summary>تعديل الأهداف اليومية</summary>
+      <summary data-i18n="edit_daily_goals">تعديل الأهداف اليومية</summary>
       <div class="goal-fields">
-        <div class="gf"><label for="cal-goal">السعرات (kcal)</label><input class="goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" /></div>
-        <div class="gf"><label for="pro-goal">البروتين (g)</label><input class="goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" /></div>
+        <div class="gf"><label for="cal-goal" data-i18n="calories_kcal">السعرات (kcal)</label><input class="goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" /></div>
+        <div class="gf"><label for="pro-goal" data-i18n="protein_g">البروتين (g)</label><input class="goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" /></div>
       </div>
     </details>
   </section>
@@ -1836,24 +1867,24 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <div style="height:16px"></div>
 
   <div class="tools-card">
-    <div class="tools-card-title">📸 مشاركة التقدم</div>
-    <button class="btn-share" onclick="openShareCard()">📸 مشاركة بطاقة التقدم</button>
+    <div class="tools-card-title" data-i18n="share_progress">📸 مشاركة التقدم</div>
+    <button class="btn-share" onclick="openShareCard()" data-i18n="share_card">📸 مشاركة بطاقة التقدم</button>
   </div>
 
   <div class="tools-card">
-    <div class="tools-card-title">📋 البيانات</div>
-    <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0">📋 نسخ البيانات (JSON)</button>
-    <button class="btn-reset" onclick="resetDay()" style="margin-top:10px">↺ إعادة ضبط اليوم</button>
+    <div class="tools-card-title" data-i18n="data">📋 البيانات</div>
+    <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0" data-i18n="copy_json">📋 نسخ البيانات (JSON)</button>
+    <button class="btn-reset" onclick="resetDay()" style="margin-top:10px" data-i18n="reset_day">↺ إعادة ضبط اليوم</button>
   </div>
 
   <div class="backup-section" style="margin-top:0">
-    <div class="backup-title">💾 النسخ الاحتياطي</div>
+    <div class="backup-title" data-i18n="backup">💾 النسخ الاحتياطي</div>
     <div class="backup-btns">
-      <button class="btn-backup" onclick="backupData()">💾 حفظ نسخة</button>
-      <button class="btn-restore" onclick="document.getElementById('restore-input').click()">📥 استعادة</button>
+      <button class="btn-backup" onclick="backupData()" data-i18n="save_backup">💾 حفظ نسخة</button>
+      <button class="btn-restore" onclick="document.getElementById('restore-input').click()" data-i18n="restore">📥 استعادة</button>
     </div>
     <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)" />
-    <div class="backup-last" id="backup-last-label">لم يتم حفظ نسخة بعد</div>
+    <div class="backup-last" id="backup-last-label" data-i18n="no_backup_yet">لم يتم حفظ نسخة بعد</div>
   </div>
 </div>
 
@@ -1863,69 +1894,69 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
   <div class="wgt-goals-row">
     <div class="wgt-goal-card">
-      <label>وزن البداية (كغ)</label>
-      <input class="wgt-goal-input" type="text" inputmode="decimal" id="start-weight" placeholder="مثال: 80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
+      <label data-i18n="start_weight">وزن البداية (كغ)</label>
+      <input class="wgt-goal-input" type="text" inputmode="decimal" id="start-weight" placeholder="مثال: 80" data-i18n-placeholder="ex_80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
     <div class="wgt-goal-card">
-      <label>وزني المستهدف (كغ)</label>
-      <input class="wgt-goal-input" type="text" inputmode="decimal" id="target-weight" placeholder="مثال: 70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
+      <label data-i18n="target_weight">وزني المستهدف (كغ)</label>
+      <input class="wgt-goal-input" type="text" inputmode="decimal" id="target-weight" placeholder="مثال: 70" data-i18n-placeholder="ex_70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
   </div>
 
   <div class="wgt-summary">
     <div class="wgt-card teal">
       <div class="wgt-val" id="w-current">--</div>
-      <div class="wgt-lbl">آخر وزن مسجل</div>
+      <div class="wgt-lbl" data-i18n="last_weight">آخر وزن مسجل</div>
     </div>
     <div class="wgt-card green">
       <div class="wgt-val" id="w-diff">--</div>
-      <div class="wgt-lbl">الفرق عن البداية</div>
+      <div class="wgt-lbl" data-i18n="diff_from_start">الفرق عن البداية</div>
     </div>
     <div class="wgt-card gold-c">
       <div class="wgt-val" id="w-remaining">--</div>
-      <div class="wgt-lbl">المتبقي للهدف</div>
+      <div class="wgt-lbl" data-i18n="remaining_to_goal">المتبقي للهدف</div>
     </div>
     <div class="wgt-card orange-c">
       <div class="wgt-val" id="w-weekly">--</div>
-      <div class="wgt-lbl">المعدل الأسبوعي</div>
+      <div class="wgt-lbl" data-i18n="weekly_rate">المعدل الأسبوعي</div>
     </div>
   </div>
 
   <div class="journey-card">
     <div class="journey-top">
-      <span class="journey-title">🎯 تقدمك نحو الهدف</span>
+      <span class="journey-title" data-i18n="journey_title">🎯 تقدمك نحو الهدف</span>
       <span class="journey-pct" id="journey-pct">0%</span>
     </div>
     <div class="journey-bar-bg">
       <div class="journey-bar-fill" id="journey-bar" style="width:0%"></div>
     </div>
     <div class="journey-meta">
-      <span id="journey-start">البداية: --</span>
-      <span id="journey-now">الآن: --</span>
-      <span id="journey-target">الهدف: --</span>
+      <span id="journey-start" data-i18n-prefix="start_colon">البداية: --</span>
+      <span id="journey-now" data-i18n-prefix="now_colon">الآن: --</span>
+      <span id="journey-target" data-i18n-prefix="goal_colon">الهدف: --</span>
     </div>
   </div>
 
   <!-- GOAL PREDICTION CARD -->
   <div class="predict-card" id="predict-card" style="display:none">
     <div class="predict-top">
-      <span class="predict-title">&#x1F4C5; &#x062A;&#x0648;&#x0642;&#x0639; &#x0627;&#x0644;&#x0648;&#x0635;&#x0648;&#x0644; &#x0644;&#x0644;&#x0647;&#x062F;&#x0641;</span>
+      <span class="predict-title" data-i18n="predict_title">📅 توقع الوصول للهدف</span>
       <span class="predict-badge" id="predict-badge">--</span>
     </div>
     <div class="predict-body">
       <div class="predict-item">
         <div class="predict-val" id="predict-days">--</div>
-        <div class="predict-lbl">&#x064A;&#x0648;&#x0645; &#x0645;&#x062A;&#x0628;&#x0642;&#x064A;</div>
+        <div class="predict-lbl" data-i18n="days_left">يوم متبقي</div>
       </div>
       <div class="predict-divider"></div>
       <div class="predict-item">
         <div class="predict-val" id="predict-rate">--</div>
-        <div class="predict-lbl">&#x0643;&#x063A; / &#x0623;&#x0633;&#x0628;&#x0648;&#x0639;</div>
+        <div class="predict-lbl" data-i18n="kg_week">كغ / أسبوع</div>
       </div>
       <div class="predict-divider"></div>
       <div class="predict-item">
         <div class="predict-val" id="predict-remain">--</div>
-        <div class="predict-lbl">&#x0643;&#x063A; &#x0645;&#x062A;&#x0628;&#x0642;&#x064A;&#x0629;</div>
+        <div class="predict-lbl" data-i18n="kg_remaining">كغ متبقية</div>
       </div>
     </div>
   </div>
@@ -1936,7 +1967,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
   <div class="wgt-chart-wrap" id="chart-container">
     <div class="wgt-chart-header">
-      <span class="wgt-chart-title">منحنى الوزن</span>
+      <span class="wgt-chart-title" data-i18n="weight_curve">منحنى الوزن</span>
       <div class="wgt-chart-legend">
         <div class="legend-item teal-l"><div class="legend-dot"></div>وزنك</div>
         <div class="legend-item gold-l"><div class="legend-dot"></div>الهدف</div>
@@ -1950,7 +1981,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     </div>
   </div>
 
-  <div class="section-label">سجلاتي</div>
+  <div class="section-label" data-i18n="my_logs">سجلاتي</div>
   <div class="wgt-list-wrap" id="wgt-list"></div>
 </div>
 
@@ -1964,12 +1995,12 @@ const saveWgtData = d => { try { localStorage.setItem(KEY_WGT, JSON.stringify(d)
 const loadWgtData = () => { try { return JSON.parse(localStorage.getItem(KEY_WGT)) || {}; } catch(e){ return {}; } };
 
 // ─── DATES ───
-const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-const AR_DAYS   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 function todayStr() { return toLocalDateStr(new Date()); }
 function formatDate(s) {
   const d = new Date(s + 'T00:00:00');
-  return `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]}`;
+  const days = t('days');
+  const months = t('months');
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
 }
 
 // ─── TABS ───
@@ -2037,7 +2068,16 @@ const _tot = (day, f) => day.slots.reduce((a, s) => a + _n(s[f]), 0);
 const slotFilled = s => ['cal','pro','carb','fat','fiber'].some(k => s[k] !== '' && s[k] != null && String(s[k]).trim() !== '');
 
 function removeDay(id) {
+  if (calDays.length <= 1) {
+    // last day = today: clear meals instead of removing
+    resetDay();
+    return;
+  }
   calDays = calDays.filter(d => d.id !== id);
+  // ensure first day is always "today"
+  if (calDays.length && calDays[0].date !== todayStr()) {
+    calDays.unshift({ id: Date.now(), date: todayStr(), slots: Array(5).fill(null).map(emptySlot) });
+  }
   saveCalData(calDays);
   renderDays();
 }
@@ -2102,16 +2142,16 @@ function mealHTML(day, i) {
     </div>`;
   return `
     <div class="meal ${_open.has(k) ? 'open' : ''}" data-meal="${k}">
-      <button class="meal-head" onclick="toggleMeal(${day.id}, ${i})" aria-label="وجبة ${i+1}">
-        <span class="meal-name">وجبة ${i+1}</span>
+      <button class="meal-head" onclick="toggleMeal(${day.id}, ${i})" aria-label="${t('meal_n')} ${i+1}">
+        <span class="meal-name">${t('meal_n')} ${i+1}</span>
         <span class="meal-sum" data-msum="${k}">${mealSum(s)}</span>
         <span class="chev"></span>
       </button>
       <div class="meal-edit">
         <div class="macro-grid">
-          ${field('cal','سعرات')}${field('pro','بروتين')}${field('carb','كارب')}${field('fat','دهون')}${field('fiber','ألياف')}
+          ${field('cal',t('cal_short'))}${field('pro',t('pro_short'))}${field('carb',t('carb'))}${field('fat',t('fat'))}${field('fiber',t('fiber'))}
         </div>
-        ${day.slots.length > 1 ? `<button class="meal-del" onclick="removeSlot(${day.id}, ${i})">حذف الوجبة</button>` : ''}
+        ${day.slots.length > 1 ? `<button class="meal-del" onclick="removeSlot(${day.id}, ${i})">${t('delete_meal')}</button>` : ''}
       </div>
     </div>`;
 }
@@ -2125,14 +2165,15 @@ function renderDays() {
     let html = day.slots.map((s, i) => shown(i) ? mealHTML(day, i) : '').join('');
     // يظهر دائماً زر واحد ناعم لإضافة وجبة بدل صفوف الأصفار
     html += firstEmpty >= 0
-      ? `<button class="meal-add" onclick="openMeal(${day.id}, ${firstEmpty})">＋ إضافة وجبة ${firstEmpty + 1}</button>`
-      : `<button class="meal-add" onclick="addSlot(${day.id})">＋ إضافة وجبة</button>`;
+      ? `<button class="meal-add" onclick="openMeal(${day.id}, ${firstEmpty})">${t('add_meal_n')} ${firstEmpty + 1}</button>`
+      : `<button class="meal-add" onclick="addSlot(${day.id})">${t('add_meal')}</button>`;
     const block = document.createElement('div');
-    block.innerHTML = `
-      <div class="day-head">
-        <h2 class="day-title">${di === 0 ? 'وجبات اليوم' : formatDate(day.date)}</h2>
-        ${di > 0 ? `<span class="day-sum" data-dsum="${day.id}">${daySumText(day)}</span>` : ''}
-        <button class="day-rm" onclick="removeDay(${day.id})" aria-label="حذف اليوم">✕</button>
+    block.innerHTML = di === 0
+      ? `<div class="meals">${html}</div>`
+      : `<div class="day-head">
+        <h2 class="day-title">${formatDate(day.date)}</h2>
+        <span class="day-sum" data-dsum="${day.id}">${daySumText(day)}</span>
+        <button class="day-rm" onclick="removeDay(${day.id})" aria-label="${t('delete_day')}">✕</button>
       </div>
       <div class="meals">${html}</div>`;
     container.appendChild(block);
@@ -2150,11 +2191,11 @@ function updateCalSummary() {
   const goal = calGoal || 2500, pg = proGoal || 150, rem = goal - cal;
   const C = 2 * Math.PI * 58, fg = $('ring-fg');
   $('dash').className = 'dash ' + (rem > 0 ? 'ok' : rem === 0 ? 'warn' : 'over');
-  $('dash-date').textContent = formatDate(d.date);
+  const _dd = $('dash-date'); if (_dd) _dd.textContent = formatDate(d.date);
   fg.style.strokeDasharray = C;
   fg.style.strokeDashoffset = C * (1 - Math.min(cal / goal, 1));
   $('ring-num').textContent = _r(Math.abs(rem)).toLocaleString();
-  $('ring-lbl').textContent = rem >= 0 ? 'kcal متبقي' : 'kcal فوق الهدف';
+  $('ring-lbl').textContent = rem >= 0 ? t('kcal_left') : t('kcal_over');
   $('dash-eaten').textContent = _r(cal).toLocaleString();
   $('dash-goal').textContent = goal.toLocaleString();
   $('m-pro').textContent = `${_r(pro)} / ${pg}g`;
@@ -2217,7 +2258,7 @@ by @coach__anis`;
   const btn = document.getElementById('btn-export');
   navigator.clipboard.writeText(text).then(() => {
     const original = btn.innerHTML;
-    btn.innerHTML = '✅ تم النسخ!';
+    btn.innerHTML = t('copied');
     btn.style.borderColor = 'rgba(0,212,170,0.5)';
     btn.style.color = 'var(--teal)';
     btn.style.background = 'rgba(0,212,170,0.08)';
@@ -2237,7 +2278,7 @@ by @coach__anis`;
     document.execCommand('copy');
     document.body.removeChild(ta);
     const original = btn.innerHTML;
-    btn.innerHTML = '✅ تم النسخ!';
+    btn.innerHTML = t('copied');
     btn.style.borderColor = 'rgba(0,212,170,0.5)';
     btn.style.color = 'var(--teal)';
     btn.style.background = 'rgba(0,212,170,0.08)';
@@ -2342,7 +2383,7 @@ function fixGoalInput(el) {
   const raw = el.value;
   if (raw.trim() === '') return;
   const v = readWeight(raw);
-  if (v === null) { el.value = ''; showToast('⚠️ الوزن يجب أن يكون بين 40 و 300 كغ'); }
+  if (v === null) { el.value = ''; showToast(t('weight_range')); }
   else el.value = v;
   saveGoals();
 }
@@ -2369,7 +2410,7 @@ function updateWeight(dateStr, val, inputEl) {
     // عند مغادرة الحقل برقم غير منطقي: نبلّغ المستخدم وننظّف الحقل
     if (inputEl && String(val).trim() !== '') {
       inputEl.value = '';
-      showToast('⚠️ الوزن يجب أن يكون بين 40 و 300 كغ');
+      showToast(t('weight_range'));
     }
   }
   saveWgtData(wgtData);
@@ -2432,9 +2473,9 @@ function updateWeeklyAverages() {
       '<div class="wk-avg-top"><span class="wk-avg-title">📊 متوسط ' + T + '</span>' +
       '<span class="wk-avg-badge ' + (reliable ? 'ok' : 'low') + '">' + cur.n + '/7 أيام' + (reliable ? '' : ' · تقديري') + '</span></div>' +
       '<div class="wk-avg-body">' +
-        '<div class="wk-avg-item"><div class="wk-avg-val">' + (Math.round(cur.avg * 100) / 100).toFixed(2) + ' KG</div><div class="wk-avg-lbl">المتوسط</div></div>' +
+        '<div class="wk-avg-item"><div class="wk-avg-val">' + (Math.round(cur.avg * 100) / 100).toFixed(2) + ' KG</div><div class="wk-avg-lbl">' + t('average') + '</div></div>' +
         '<div class="wk-avg-div"></div>' +
-        '<div class="wk-avg-item"><div class="wk-avg-val ' + changeCls + '">' + changeHtml + '</div><div class="wk-avg-lbl">عن الأسبوع السابق' + (ref ? ' (' + ref + ')' : '') + '</div></div>' +
+        '<div class="wk-avg-item"><div class="wk-avg-val ' + changeCls + '">' + changeHtml + '</div><div class="wk-avg-lbl">' + t('vs_prev_week') + (ref ? ' (' + ref + ')' : '') + '</div></div>' +
       '</div>';
 
     if (reliable) prev = cur;
@@ -2502,7 +2543,7 @@ function updateWgtSummary() {
     // إذا لم يُسجَّل أي وزن بعد، نحسب المتبقي من وزن البداية
     const ref = last !== null ? last : start;
     const remain = Math.round((dir === 'cut' ? ref - target : target - ref) * 10) / 10;
-    remEl.textContent = (remain <= 0 && last !== null) ? '🎉 وصلت!' : fmtKg(Math.max(0, remain));
+    remEl.textContent = (remain <= 0 && last !== null) ? t('reached') : fmtKg(Math.max(0, remain));
   } else {
     remEl.textContent = '--';
   }
@@ -2526,7 +2567,7 @@ function updateWgtSummary() {
       weeklyEl.style.color = weekly === 0 ? 'var(--muted)' : (good ? 'var(--teal2)' : 'var(--red)');
     } else {
       weeklyEl.textContent = '--';
-      weeklyEl.title = 'يلزم 7 أيام على الأقل بين أول وآخر تسجيل لحساب المعدل الأسبوعي';
+      weeklyEl.title = t('need_7_days');
     }
   } else {
     weeklyEl.textContent = '--';
@@ -2539,7 +2580,7 @@ function updateWgtSummary() {
   const nowM = document.getElementById('journey-now');
   const targM = document.getElementById('journey-target');
 
-  startM.textContent  = 'البداية: ' + (start  !== null ? start  + ' KG' : '--');
+  startM.textContent  = t('start_colon') + ' ' + (start  !== null ? start  + ' KG' : '--');
   targM.textContent   = 'الهدف: '   + (target !== null ? target + ' KG' : '--');
   nowM.textContent    = 'الآن: '    + (last   !== null ? last   + ' KG' : (start !== null ? start + ' KG' : '--'));
 
@@ -2588,7 +2629,7 @@ function updateWgtSummary() {
     if (days < 7 || toward <= 0.05) {
       predDays.textContent = '—';
       predRate.textContent = days < 7 ? '--' : ((toward > 0 ? '+' : '') + toward + ' KG');
-      predBadge.textContent = days < 7 ? 'بيانات غير كافية' : 'لا تقدم';
+      predBadge.textContent = days < 7 ? t('insufficient_data') : t('no_progress');
     } else {
       const daysLeft = Math.ceil((remaining / toward) * 7);
       const arr = new Date();
@@ -2875,9 +2916,9 @@ function updateStickyBar() {
   const pct  = Math.min((totalCal / goal) * 100, 100);
 
   let cls, subText;
-  if (rem > 0)       { cls = 'ok';   subText = `متبقي ${rem.toLocaleString()} kcal`; }
-  else if (rem === 0){ cls = 'warn'; subText = '🎯 أكملت الهدف!'; }
-  else               { cls = 'over'; subText = `تجاوزت بـ ${Math.abs(rem).toLocaleString()} kcal`; }
+  if (rem > 0)       { cls = 'ok';   subText = `${t('remaining_kcal')} ${rem.toLocaleString()} kcal`; }
+  else if (rem === 0){ cls = 'warn'; subText = t('goal_reached'); }
+  else               { cls = 'over'; subText = `${t('exceeded_by')} ${Math.abs(rem).toLocaleString()} kcal`; }
 
   valEl.className = `csb-val ${cls}`;
   valEl.textContent = totalCal > 0 ? totalCal.toLocaleString() + ' kcal' : '-- kcal';
@@ -2913,8 +2954,8 @@ renderDays = function() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/my-tracker/sw.js').then(() => {}).catch(() => {});
 
-  window.addEventListener('offline', () => showToast('📵 أنت غير متصل — يعمل أوف لاين'));
-  window.addEventListener('online',  () => showToast('🌐 عاد الاتصال بالإنترنت'));
+  window.addEventListener('offline', () => showToast(t('offline')));
+  window.addEventListener('online',  () => showToast(t('online')));
 }
 
 // رسالة الترحيب المركزية
@@ -2944,7 +2985,7 @@ document.getElementById('btn-pwa-install').addEventListener('click', () => {
   if (_deferredPrompt) {
     _deferredPrompt.prompt();
     _deferredPrompt.userChoice.then(res => {
-      if (res.outcome === 'accepted') showToast('🎉 تم تثبيت التطبيق!');
+      if (res.outcome === 'accepted') showToast(t('app_installed'));
       _deferredPrompt = null;
     });
   }
@@ -2957,7 +2998,7 @@ document.getElementById('btn-pwa-dismiss').addEventListener('click', () => {
 
 window.addEventListener('appinstalled', () => {
   document.getElementById('pwa-banner').classList.add('hidden');
-  showToast('🎉 تم تثبيت التطبيق بنجاح!');
+  showToast(t('app_installed_ok'));
 });
 
 function showToast(msg) {
@@ -2995,7 +3036,7 @@ function backupData() {
   const now = Date.now();
   localStorage.setItem(KEY_LAST_BACKUP, now);
   updateBackupLabel();
-  showToast('💾 تم حفظ النسخة الاحتياطية!');
+  showToast(t('backup_saved'));
 }
 
 function restoreData(event) {
@@ -3006,10 +3047,10 @@ function restoreData(event) {
     try {
       const payload = JSON.parse(e.target.result);
       if (!payload.calDays || !payload.wgtData) {
-        showToast('⚠️ الملف غير صحيح!'); return;
+        showToast(t('invalid_file')); return;
       }
       // تأكيد قبل الاستعادة
-      if (!confirm('هل تريد استعادة البيانات؟ سيتم استبدال البيانات الحالية.')) return;
+      if (!confirm(t('confirm_restore'))) return;
 
       calDays = payload.calDays.map(day => ({
         ...day,
@@ -3033,9 +3074,9 @@ function restoreData(event) {
       renderDays();
       renderWeight();
       updateStickyBar();
-      showToast('✅ تمت الاستعادة بنجاح!');
+      showToast(t('restored'));
     } catch(err) {
-      showToast('⚠️ خطأ في قراءة الملف!');
+      showToast(t('file_error'));
     }
     event.target.value = '';
   };
@@ -3046,11 +3087,11 @@ function updateBackupLabel() {
   const last = localStorage.getItem(KEY_LAST_BACKUP);
   const el   = document.getElementById('backup-last-label');
   if (!el) return;
-  if (!last) { el.textContent = 'لم يتم حفظ نسخة بعد'; el.style.color = 'var(--red)'; return; }
+  if (!last) { el.textContent = t('no_backup_yet'); el.style.color = 'var(--red)'; return; }
   const diff = Math.floor((Date.now() - parseInt(last)) / 86400000);
-  if (diff === 0) { el.textContent = 'آخر نسخة: اليوم ✅'; el.style.color = 'var(--teal2)'; }
-  else if (diff === 1) { el.textContent = 'آخر نسخة: أمس'; el.style.color = 'var(--gold)'; }
-  else { el.textContent = `آخر نسخة: منذ ${diff} أيام`; el.style.color = diff >= 5 ? 'var(--red)' : 'var(--gold)'; }
+  if (diff === 0) { el.textContent = t('last_backup_today'); el.style.color = 'var(--teal2)'; }
+  else if (diff === 1) { el.textContent = t('last_backup_yesterday'); el.style.color = 'var(--gold)'; }
+  else { el.textContent = `${t('last_backup_days')} ${diff} ${t('days_ago')}`; el.style.color = diff >= 5 ? 'var(--red)' : 'var(--gold)'; }
 }
 
 function checkBackupReminder() {
@@ -3059,13 +3100,13 @@ function checkBackupReminder() {
   const sub      = document.getElementById('reminder-sub');
   if (!reminder) return;
   if (!last) {
-    sub.textContent = 'لم تنسخ بياناتك أبداً — انسخ الآن!';
+    sub.textContent = t('never_backed_up');
     setTimeout(() => reminder.classList.remove('hidden'), 4000);
     return;
   }
   const diff = Math.floor((Date.now() - parseInt(last)) / 86400000);
   if (diff >= 3) {
-    sub.textContent = `مضت ${diff} أيام بدون نسخة احتياطية`;
+    sub.textContent = `${diff} ${t('days_ago')} — ${t('never_backed_up')}`;
     setTimeout(() => reminder.classList.remove('hidden'), 4000);
   }
 }
@@ -3073,6 +3114,391 @@ function checkBackupReminder() {
 function dismissReminder() {
   document.getElementById('backup-reminder').classList.add('hidden');
 }
+
+
+
+// ─── I18N ───
+const I18N = {
+  ar: {
+    theme_toggle: 'تبديل الوضع',
+    welcome_title: 'تطبيق المدرب أنيس',
+    welcome_sub: 'تتبع سعراتك ووزنك يومياً',
+    calories: 'السعرات',
+    remaining_today: 'متبقي اليوم',
+    protein: 'البروتين',
+    pwa_title: 'ثبّت التطبيق على هاتفك',
+    pwa_sub: 'يعمل بدون إنترنت · أسرع · مثل تطبيق حقيقي',
+    install: 'تثبيت',
+    later: 'لاحقاً',
+    tab_cal: '🔥 السعرات',
+    tab_weight: '⚖️ الوزن',
+    tab_tools: '⚙️ أدوات',
+    kcal_left: 'kcal متبقي',
+    kcal_over: 'kcal فوق الهدف',
+    eaten: 'تناولت',
+    goal: 'الهدف',
+    carb: 'كارب',
+    fat: 'دهون',
+    fiber: 'ألياف',
+    edit_daily_goals: 'تعديل الأهداف اليومية',
+    calories_kcal: 'السعرات (kcal)',
+    protein_g: 'البروتين (g)',
+    share_progress: '📸 مشاركة التقدم',
+    share_card: '📸 مشاركة بطاقة التقدم',
+    data: '📋 البيانات',
+    copy_json: '📋 نسخ البيانات (JSON)',
+    reset_day: '🗑️ حذف اليوم',
+    backup: '💾 النسخ الاحتياطي',
+    save_backup: '💾 حفظ نسخة',
+    restore: '📥 استعادة',
+    no_backup_yet: 'لم يتم حفظ نسخة بعد',
+    share: '📤 مشاركة',
+    download: '⬇️ تحميل',
+    close: 'إغلاق',
+    start_weight: 'وزن البداية (كغ)',
+    target_weight: 'وزني المستهدف (كغ)',
+    ex_80: 'مثال: 80',
+    ex_70: 'مثال: 70',
+    last_weight: 'آخر وزن مسجل',
+    diff_from_start: 'الفرق عن البداية',
+    remaining_to_goal: 'المتبقي للهدف',
+    weekly_rate: 'المعدل الأسبوعي',
+    journey_title: '🎯 تقدمك نحو الهدف',
+    start_colon: 'البداية:',
+    now_colon: 'الآن:',
+    goal_colon: 'الهدف:',
+    predict_title: '📅 توقع الوصول للهدف',
+    days_left: 'يوم متبقي',
+    kg_week: 'كغ / أسبوع',
+    kg_remaining: 'كغ متبقية',
+    weight_curve: 'منحنى الوزن',
+    my_logs: 'سجلاتي',
+    meals_today: 'وجبات اليوم',
+    meal_n: 'وجبة',
+    add_meal: '＋ إضافة وجبة',
+    add_meal_n: '＋ إضافة وجبة',
+    delete_meal: 'حذف الوجبة',
+    delete_day: 'حذف اليوم',
+    cal_short: 'سعرات',
+    pro_short: 'بروتين',
+    goal_reached: '🎯 أكملت الهدف!',
+    remaining_kcal: 'متبقي',
+    exceeded_by: 'تجاوزت بـ',
+    no_data: 'لا بيانات',
+    no_progress: 'لا تقدم',
+    reached: '🎉 وصلت!',
+    insufficient_data: 'بيانات غير كافية',
+    register_weight: 'سجّل وزنك لترى المنحنى',
+    copied: '✅ تم النسخ!',
+    restored: '✅ تمت الاستعادة بنجاح!',
+    invalid_file: '⚠️ الملف غير صحيح!',
+    file_error: '⚠️ خطأ في قراءة الملف!',
+    image_saved: '📥 تم تحميل الصورة!',
+    app_installed: '🎉 تم تثبيت التطبيق!',
+    app_installed_ok: '🎉 تم تثبيت التطبيق بنجاح!',
+    offline: '📵 أنت غير متصل — يعمل أوف لاين',
+    online: '🌐 عاد الاتصال بالإنترنت',
+    share_unsupported: 'المشاركة غير مدعومة — استخدم التحميل',
+    weight_range: '⚠️ الوزن يجب أن يكون بين 40 و 300 كغ',
+    never_backed_up: 'لم تنسخ بياناتك أبداً — انسخ الآن!',
+    last_backup_today: 'آخر نسخة: اليوم ✅',
+    last_backup_yesterday: 'آخر نسخة: أمس',
+    last_backup_days: 'آخر نسخة: منذ',
+    days_ago: 'أيام',
+    wait: 'انتظر قليلاً...',
+    progress_with: 'تقدمي مع Coach Anis',
+    avg_week: '📊 متوسط',
+    vs_prev_week: '${t('vs_prev_week')}',
+    estimated: '· تقديري',
+    week: 'الأسبوع',
+    change: 'التغيّر',
+    average: 'المتوسط',
+    your_weight: 'وزنك',
+    cal_today: 'السعرات اليوم',
+    pro_today: 'البروتين اليوم',
+    current_weight: 'الوزن الحالي',
+    change_label: 'التغيّر',
+    app_title_full: 'تطبيق المدرب أنيس · My Tracker',
+    daily_progress: 'تقدمي اليومي',
+    confirm_restore: 'هل تريد استعادة البيانات؟ سيتم استبدال البيانات الحالية.',
+    backup_saved: '💾 تم حفظ النسخة الاحتياطية!',
+    need_7_days: 'يلزم 7 أيام على الأقل بين أول وآخر تسجيل لحساب المعدل الأسبوعي',
+    months: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    days: ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
+  },
+  en: {
+    theme_toggle: 'Toggle theme',
+    welcome_title: 'Coach Anis App',
+    welcome_sub: 'Track your calories & weight daily',
+    calories: 'Calories',
+    remaining_today: 'Left today',
+    protein: 'Protein',
+    pwa_title: 'Install the app on your phone',
+    pwa_sub: 'Works offline · Faster · Like a real app',
+    install: 'Install',
+    later: 'Later',
+    tab_cal: '🔥 Calories',
+    tab_weight: '⚖️ Weight',
+    tab_tools: '⚙️ Tools',
+    kcal_left: 'kcal left',
+    kcal_over: 'kcal over goal',
+    eaten: 'Eaten',
+    goal: 'Goal',
+    carb: 'Carbs',
+    fat: 'Fat',
+    fiber: 'Fiber',
+    edit_daily_goals: 'Edit daily goals',
+    calories_kcal: 'Calories (kcal)',
+    protein_g: 'Protein (g)',
+    share_progress: '📸 Share progress',
+    share_card: '📸 Share progress card',
+    data: '📋 Data',
+    copy_json: '📋 Copy data (JSON)',
+    reset_day: '🗑️ Delete today',
+    backup: '💾 Backup',
+    save_backup: '💾 Save backup',
+    restore: '📥 Restore',
+    no_backup_yet: 'No backup saved yet',
+    share: '📤 Share',
+    download: '⬇️ Download',
+    close: 'Close',
+    start_weight: 'Start weight (kg)',
+    target_weight: 'Target weight (kg)',
+    ex_80: 'e.g. 80',
+    ex_70: 'e.g. 70',
+    last_weight: 'Last logged weight',
+    diff_from_start: 'Change from start',
+    remaining_to_goal: 'Left to goal',
+    weekly_rate: 'Weekly rate',
+    journey_title: '🎯 Progress to goal',
+    start_colon: 'Start:',
+    now_colon: 'Now:',
+    goal_colon: 'Goal:',
+    predict_title: '📅 Goal ETA',
+    days_left: 'days left',
+    kg_week: 'kg / week',
+    kg_remaining: 'kg left',
+    weight_curve: 'Weight curve',
+    my_logs: 'My logs',
+    meals_today: "Today's meals",
+    meal_n: 'Meal',
+    add_meal: '＋ Add meal',
+    add_meal_n: '＋ Add meal',
+    delete_meal: 'Delete meal',
+    delete_day: 'Delete day',
+    cal_short: 'Cal',
+    pro_short: 'Protein',
+    goal_reached: '🎯 Goal reached!',
+    remaining_kcal: 'Left',
+    exceeded_by: 'Over by',
+    no_data: 'No data',
+    no_progress: 'No progress',
+    reached: '🎉 Reached!',
+    insufficient_data: 'Not enough data',
+    register_weight: 'Log your weight to see the curve',
+    copied: '✅ Copied!',
+    restored: '✅ Restored successfully!',
+    invalid_file: '⚠️ Invalid file!',
+    file_error: '⚠️ Error reading file!',
+    image_saved: '📥 Image downloaded!',
+    app_installed: '🎉 App installed!',
+    app_installed_ok: '🎉 App installed successfully!',
+    offline: '📵 You are offline — working offline',
+    online: '🌐 Back online',
+    share_unsupported: 'Sharing not supported — use download',
+    weight_range: '⚠️ Weight must be between 40 and 300 kg',
+    never_backed_up: 'You never backed up — do it now!',
+    last_backup_today: 'Last backup: today ✅',
+    last_backup_yesterday: 'Last backup: yesterday',
+    last_backup_days: 'Last backup:',
+    days_ago: 'days ago',
+    wait: 'Please wait...',
+    progress_with: 'My progress with Coach Anis',
+    avg_week: '📊 Avg',
+    vs_prev_week: 'vs previous week',
+    estimated: '· est.',
+    week: 'Week',
+    change: 'Change',
+    average: 'Average',
+    your_weight: 'Your weight',
+    cal_today: 'Calories today',
+    pro_today: 'Protein today',
+    current_weight: 'Current weight',
+    change_label: 'Change',
+    app_title_full: 'Coach Anis App · My Tracker',
+    daily_progress: 'My daily progress',
+    confirm_restore: 'Restore data? Current data will be replaced.',
+    backup_saved: '💾 Backup saved!',
+    need_7_days: 'Need at least 7 days between first and last log for weekly rate',
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    days: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+  },
+  fr: {
+    theme_toggle: 'Changer le thème',
+    welcome_title: 'App Coach Anis',
+    welcome_sub: 'Suivez calories et poids chaque jour',
+    calories: 'Calories',
+    remaining_today: 'Restant aujourd\'hui',
+    protein: 'Protéines',
+    pwa_title: 'Installez l\'app sur votre téléphone',
+    pwa_sub: 'Hors ligne · Plus rapide · Comme une vraie app',
+    install: 'Installer',
+    later: 'Plus tard',
+    tab_cal: '🔥 Calories',
+    tab_weight: '⚖️ Poids',
+    tab_tools: '⚙️ Outils',
+    kcal_left: 'kcal restants',
+    kcal_over: 'kcal au-dessus',
+    eaten: 'Consommé',
+    goal: 'Objectif',
+    carb: 'Glucides',
+    fat: 'Lipides',
+    fiber: 'Fibres',
+    edit_daily_goals: 'Modifier les objectifs quotidiens',
+    calories_kcal: 'Calories (kcal)',
+    protein_g: 'Protéines (g)',
+    share_progress: '📸 Partager les progrès',
+    share_card: '📸 Partager la carte de progrès',
+    data: '📋 Données',
+    copy_json: '📋 Copier les données (JSON)',
+    reset_day: '🗑️ Supprimer aujourd\'hui',
+    backup: '💾 Sauvegarde',
+    save_backup: '💾 Enregistrer',
+    restore: '📥 Restaurer',
+    no_backup_yet: 'Aucune sauvegarde pour le moment',
+    share: '📤 Partager',
+    download: '⬇️ Télécharger',
+    close: 'Fermer',
+    start_weight: 'Poids de départ (kg)',
+    target_weight: 'Poids cible (kg)',
+    ex_80: 'ex. 80',
+    ex_70: 'ex. 70',
+    last_weight: 'Dernier poids enregistré',
+    diff_from_start: 'Écart depuis le départ',
+    remaining_to_goal: 'Restant jusqu\'à l\'objectif',
+    weekly_rate: 'Rythme hebdomadaire',
+    journey_title: '🎯 Progression vers l\'objectif',
+    start_colon: 'Départ :',
+    now_colon: 'Maintenant :',
+    goal_colon: 'Objectif :',
+    predict_title: '📅 Estimation d\'arrivée',
+    days_left: 'jours restants',
+    kg_week: 'kg / semaine',
+    kg_remaining: 'kg restants',
+    weight_curve: 'Courbe de poids',
+    my_logs: 'Mes enregistrements',
+    meals_today: 'Repas du jour',
+    meal_n: 'Repas',
+    add_meal: '＋ Ajouter un repas',
+    add_meal_n: '＋ Ajouter un repas',
+    delete_meal: 'Supprimer le repas',
+    delete_day: 'Supprimer le jour',
+    cal_short: 'Cal',
+    pro_short: 'Protéines',
+    goal_reached: '🎯 Objectif atteint !',
+    remaining_kcal: 'Restant',
+    exceeded_by: 'Dépassé de',
+    no_data: 'Aucune donnée',
+    no_progress: 'Aucun progrès',
+    reached: '🎉 Atteint !',
+    insufficient_data: 'Données insuffisantes',
+    register_weight: 'Enregistrez votre poids pour voir la courbe',
+    copied: '✅ Copié !',
+    restored: '✅ Restauré avec succès !',
+    invalid_file: '⚠️ Fichier invalide !',
+    file_error: '⚠️ Erreur de lecture du fichier !',
+    image_saved: '📥 Image téléchargée !',
+    app_installed: '🎉 App installée !',
+    app_installed_ok: '🎉 App installée avec succès !',
+    offline: '📵 Hors ligne — mode offline',
+    online: '🌐 De retour en ligne',
+    share_unsupported: 'Partage non supporté — utilisez le téléchargement',
+    weight_range: '⚠️ Le poids doit être entre 40 et 300 kg',
+    never_backed_up: 'Vous n\'avez jamais sauvegardé — faites-le maintenant !',
+    last_backup_today: 'Dernière sauvegarde : aujourd\'hui ✅',
+    last_backup_yesterday: 'Dernière sauvegarde : hier',
+    last_backup_days: 'Dernière sauvegarde : il y a',
+    days_ago: 'jours',
+    wait: 'Patientez un instant...',
+    progress_with: 'Mes progrès avec Coach Anis',
+    avg_week: '📊 Moy.',
+    vs_prev_week: 'vs semaine précédente',
+    estimated: '· est.',
+    week: 'Semaine',
+    change: 'Variation',
+    average: 'Moyenne',
+    your_weight: 'Votre poids',
+    cal_today: 'Calories du jour',
+    pro_today: 'Protéines du jour',
+    current_weight: 'Poids actuel',
+    change_label: 'Variation',
+    app_title_full: 'App Coach Anis · My Tracker',
+    daily_progress: 'Ma progression quotidienne',
+    confirm_restore: 'Restaurer les données ? Les données actuelles seront remplacées.',
+    backup_saved: '💾 Sauvegarde enregistrée !',
+    need_7_days: 'Il faut au moins 7 jours entre le premier et le dernier enregistrement',
+    months: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+    days: ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
+  }
+};
+
+let currentLang = localStorage.getItem('trackerLang') || 'ar';
+
+function t(key) {
+  const pack = I18N[currentLang] || I18N.ar;
+  return (pack[key] !== undefined) ? pack[key] : (I18N.ar[key] || key);
+}
+
+function applyStaticI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key) el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (key) el.setAttribute('title', t(key));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (key) el.setAttribute('placeholder', t(key));
+  });
+}
+
+function setLanguage(lang) {
+  if (!I18N[lang]) lang = 'ar';
+  currentLang = lang;
+  localStorage.setItem('trackerLang', lang);
+  const html = document.documentElement;
+  html.setAttribute('lang', lang);
+  html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  const btn = document.getElementById('lang-btn');
+  if (btn) btn.textContent = lang.toUpperCase();
+  document.querySelectorAll('.lang-opt').forEach(o => {
+    o.classList.toggle('active', o.getAttribute('data-lang') === lang);
+  });
+  document.getElementById('lang-menu')?.classList.remove('show');
+  applyStaticI18n();
+  // refresh dynamic UI
+  try { if (typeof renderDays === 'function') renderDays(); } catch(e){}
+  try { if (typeof updateCalSummary === 'function') updateCalSummary(); } catch(e){}
+  try { if (typeof updateStickyBar === 'function') updateStickyBar(); } catch(e){}
+  try { if (typeof updateWgtSummary === 'function') updateWgtSummary(); } catch(e){}
+  try { if (typeof renderWgtList === 'function') renderWgtList(); } catch(e){}
+  try { if (typeof drawChart === 'function') setTimeout(drawChart, 40); } catch(e){}
+  try { if (typeof updateBackupLabel === 'function') updateBackupLabel(); } catch(e){}
+}
+
+function toggleLangMenu() {
+  const m = document.getElementById('lang-menu');
+  if (m) m.classList.toggle('show');
+}
+document.addEventListener('click', (e) => {
+  const m = document.getElementById('lang-menu');
+  const b = document.getElementById('lang-btn');
+  if (m && m.classList.contains('show') && !m.contains(e.target) && e.target !== b) {
+    m.classList.remove('show');
+  }
+});
 
 
 // ─── THEME ───
@@ -3089,7 +3515,10 @@ function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   applyTheme(cur === 'dark' ? 'light' : 'dark');
 }
-(function(){ applyTheme(localStorage.getItem('trackerTheme') || 'dark'); })();
+(function(){
+  applyTheme(localStorage.getItem('trackerTheme') || 'dark');
+  setLanguage(localStorage.getItem('trackerLang') || 'ar');
+})();
 
 // ─── SHARE PROGRESS CARD ───
 function openShareCard() {
@@ -3121,8 +3550,8 @@ function openShareCard() {
   ctx.fillText('🔥 Coach Anis Tracker', W/2, 55);
 
   const today = new Date();
-  const AR_M = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  const AR_D = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const AR_M = t('months');
+  const AR_D = t('days');
   ctx.font = '15px Cairo, sans-serif';
   ctx.fillStyle = mutedCol;
   ctx.fillText(AR_D[today.getDay()] + ' ' + today.getDate() + ' ' + AR_M[today.getMonth()], W/2, 85);
@@ -3138,11 +3567,11 @@ function openShareCard() {
   if (lastW !== null && startW !== null) diffW = Math.round((lastW - startW) * 10) / 10;
 
   const stats = [
-    { label: 'السعرات اليوم', value: Math.round(todayCal) + ' / ' + (calGoal||2500), color: '#FF8C42' },
-    { label: 'البروتين اليوم', value: Math.round(todayPro) + 'g / ' + (proGoal||150) + 'g', color: '#F5C842' },
-    { label: 'الوزن الحالي', value: lastW !== null ? lastW + ' KG' : '--', color: '#00D4AA' },
-    { label: 'التغيّر', value: diffW !== null ? ((diffW>0?'+':'') + diffW + ' KG') : '--', color: diffW !== null && (shareDir === 'gain' ? diffW > 0 : diffW < 0) ? '#00D4AA' : '#FF4D6D' },
-    { label: 'الهدف', value: targetW !== null ? targetW + ' KG' : '--', color: '#4DA6FF' }
+    { label: t('cal_today'), value: Math.round(todayCal) + ' / ' + (calGoal||2500), color: '#FF8C42' },
+    { label: t('pro_today'), value: Math.round(todayPro) + 'g / ' + (proGoal||150) + 'g', color: '#F5C842' },
+    { label: t('current_weight'), value: lastW !== null ? lastW + ' KG' : '--', color: '#00D4AA' },
+    { label: t('change_label'), value: diffW !== null ? ((diffW>0?'+':'') + diffW + ' KG') : '--', color: diffW !== null && (shareDir === 'gain' ? diffW > 0 : diffW < 0) ? '#00D4AA' : '#FF4D6D' },
+    { label: t('goal'), value: targetW !== null ? targetW + ' KG' : '--', color: '#4DA6FF' }
   ];
 
   stats.forEach((s, i) => {
@@ -3152,20 +3581,21 @@ function openShareCard() {
     if (ctx.roundRect) ctx.roundRect(40, y, W-80, 80, 16);
     else ctx.rect(40, y, W-80, 80);
     ctx.fill();
+    const isRTL = document.documentElement.getAttribute('dir') !== 'ltr';
     ctx.fillStyle = mutedCol;
     ctx.font = 'bold 14px Cairo, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(s.label, W - 60, y + 30);
+    ctx.textAlign = isRTL ? 'right' : 'left';
+    ctx.fillText(s.label, isRTL ? W - 60 : 60, y + 30);
     ctx.fillStyle = s.color;
     ctx.font = 'bold 26px Syne, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(s.value, 60, y + 58);
+    ctx.textAlign = isRTL ? 'left' : 'right';
+    ctx.fillText(s.value, isRTL ? 60 : W - 60, y + 58);
   });
 
   ctx.fillStyle = mutedCol;
   ctx.font = '13px Cairo, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('تطبيق المدرب أنيس · My Tracker', W/2, H - 30);
+  ctx.fillText(t('app_title_full'), W/2, H - 30);
 
   document.getElementById('share-modal').classList.add('show');
   window._shareBlob = null;
@@ -3193,16 +3623,16 @@ document.getElementById('btn-share-dl') && document.getElementById('btn-share-dl
   a.download = 'coach-anis-progress.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
-  if (typeof showToast === 'function') showToast('📥 تم تحميل الصورة!');
+  if (typeof showToast === 'function') showToast(t('image_saved'));
 });
 document.getElementById('btn-share-native') && document.getElementById('btn-share-native').addEventListener('click', async () => {
-  if (!window._shareBlob) { if (typeof showToast === 'function') showToast('انتظر قليلاً...'); return; }
+  if (!window._shareBlob) { if (typeof showToast === 'function') showToast(t('wait')); return; }
   const file = new File([window._shareBlob], 'coach-anis-progress.png', { type: 'image/png' });
   if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: 'تقدمي مع Coach Anis', text: 'تقدمي اليومي' }); } catch(e) {}
+    try { await navigator.share({ files: [file], title: t('progress_with'), text: 'تقدمي اليومي' }); } catch(e) {}
   } else if (navigator.share) {
-    try { await navigator.share({ title: 'تقدمي مع Coach Anis', text: 'تقدمي اليومي' }); } catch(e) {}
-  } else if (typeof showToast === 'function') showToast('المشاركة غير مدعومة — استخدم التحميل');
+    try { await navigator.share({ title: t('progress_with'), text: 'تقدمي اليومي' }); } catch(e) {}
+  } else if (typeof showToast === 'function') showToast(t('share_unsupported'));
 });
 
 
