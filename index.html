@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>My Tracker</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#06060A" id="meta-theme">
 <meta name="description" content="تتبع السعرات والوزن يومياً">
+<meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" sizes="180x180" href="/my-tracker/apple-touch-icon.png">
 <link rel="manifest" href="/my-tracker/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -36,14 +37,21 @@
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cairo', sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* ── Animated bg mesh ── */
@@ -183,18 +191,21 @@ body::after {
 
 .goal-input {
   flex: 1;
-  padding: 8px 10px;
+  padding: 10px 10px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg3);
   color: var(--text);
   font-family: 'Syne', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
   min-width: 0;
+  min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .goal-card.fire-card .goal-input:focus {
@@ -220,7 +231,7 @@ body::after {
 /* ── SUMMARY STRIP ── */
 .summary-strip {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -229,7 +240,7 @@ body::after {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 18px 14px;
+  padding: 14px 10px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -241,24 +252,33 @@ body::after {
 .strip-card.s1::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,var(--fire),var(--fire2)); }
 .strip-card.s4 { border-color: var(--border-gold); }
 .strip-card.s4::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,var(--gold),var(--gold2)); }
+.strip-card.s-carb { border-color: var(--border-teal); }
+.strip-card.s-carb::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,var(--teal),var(--teal2)); }
+.strip-card.s-fat { border-color: rgba(77,166,255,0.25); }
+.strip-card.s-fat::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,#4DA6FF,#7BC0FF); }
+.strip-card.s-fiber { border-color: rgba(167,139,250,0.25); }
+.strip-card.s-fiber::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; background:linear-gradient(90deg,#A78BFA,#C4B5FD); }
 
 .strip-card .sv {
   font-family: 'Syne', sans-serif;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
   margin-bottom: 5px;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 .strip-card .sl {
   font-size: 9px;
   color: var(--muted);
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   font-weight: 700;
 }
 .strip-card.s1 .sv { color: var(--fire2); }
 .strip-card.s4 .sv { color: var(--gold); }
+.strip-card.s-carb .sv { color: var(--teal); }
+.strip-card.s-fat .sv { color: #4DA6FF; }
+.strip-card.s-fiber .sv { color: #A78BFA; }
 
 /* ── SECTION LABEL ── */
 .section-label {
@@ -368,45 +388,99 @@ body::after {
 .sub-label.fire .sub-dot { background: var(--fire); }
 .sub-label.gold .sub-dot { background: var(--gold); }
 
-/* ── SLOTS GRID ── */
-.slots-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
+/* ── MEAL CARDS (new organized layout) ── */
+.meals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.slot-wrap { position: relative; padding-top: 14px; }
+.meal-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  position: relative;
+}
 
-.slot-label {
-  position: absolute;
-  top: 0; right: 6px;
-  font-size: 8px;
+.meal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.meal-title {
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 1.5px;
   color: var(--muted);
-  background: var(--bg2);
-  padding: 0 4px;
-  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.slot-input-wrap { display: flex; align-items: center; gap: 4px; }
+.btn-rm-slot {
+  background: none;
+  border: none;
+  color: var(--red);
+  opacity: .35;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity .2s;
+  padding: 2px 6px;
+}
+.btn-rm-slot:hover { opacity: 1; }
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.macro-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.macro-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.macro-label.cal { color: var(--fire2); }
+.macro-label.pro { color: var(--gold); }
+.macro-label.carb { color: var(--teal); }
+.macro-label.fat { color: #4DA6FF; }
+.macro-label.fiber { color: #A78BFA; }
 
 .slot-input {
   width: 100%;
-  padding: 10px 6px;
-  border-radius: 10px;
+  padding: 9px 3px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg3);
+  background: var(--bg2);
   color: var(--text);
   font-family: 'Syne', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-align: center;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
+  min-height: 40px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .slot-input::placeholder { color: rgba(255,255,255,0.08); }
+
+.slot-input.cal { border-color: rgba(255,95,31,0.15); }
+.slot-input.pro { border-color: rgba(245,200,66,0.15); }
+.slot-input.carb { border-color: rgba(0,212,170,0.15); }
+.slot-input.fat { border-color: rgba(77,166,255,0.15); }
+.slot-input.fiber { border-color: rgba(167,139,250,0.15); }
 
 .slot-input.cal:focus {
   border-color: rgba(255,95,31,0.5);
@@ -416,27 +490,25 @@ body::after {
   border-color: rgba(245,200,66,0.5);
   box-shadow: 0 0 0 3px rgba(245,200,66,0.08);
 }
-.slot-input.cal { border-color: rgba(255,95,31,0.15); }
-.slot-input.pro { border-color: rgba(245,200,66,0.15); }
-
-.btn-rm-slot {
-  background: none;
-  border: none;
-  color: var(--red);
-  opacity: .3;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: opacity .2s;
-  flex-shrink: 0;
+.slot-input.carb:focus {
+  border-color: rgba(0,212,170,0.5);
+  box-shadow: 0 0 0 3px rgba(0,212,170,0.08);
 }
-.btn-rm-slot:hover { opacity: 1; }
+.slot-input.fat:focus {
+  border-color: rgba(77,166,255,0.5);
+  box-shadow: 0 0 0 3px rgba(77,166,255,0.08);
+}
+.slot-input.fiber:focus {
+  border-color: rgba(167,139,250,0.5);
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.08);
+}
 
 /* ── PROGRESS BAR ── */
 .prog-wrap {
   height: 4px;
   background: rgba(255,255,255,0.04);
   border-radius: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 .prog-bar {
@@ -459,12 +531,14 @@ body::after {
   border: 1px dashed rgba(255,255,255,0.08);
   color: var(--muted);
   border-radius: 10px;
-  padding: 8px 16px;
+  padding: 12px 16px;
   font-family: 'Cairo', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: all .2s;
+  width: 100%;
+  min-height: 44px;
 }
 .btn-add-slot:hover {
   border-color: var(--fire2);
@@ -528,17 +602,20 @@ body::after {
 
 .wgt-goal-input {
   width: 100%;
-  padding: 9px 10px;
+  padding: 11px 10px;
   border-radius: 10px;
   border: 1px solid rgba(0,212,170,0.2);
   background: var(--bg3);
   color: var(--text);
   font-family: 'Syne', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   text-align: center;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
+  min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .wgt-goal-input:focus {
   border-color: rgba(0,212,170,0.5);
@@ -850,13 +927,14 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 10px 16px;
+  padding-top: calc(10px + env(safe-area-inset-top));
   background: rgba(6,6,10,0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   transition: all .3s ease;
-  gap: 12px;
+  gap: 10px;
 }
 .cal-sticky-bar.hidden {
   transform: translateY(-100%);
@@ -1032,12 +1110,43 @@ body::after {
 }
 .pwa-toast.show { opacity: 1; }
 
-/* ── Responsive ── */
+/* ── Responsive / Mobile ── */
 @media(max-width:480px) {
-  .tabs { padding: 16px 12px 0; gap:6px; }
-  .panel { padding-left: 12px; padding-right: 12px; }
-  .goals-row { grid-template-columns: 1fr; }
-  .wgt-goals-row { grid-template-columns: 1fr; }
+  .tabs { padding: 12px 10px 0; gap: 6px; }
+  .tab-btn { padding: 12px 6px; font-size: 0.8rem; border-radius: 12px; }
+  .panel { padding: 14px 10px 90px; }
+  .goals-row { grid-template-columns: 1fr; gap: 8px; }
+  .wgt-goals-row { grid-template-columns: 1fr; gap: 8px; }
+  .summary-strip { grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap: 8px; }
+  .strip-card { padding: 12px 8px; border-radius: 14px; }
+  .strip-card .sv { font-size: 18px; }
+  .strip-card .sl { font-size: 8px; letter-spacing: 1px; }
+  .macro-grid { gap: 4px; }
+  .slot-input { padding: 9px 2px; font-size: 0.9rem; border-radius: 8px; }
+  .macro-label { font-size: 8px; letter-spacing: 0.3px; }
+  .meal-card { padding: 10px; border-radius: 12px; }
+  .meal-title { font-size: 11px; }
+  .day-card-body { padding: 12px 12px; }
+  .day-card-header { padding: 12px 12px 0; }
+  .sub-label { font-size: 8px; margin-bottom: 8px; }
+  .btn-add-slot { padding: 10px; font-size: 0.85rem; }
+  .goal-card { padding: 12px 14px; }
+  .goal-input { font-size: 1.3rem; }
+  .wgt-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wgt-card { padding: 12px 8px; }
+  .wgt-val { font-size: 1.2rem; }
+  .cal-sticky-bar { padding: 8px 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .csb-val { font-size: 0.95rem; }
+  .csb-label { font-size: 8px; }
+}
+
+/* Extra small phones */
+@media(max-width:360px) {
+  .macro-grid { grid-template-columns: repeat(5, 1fr); gap: 3px; }
+  .slot-input { font-size: 0.82rem; padding: 8px 1px; }
+  .macro-label { font-size: 7px; }
+  .summary-strip { grid-template-columns: repeat(3, 1fr); }
+  .tab-btn { font-size: 0.75rem; padding: 11px 4px; }
 }
 
 /* ── Motivational Banner ── */
@@ -1553,7 +1662,7 @@ body { transition: background .3s, color .3s; }
 <div class="pwa-toast" id="pwa-toast"></div>
 
 <!-- ── BACKUP REMINDER BANNER ── -->
-<div class="tabs" style="margin-top:58px">
+<div class="tabs" style="margin-top: calc(52px + env(safe-area-inset-top))">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
   <button class="tab-btn" onclick="switchTab('tools')">⚙️ أدوات</button>
@@ -1583,11 +1692,23 @@ body { transition: background .3s, color .3s; }
   <div class="summary-strip">
     <div class="strip-card s1">
       <div class="sv" id="sum-total">0</div>
-      <div class="sl">إجمالي السعرات</div>
+      <div class="sl">السعرات</div>
     </div>
     <div class="strip-card s4">
-      <div class="sv" id="sum-protein">0<span style="font-size:15px;font-weight:700">g</span></div>
-      <div class="sl">إجمالي البروتين</div>
+      <div class="sv" id="sum-protein">0<span style="font-size:13px;font-weight:700">g</span></div>
+      <div class="sl">بروتين</div>
+    </div>
+    <div class="strip-card s-carb">
+      <div class="sv" id="sum-carb">0<span style="font-size:13px;font-weight:700">g</span></div>
+      <div class="sl">كارب</div>
+    </div>
+    <div class="strip-card s-fat">
+      <div class="sv" id="sum-fat">0<span style="font-size:13px;font-weight:700">g</span></div>
+      <div class="sl">دهون</div>
+    </div>
+    <div class="strip-card s-fiber">
+      <div class="sv" id="sum-fiber">0<span style="font-size:13px;font-weight:700">g</span></div>
+      <div class="sl">ألياف</div>
     </div>
   </div>
 
@@ -1726,7 +1847,7 @@ body { transition: background .3s, color .3s; }
 <script>
 // ─── STORAGE ───
 const KEY_CAL = 'trackerCalories_v2';
-const KEY_WGT = 'trackerWeight_v2';
+const KEY_WGT = 'trackerWeight_v3';
 const saveCalData = d => { try { localStorage.setItem(KEY_CAL, JSON.stringify(d)); } catch(e){} };
 const loadCalData = () => { try { return JSON.parse(localStorage.getItem(KEY_CAL)) || []; } catch(e){ return []; } };
 const saveWgtData = d => { try { localStorage.setItem(KEY_WGT, JSON.stringify(d)); } catch(e){} };
@@ -1777,13 +1898,24 @@ function saveProGoal() {
 }
 
 // ─── CALORIES ───
+const emptySlot = () => ({cal:'', pro:'', carb:'', fat:'', fiber:''});
+function normalizeSlot(s) {
+  if (typeof s !== 'object' || s === null) return { cal: s || '', pro: '', carb: '', fat: '', fiber: '' };
+  return {
+    cal: s.cal ?? '',
+    pro: s.pro ?? '',
+    carb: s.carb ?? '',
+    fat: s.fat ?? '',
+    fiber: s.fiber ?? ''
+  };
+}
 let calDays = loadCalData();
 calDays = calDays.map(day => ({
   ...day,
-  slots: day.slots.map(s => (typeof s === 'object' && s !== null) ? s : { cal: s, pro: '' })
+  slots: (day.slots || []).map(normalizeSlot)
 }));
 if(!calDays.length) {
-  calDays = [{ id: Date.now(), date: todayStr(), slots: Array(5).fill(null).map(()=>({cal:'',pro:''})) }];
+  calDays = [{ id: Date.now(), date: todayStr(), slots: Array(5).fill(null).map(emptySlot) }];
   saveCalData(calDays);
 }
 
@@ -1794,14 +1926,14 @@ function removeDay(id) {
 }
 function resetDay() {
   if(calDays.length > 0) {
-    calDays[0].slots = Array(5).fill(null).map(()=>({cal:'',pro:''}));
+    calDays[0].slots = Array(5).fill(null).map(emptySlot);
     saveCalData(calDays);
     renderDays();
   }
 }
 function addSlot(id) {
   const day = calDays.find(d => d.id === id);
-  if(day) { day.slots.push({cal:'',pro:''}); saveCalData(calDays); renderDays(); }
+  if(day) { day.slots.push(emptySlot()); saveCalData(calDays); renderDays(); }
 }
 function removeSlot(id, idx) {
   const day = calDays.find(d => d.id === id);
@@ -1814,14 +1946,20 @@ function updateSlot(id, idx, field, val) {
     saveCalData(calDays);
     const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
     const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
+    const totalCarb = day.slots.reduce((a, s) => a + (parseFloat(s.carb)||0), 0);
+    const totalFat = day.slots.reduce((a, s) => a + (parseFloat(s.fat)||0), 0);
+    const totalFiber = day.slots.reduce((a, s) => a + (parseFloat(s.fiber)||0), 0);
     const badge  = document.querySelector(`[data-badge="${id}"]`);
     const bar    = document.querySelector(`[data-bar="${id}"]`);
     const barPro = document.querySelector(`[data-bar-pro="${id}"]`);
-    if(badge) badge.innerHTML = (totalCal > 0 ? totalCal.toLocaleString() : '0') + ' CAL' +
-      (totalPro > 0 ? `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>` : '');
+    if(badge) {
+      let html = (totalCal > 0 ? totalCal.toLocaleString() : '0') + ' CAL';
+      if(totalPro > 0) html += `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>`;
+      badge.innerHTML = html;
+    }
     if(bar)    bar.style.width    = Math.min((totalCal / (calGoal || 2500)) * 100, 100) + '%';
     if(barPro) barPro.style.width = Math.min((totalPro / (proGoal || 150))  * 100, 100) + '%';
-    updateDaySummary(id, totalCal, totalPro);
+    updateDaySummary(id, totalCal, totalPro, totalCarb, totalFat, totalFiber);
     updateCalSummary();
     updateMotivBanner();
   }
@@ -1833,6 +1971,9 @@ function renderDays() {
   calDays.forEach(day => {
     const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
     const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
+    const totalCarb = day.slots.reduce((a, s) => a + (parseFloat(s.carb)||0), 0);
+    const totalFat = day.slots.reduce((a, s) => a + (parseFloat(s.fat)||0), 0);
+    const totalFiber = day.slots.reduce((a, s) => a + (parseFloat(s.fiber)||0), 0);
     const pct    = Math.min((totalCal / (calGoal || 2500)) * 100, 100);
     const proPct = Math.min((totalPro / (proGoal || 150))  * 100, 100);
     const dayNum = calDays.indexOf(day) + 1;
@@ -1841,7 +1982,7 @@ function renderDays() {
     const remPro = (proGoal || 150) - totalPro;
 
     // Smart summary pills
-    let calPill = '', proPill = '';
+    let calPill = '', proPill = '', macrosPill = '';
     if(totalCal === 0) {
       calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
     } else if(remCal > 0) {
@@ -1859,6 +2000,9 @@ function renderDays() {
       proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
     } else {
       proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
+    }
+    if(totalCarb > 0 || totalFat > 0 || totalFiber > 0) {
+      macrosPill = `<div class="day-sum-pill ok" style="border-color:rgba(0,212,170,0.2)">🥗 كارب ${totalCarb}g · دهون ${totalFat}g · ألياف ${totalFiber}g</div>`;
     }
 
     const card = document.createElement('div');
@@ -1878,44 +2022,54 @@ function renderDays() {
         </div>
       </div>
       <div class="day-card-body">
-        <div class="day-summary" data-summary="${day.id}">${calPill}${proPill}</div>
+        <div class="day-summary" data-summary="${day.id}">${calPill}${proPill}${macrosPill}</div>
 
         <div class="sub-label fire">
           <div class="sub-dot"></div>
-          السعرات · CALORIES
+          الوجبات · MEALS
         </div>
-        <div class="slots-grid" id="slots-${day.id}">
+        <div class="meals-list" id="meals-${day.id}">
           ${day.slots.map((s, i) => `
-            <div class="slot-wrap">
-              <span class="slot-label">وجبة ${i+1}</span>
-              <div class="slot-input-wrap">
-                <input class="slot-input cal" type="number" value="${s.cal}" placeholder="0"
-                  oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
+            <div class="meal-card">
+              <div class="meal-header">
+                <span class="meal-title">وجبة ${i+1}</span>
                 ${day.slots.length > 1 ? `<button class="btn-rm-slot" onclick="removeSlot(${day.id},${i})">✕</button>` : ''}
+              </div>
+              <div class="macro-grid">
+                <div class="macro-item">
+                  <span class="macro-label cal">سعرات</span>
+                  <input class="slot-input cal" type="number" value="${s.cal || ''}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
+                </div>
+                <div class="macro-item">
+                  <span class="macro-label pro">بروتين</span>
+                  <input class="slot-input pro" type="number" value="${s.pro || ''}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
+                </div>
+                <div class="macro-item">
+                  <span class="macro-label carb">كارب</span>
+                  <input class="slot-input carb" type="number" value="${s.carb || ''}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'carb', this.value)" min="0" />
+                </div>
+                <div class="macro-item">
+                  <span class="macro-label fat">دهون</span>
+                  <input class="slot-input fat" type="number" value="${s.fat || ''}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'fat', this.value)" min="0" />
+                </div>
+                <div class="macro-item">
+                  <span class="macro-label fiber">ألياف</span>
+                  <input class="slot-input fiber" type="number" value="${s.fiber || ''}" placeholder="0"
+                    oninput="updateSlot(${day.id}, ${i}, 'fiber', this.value)" min="0" />
+                </div>
               </div>
             </div>
           `).join('')}
         </div>
+
         <div class="prog-wrap">
           <div class="prog-bar fire" data-bar="${day.id}" style="width:${pct}%"></div>
         </div>
-
-        <div class="sub-label gold">
-          <div class="sub-dot"></div>
-          البروتين · PROTEIN
-        </div>
-        <div class="slots-grid" id="pro-slots-${day.id}">
-          ${day.slots.map((s, i) => `
-            <div class="slot-wrap">
-              <span class="slot-label" style="color:var(--gold)">وجبة ${i+1}</span>
-              <div class="slot-input-wrap">
-                <input class="slot-input pro" type="number" value="${s.pro}" placeholder="0"
-                  oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
-              </div>
-            </div>
-          `).join('')}
-        </div>
-        <div class="prog-wrap">
+        <div class="prog-wrap" style="margin-bottom:14px">
           <div class="prog-bar gold" data-bar-pro="${day.id}" style="width:${proPct}%"></div>
         </div>
 
@@ -1933,16 +2087,22 @@ function renderDays() {
 function updateCalSummary() {
   const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.cal)||0), 0), 0);
   const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
+  const totalCarb = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.carb)||0), 0), 0);
+  const totalFat  = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.fat)||0), 0), 0);
+  const totalFiber= calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.fiber)||0), 0), 0);
   document.getElementById('sum-total').textContent = totalCals.toLocaleString();
-  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:15px;font-weight:700">g</span>';
+  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
+  document.getElementById('sum-carb').innerHTML = totalCarb.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
+  document.getElementById('sum-fat').innerHTML = totalFat.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
+  document.getElementById('sum-fiber').innerHTML = totalFiber.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
 }
 
-function updateDaySummary(id, totalCal, totalPro) {
+function updateDaySummary(id, totalCal, totalPro, totalCarb = 0, totalFat = 0, totalFiber = 0) {
   const container = document.querySelector(`[data-summary="${id}"]`);
   if(!container) return;
   const remCal = (calGoal || 2500) - totalCal;
   const remPro = (proGoal || 150) - totalPro;
-  let calPill, proPill;
+  let calPill, proPill, macrosPill = '';
   if(totalCal === 0) calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
   else if(remCal > 0) calPill = `<div class="day-sum-pill ok">🔥 متبقي ${remCal.toLocaleString()} kcal</div>`;
   else if(remCal === 0) calPill = `<div class="day-sum-pill warn">🎯 وصلت للهدف بالضبط!</div>`;
@@ -1951,7 +2111,10 @@ function updateDaySummary(id, totalCal, totalPro) {
   else if(remPro > 0) proPill = `<div class="day-sum-pill ok">💪 متبقي ${remPro}g بروتين</div>`;
   else if(remPro === 0) proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
   else proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
-  container.innerHTML = calPill + proPill;
+  if(totalCarb > 0 || totalFat > 0 || totalFiber > 0) {
+    macrosPill = `<div class="day-sum-pill ok" style="border-color:rgba(0,212,170,0.2)">🥗 كارب ${totalCarb}g · دهون ${totalFat}g · ألياف ${totalFiber}g</div>`;
+  }
+  container.innerHTML = calPill + proPill + macrosPill;
 }
 
 function updateMotivBanner() {
@@ -1962,6 +2125,9 @@ function exportData() {
   const today     = calDays[0];
   const totalCal  = today ? today.slots.reduce((a,s) => a+(parseFloat(s.cal)||0), 0) : 0;
   const totalPro  = today ? today.slots.reduce((a,s) => a+(parseFloat(s.pro)||0), 0) : 0;
+  const totalCarb = today ? today.slots.reduce((a,s) => a+(parseFloat(s.carb)||0), 0) : 0;
+  const totalFat  = today ? today.slots.reduce((a,s) => a+(parseFloat(s.fat)||0), 0) : 0;
+  const totalFiber= today ? today.slots.reduce((a,s) => a+(parseFloat(s.fiber)||0), 0) : 0;
   const entries   = getSortedEntries();
   const lastWgt   = entries.length ? entries[entries.length-1][1] : null;
   const start     = wgtData.startWeight;
@@ -1990,7 +2156,8 @@ ${line}
 🔥 السعرات: ${totalCal.toLocaleString()} / ${(calGoal||2500).toLocaleString()} kcal
 📌 ${calStatus}
 ${line}
-💪 البروتين: ${totalPro}g / ${proGoal||150}g${wgtLines}
+💪 البروتين: ${totalPro}g / ${proGoal||150}g
+🥗 كارب: ${totalCarb}g · دهون: ${totalFat}g · ألياف: ${totalFiber}g${wgtLines}
 ${line}
 by @coach__anis`;
 
@@ -2793,7 +2960,7 @@ function restoreData(event) {
 
       calDays = payload.calDays.map(day => ({
         ...day,
-        slots: day.slots.map(s => (typeof s === 'object' && s !== null) ? s : { cal: s, pro: '' })
+        slots: (day.slots || []).map(normalizeSlot)
       }));
       wgtData = payload.wgtData;
       if (!wgtData.weights) wgtData.weights = {};
