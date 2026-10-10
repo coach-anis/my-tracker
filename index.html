@@ -1046,7 +1046,9 @@ body::after {
   pointer-events: none;
 }
 .welcome-overlay.hide {
-  animation: fadeOut .5s ease both;
+  animation: fadeOut .4s ease both;
+  pointer-events: none !important;
+  opacity: 0;
 }
 @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
 @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
@@ -2958,14 +2960,16 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('online',  () => showToast(t('online')));
 }
 
-// رسالة الترحيب المركزية
-window.addEventListener('load', () => {
+// رسالة الترحيب المركزية — تظهر ثانية واحدة فقط
+function hideWelcome() {
   const overlay = document.getElementById('welcome-overlay');
-  setTimeout(() => {
-    overlay.classList.add('hide');
-    setTimeout(() => overlay.remove(), 500);
-  }, 1100);
-});
+  if (!overlay) return;
+  overlay.classList.add('hide');
+  setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 400);
+}
+window.addEventListener('load', () => setTimeout(hideWelcome, 1000));
+// احتياطي: إخفاء حتى لو تأخر load
+setTimeout(hideWelcome, 1500);
 
 // ─── PWA INSTALL PROMPT ───
 let _deferredPrompt = null;
@@ -3208,7 +3212,7 @@ const I18N = {
     wait: 'انتظر قليلاً...',
     progress_with: 'تقدمي مع Coach Anis',
     avg_week: '📊 متوسط',
-    vs_prev_week: '${t('vs_prev_week')}',
+    vs_prev_week: 'عن الأسبوع السابق',
     estimated: '· تقديري',
     week: 'الأسبوع',
     change: 'التغيّر',
