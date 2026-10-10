@@ -143,14 +143,14 @@ body::after {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .goal-card {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 16px;
+  border-radius: 14px;
+  padding: 12px 12px;
   transition: border-color .2s;
   position: relative;
   overflow: hidden;
@@ -177,10 +177,10 @@ body::after {
   display: block;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .goal-input-row {
@@ -928,7 +928,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  padding-top: calc(10px + env(safe-area-inset-top));
+  padding-top: calc(14px + env(safe-area-inset-top));
   background: rgba(6,6,10,0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1115,7 +1115,7 @@ body::after {
   .tabs { padding: 12px 10px 0; gap: 6px; }
   .tab-btn { padding: 12px 6px; font-size: 0.8rem; border-radius: 12px; }
   .panel { padding: 14px 10px 90px; }
-  .goals-row { grid-template-columns: 1fr; gap: 8px; }
+  .goals-row { grid-template-columns: 1fr 1fr; gap: 8px; }
   .wgt-goals-row { grid-template-columns: 1fr; gap: 8px; }
   .summary-strip { grid-template-columns: repeat(auto-fit, minmax(85px, 1fr)); gap: 8px; }
   .strip-card { padding: 12px 8px; border-radius: 14px; }
@@ -1130,12 +1130,14 @@ body::after {
   .day-card-header { padding: 12px 12px 0; }
   .sub-label { font-size: 8px; margin-bottom: 8px; }
   .btn-add-slot { padding: 10px; font-size: 0.85rem; }
-  .goal-card { padding: 12px 14px; }
-  .goal-input { font-size: 1.3rem; }
+  .goal-card { padding: 10px 10px; border-radius: 14px; }
+  .goal-card label { font-size: 8px; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .goal-input { font-size: 1.15rem; padding: 8px 6px; min-height: 40px; }
+  .goal-unit { font-size: 8px; }
   .wgt-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
   .wgt-card { padding: 12px 8px; }
   .wgt-val { font-size: 1.2rem; }
-  .cal-sticky-bar { padding: 8px 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .cal-sticky-bar { padding: 8px 12px; padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
   .csb-val { font-size: 0.95rem; }
   .csb-label { font-size: 8px; }
 }
@@ -1546,7 +1548,10 @@ body::after {
 }
 body { transition: background .3s, color .3s; }
 .theme-btn {
-  position: fixed; top: 14px; left: 14px; z-index: 200;
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 12px;
+  z-index: 200;
   width: 40px; height: 40px; border-radius: 12px;
   border: 1px solid var(--border); background: var(--bg2);
   color: var(--text); font-size: 1.15rem; cursor: pointer;
@@ -1599,6 +1604,125 @@ body { transition: background .3s, color .3s; }
 }
 .btn-share:hover { background: rgba(0,212,170,0.15); }
 
+
+/* ═══════════ REDESIGN LAYER v3 — soft elevation, no outlines ═══════════ */
+:root{
+  --fire:#FF7B54; --fire2:#FFA24D; --gold:#F6C85F; --gold2:#FFE08A;
+  --teal:#2FD3B0; --teal2:#5BE8C8; --blue:#5BA8FF; --red:#FF5A74;
+  --bg:#0F1420; --bg2:#171D2B; --bg3:#1F2637; --bg4:#2A3249;
+  --text:#EEF1F8; --muted:#8C95AC;
+  --border:transparent; --border-fire:transparent; --border-gold:transparent; --border-teal:transparent;
+  --sh:0 20px 40px -22px rgba(0,0,0,.65); --sh-sm:0 8px 18px -12px rgba(0,0,0,.55);
+  --c-pro:#F6C85F; --c-carb:#5BA8FF; --c-fat:#F58AB5; --c-fiber:#5ED6A4;
+}
+[data-theme="light"]{
+  --fire:#E2582B; --fire2:#F58A3C; --gold:#B98512; --gold2:#D9A62A;
+  --teal:#0E9F85; --teal2:#17B89B; --blue:#2F7FE0; --red:#D6365A;
+  --bg:#F3F4F8; --bg2:#FFFFFF; --bg3:#EEF1F7; --bg4:#E1E5EF;
+  --text:#171B2A; --muted:#636B80;
+  --sh:0 18px 36px -22px rgba(40,50,90,.35); --sh-sm:0 6px 14px -10px rgba(40,50,90,.3);
+  --c-pro:#B98512; --c-carb:#2F7FE0; --c-fat:#D1457F; --c-fiber:#169A6A;
+}
+body{background:var(--bg);}
+body::before{background:radial-gradient(ellipse 70% 32% at 50% 0%,rgba(255,123,84,.07),transparent 65%);}
+body::after{display:none;}
+body *{letter-spacing:normal !important;}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+
+/* navigation */
+.tabs{background:var(--bg2);padding:4px;border-radius:18px;box-shadow:var(--sh-sm);gap:4px;width:calc(100% - 32px);}
+.tab-btn{border:0;background:transparent;box-shadow:none;color:var(--muted);border-radius:14px;padding:11px 6px;font-size:.85rem;}
+.tab-btn[class*="active-"]{background:var(--bg4);color:var(--text);box-shadow:var(--sh-sm);}
+.theme-btn{border:0;box-shadow:var(--sh-sm);}
+.panel{padding-top:16px;}
+
+/* dashboard */
+.dash{background:linear-gradient(155deg,var(--bg3),var(--bg2));border-radius:28px;padding:20px 18px 12px;box-shadow:var(--sh);}
+.dash-date{font-size:1.02rem;font-weight:800;margin-bottom:14px;}
+.dash-hero{display:flex;align-items:center;gap:18px;}
+.ring-wrap{position:relative;width:136px;height:136px;flex:none;}
+.ring{width:100%;height:100%;display:block;}
+.ring-bg{fill:none;stroke:var(--bg4);stroke-width:11;}
+.ring-fg{fill:none;stroke:url(#rg);stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.3,.8,.3,1),stroke .3s;}
+.dash.warn .ring-fg{stroke:var(--gold);} .dash.over .ring-fg{stroke:var(--red);}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-num{font-size:1.95rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;}
+.dash.over .ring-num{color:var(--red);}
+.ring-lbl{font-size:.7rem;color:var(--muted);margin-top:5px;font-weight:600;}
+.dash-stats{flex:1;display:grid;gap:14px;}
+.dstat span{display:block;font-size:.75rem;color:var(--muted);font-weight:600;}
+.dstat b{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.dstat b small{font-size:.7rem;color:var(--muted);font-weight:600;margin-right:4px;}
+.dash-pro{margin-top:22px;}
+.dp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:.85rem;font-weight:800;}
+.dp-top span{color:var(--muted);font-weight:600;}
+.dp-top b{font-variant-numeric:tabular-nums;}
+.dp-bar{height:8px;border-radius:99px;background:var(--bg4);overflow:hidden;}
+.dp-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s;}
+.dash-sub{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px;}
+.ds{text-align:center;}
+.ds b{display:block;font-size:1.08rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.ds span{font-size:.72rem;color:var(--muted);font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+.ds span::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--dc);}
+.goals-fold{margin-top:10px;}
+.goals-fold summary{cursor:pointer;color:var(--muted);font-size:.78rem;font-weight:700;list-style:none;padding:10px 0;text-align:center;}
+.goals-fold summary::-webkit-details-marker{display:none;}
+.goal-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:2px 0 10px;}
+.gf label{display:block;font-size:.75rem;color:var(--muted);font-weight:700;margin-bottom:6px;}
+.goal-input{border:0 !important;background:var(--bg4);color:var(--text);font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:700;border-radius:12px;width:100%;}
+.goal-input:focus{box-shadow:0 0 0 2px var(--teal) !important;}
+
+/* meals */
+.day-head{display:flex;align-items:center;gap:10px;margin:26px 4px 12px;}
+.day-title{font-size:1rem;font-weight:800;flex:1;}
+.day-sum{font-size:.78rem;color:var(--muted);font-weight:600;}
+.day-rm{background:none;border:0;color:var(--muted);cursor:pointer;font-size:.95rem;padding:6px 10px;border-radius:10px;}
+.day-rm:hover{color:var(--red);background:var(--bg2);}
+.meals{display:grid;gap:10px;}
+.meal{background:var(--bg2);border-radius:20px;box-shadow:var(--sh-sm);overflow:hidden;}
+.meal-head{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:none;border:0;color:var(--text);font-family:inherit;text-align:right;cursor:pointer;}
+.meal-name{font-size:.82rem;font-weight:700;color:var(--muted);min-width:52px;}
+.meal-sum{flex:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 8px;}
+.meal-sum b{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.meal-sum small{font-size:.7rem;color:var(--muted);font-weight:600;margin-right:-4px;}
+.chip{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);}
+.chip.pro{--c:var(--c-pro);} .chip.carb{--c:var(--c-carb);} .chip.fat{--c:var(--c-fat);} .chip.fiber{--c:var(--c-fiber);}
+.chev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;flex:none;margin-left:4px;}
+.meal.open .chev{transform:rotate(-135deg);}
+.meal-edit{display:none;padding:2px 16px 16px;}
+.meal.open .meal-edit{display:block;}
+.macro-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.macro-item{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.macro-label{font-size:.7rem;font-weight:700;text-align:center;color:var(--muted);}
+.macro-label.cal{color:var(--fire);} .macro-label.pro{color:var(--c-pro);} .macro-label.carb{color:var(--c-carb);} .macro-label.fat{color:var(--c-fat);} .macro-label.fiber{color:var(--c-fiber);}
+.meal .slot-input{border:0;background:var(--bg3);color:var(--text);border-radius:12px;text-align:center;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:700;padding:11px 2px;width:100%;min-width:0;box-shadow:none;}
+.meal .slot-input:focus{box-shadow:0 0 0 2px var(--rc,var(--teal));outline:none;}
+.meal .slot-input.cal{--rc:var(--fire);} .meal .slot-input.pro{--rc:var(--c-pro);} .meal .slot-input.carb{--rc:var(--c-carb);} .meal .slot-input.fat{--rc:var(--c-fat);} .meal .slot-input.fiber{--rc:var(--c-fiber);}
+.meal-del{margin-top:12px;background:none;border:0;color:var(--muted);font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;padding:6px 0;}
+.meal-del:hover{color:var(--red);}
+.meal-add{width:100%;padding:15px;border-radius:20px;border:0;background:var(--bg3);color:var(--muted);font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .2s,color .2s;}
+.meal-add:hover,.meal-add:active{background:var(--bg4);color:var(--text);}
+
+/* sticky bar */
+.cal-sticky-bar{background:var(--bg2);background:color-mix(in srgb,var(--bg2) 88%,transparent);border:0;box-shadow:var(--sh-sm);}
+.csb-val{font-family:'Cairo',sans-serif;}
+
+/* weight + tools: same system, no outlines */
+.tools-card,.backup-section,.wgt-goal-card,.wgt-card,.journey-card,.predict-card,.predict-warn-card,.wgt-chart-wrap,.wk-avg-card,.pwa-banner,.share-modal-box{
+  border:0 !important;background:linear-gradient(155deg,var(--bg3),var(--bg2));box-shadow:var(--sh-sm);border-radius:22px;}
+.wgt-card::before,.wgt-card::after,.journey-card::before,.predict-card::before{display:none;}
+.wgt-row,.wgt-row.week-start,.wgt-row.week-end{border:0 !important;background:var(--bg2);border-radius:14px;box-shadow:var(--sh-sm);}
+.wgt-goal-input,.wgt-row-input{border:0 !important;background:var(--bg3);color:var(--text);border-radius:12px;}
+.wgt-goal-input:focus,.wgt-row-input:focus{box-shadow:0 0 0 2px var(--teal);outline:none;}
+.section-label,.tools-card-title,.backup-title,.wgt-chart-title{font-size:.9rem !important;font-weight:800;color:var(--text);text-transform:none;margin-bottom:12px;}
+.btn-share,.btn-export,.btn-reset,.btn-backup,.btn-restore,.btn-share-dl,.btn-pwa-dismiss{border:0 !important;background:var(--bg4);color:var(--text);border-radius:14px;font-family:'Cairo',sans-serif;font-weight:700;padding:14px;cursor:pointer;}
+.btn-export,.btn-reset,.btn-share{display:block;width:100%;}
+.btn-share,.btn-backup,.btn-share-do,.btn-pwa-install{background:linear-gradient(135deg,var(--teal2),var(--teal)) !important;color:#04221B !important;}
+.btn-reset{color:var(--red);background:var(--bg3);}
+.pwa-toast{border:0;box-shadow:var(--sh);}
+.welcome-overlay{background:var(--bg);}
+@media(max-width:360px){.macro-grid{gap:5px}.ring-wrap{width:116px;height:116px}.ring-num{font-size:1.6rem}}
 </style>
 </head>
 <body>
@@ -1662,7 +1786,7 @@ body { transition: background .3s, color .3s; }
 <div class="pwa-toast" id="pwa-toast"></div>
 
 <!-- ── BACKUP REMINDER BANNER ── -->
-<div class="tabs" style="margin-top: calc(52px + env(safe-area-inset-top))">
+<div class="tabs" style="margin-top: calc(58px + env(safe-area-inset-top))">
   <button class="tab-btn active-cal" onclick="switchTab('cal')">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')">⚖️ الوزن</button>
   <button class="tab-btn" onclick="switchTab('tools')">⚙️ أدوات</button>
@@ -1670,74 +1794,60 @@ body { transition: background .3s, color .3s; }
 
 <!-- ═══ CALORIES PANEL ═══ -->
 <div class="panel active" id="panel-cal">
-  <div style="height:16px"></div>
-
-  <div class="goals-row">
-    <div class="goal-card fire-card">
-      <label>هدف السعرات اليومي</label>
-      <div class="goal-input-row">
-        <input class="goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" />
-        <span class="goal-unit">KCAL</span>
+  <section class="dash ok" id="dash">
+    <div class="dash-date" id="dash-date">--</div>
+    <div class="dash-hero">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--fire2)"/><stop offset="1" style="stop-color:var(--fire)"/></linearGradient></defs>
+          <circle class="ring-bg" cx="70" cy="70" r="58"/>
+          <circle class="ring-fg" id="ring-fg" cx="70" cy="70" r="58" transform="rotate(-90 70 70)"/>
+        </svg>
+        <div class="ring-center"><div class="ring-num" id="ring-num">0</div><div class="ring-lbl" id="ring-lbl">kcal متبقي</div></div>
+      </div>
+      <div class="dash-stats">
+        <div class="dstat"><span>تناولت</span><b><span id="dash-eaten" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
+        <div class="dstat"><span>الهدف</span><b><span id="dash-goal" style="display:inline;font-size:inherit;color:inherit;font-weight:inherit">0</span><small>kcal</small></b></div>
       </div>
     </div>
-    <div class="goal-card gold-card">
-      <label>هدف البروتين اليومي</label>
-      <div class="goal-input-row">
-        <input class="goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" />
-        <span class="goal-unit">G</span>
+    <div class="dash-pro">
+      <div class="dp-top"><span>البروتين</span><b id="m-pro">0 / 150g</b></div>
+      <div class="dp-bar"><i id="m-pro-bar"></i></div>
+    </div>
+    <div class="dash-sub">
+      <div class="ds" style="--dc:var(--c-carb)"><b id="m-carb">0g</b><span>كارب</span></div>
+      <div class="ds" style="--dc:var(--c-fat)"><b id="m-fat">0g</b><span>دهون</span></div>
+      <div class="ds" style="--dc:var(--c-fiber)"><b id="m-fiber">0g</b><span>ألياف</span></div>
+    </div>
+    <details class="goals-fold">
+      <summary>تعديل الأهداف اليومية</summary>
+      <div class="goal-fields">
+        <div class="gf"><label for="cal-goal">السعرات (kcal)</label><input class="goal-input" type="number" id="cal-goal" placeholder="2500" min="0" oninput="saveCalGoal()" /></div>
+        <div class="gf"><label for="pro-goal">البروتين (g)</label><input class="goal-input" type="number" id="pro-goal" placeholder="150" min="0" oninput="saveProGoal()" /></div>
       </div>
-    </div>
-  </div>
-
-  <div class="summary-strip">
-    <div class="strip-card s1">
-      <div class="sv" id="sum-total">0</div>
-      <div class="sl">السعرات</div>
-    </div>
-    <div class="strip-card s4">
-      <div class="sv" id="sum-protein">0<span style="font-size:13px;font-weight:700">g</span></div>
-      <div class="sl">بروتين</div>
-    </div>
-    <div class="strip-card s-carb">
-      <div class="sv" id="sum-carb">0<span style="font-size:13px;font-weight:700">g</span></div>
-      <div class="sl">كارب</div>
-    </div>
-    <div class="strip-card s-fat">
-      <div class="sv" id="sum-fat">0<span style="font-size:13px;font-weight:700">g</span></div>
-      <div class="sl">دهون</div>
-    </div>
-    <div class="strip-card s-fiber">
-      <div class="sv" id="sum-fiber">0<span style="font-size:13px;font-weight:700">g</span></div>
-      <div class="sl">ألياف</div>
-    </div>
-  </div>
-
-  <div class="section-label">أيامي · MY DAYS</div>
+    </details>
+  </section>
 
   <div id="days-container"></div>
-
 </div>
-
-
-
 
 <!-- ═══ TOOLS PANEL ═══ -->
 <div class="panel" id="panel-tools">
   <div style="height:16px"></div>
 
   <div class="tools-card">
-    <div class="tools-card-title">📸 مشاركة التقدم · SHARE</div>
+    <div class="tools-card-title">📸 مشاركة التقدم</div>
     <button class="btn-share" onclick="openShareCard()">📸 مشاركة بطاقة التقدم</button>
   </div>
 
   <div class="tools-card">
-    <div class="tools-card-title">📋 البيانات · DATA</div>
-    <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0">📋 نسخ البيانات · JSON</button>
+    <div class="tools-card-title">📋 البيانات</div>
+    <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0">📋 نسخ البيانات (JSON)</button>
     <button class="btn-reset" onclick="resetDay()" style="margin-top:10px">↺ إعادة ضبط اليوم</button>
   </div>
 
   <div class="backup-section" style="margin-top:0">
-    <div class="backup-title">💾 النسخ الاحتياطي · BACKUP</div>
+    <div class="backup-title">💾 النسخ الاحتياطي</div>
     <div class="backup-btns">
       <button class="btn-backup" onclick="backupData()">💾 حفظ نسخة</button>
       <button class="btn-restore" onclick="document.getElementById('restore-input').click()">📥 استعادة</button>
@@ -1753,11 +1863,11 @@ body { transition: background .3s, color .3s; }
 
   <div class="wgt-goals-row">
     <div class="wgt-goal-card">
-      <label>وزن البداية · KG</label>
+      <label>وزن البداية (كغ)</label>
       <input class="wgt-goal-input" type="text" inputmode="decimal" id="start-weight" placeholder="مثال: 80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
     <div class="wgt-goal-card">
-      <label>وزني المستهدف · KG</label>
+      <label>وزني المستهدف (كغ)</label>
       <input class="wgt-goal-input" type="text" inputmode="decimal" id="target-weight" placeholder="مثال: 70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
   </div>
@@ -1826,7 +1936,7 @@ body { transition: background .3s, color .3s; }
 
   <div class="wgt-chart-wrap" id="chart-container">
     <div class="wgt-chart-header">
-      <span class="wgt-chart-title">منحنى الوزن · WEIGHT CURVE</span>
+      <span class="wgt-chart-title">منحنى الوزن</span>
       <div class="wgt-chart-legend">
         <div class="legend-item teal-l"><div class="legend-dot"></div>وزنك</div>
         <div class="legend-item gold-l"><div class="legend-dot"></div>الهدف</div>
@@ -1840,7 +1950,7 @@ body { transition: background .3s, color .3s; }
     </div>
   </div>
 
-  <div class="section-label">سجلاتي · MY LOG</div>
+  <div class="section-label">سجلاتي</div>
   <div class="wgt-list-wrap" id="wgt-list"></div>
 </div>
 
@@ -1895,6 +2005,7 @@ function saveProGoal() {
   const v = parseInt(document.getElementById('pro-goal').value);
   proGoal = isNaN(v) ? 150 : v;
   localStorage.setItem(KEY_PRO_GOAL, proGoal);
+  updateCalSummary();
 }
 
 // ─── CALORIES ───
@@ -1919,6 +2030,12 @@ if(!calDays.length) {
   saveCalData(calDays);
 }
 
+const _open = new Set();
+const _n = v => parseFloat(v) || 0;
+const _r = v => Math.round(v * 10) / 10;
+const _tot = (day, f) => day.slots.reduce((a, s) => a + _n(s[f]), 0);
+const slotFilled = s => ['cal','pro','carb','fat','fiber'].some(k => s[k] !== '' && s[k] != null && String(s[k]).trim() !== '');
+
 function removeDay(id) {
   calDays = calDays.filter(d => d.id !== id);
   saveCalData(calDays);
@@ -1927,194 +2044,130 @@ function removeDay(id) {
 function resetDay() {
   if(calDays.length > 0) {
     calDays[0].slots = Array(5).fill(null).map(emptySlot);
+    _open.clear();
     saveCalData(calDays);
     renderDays();
   }
 }
 function addSlot(id) {
   const day = calDays.find(d => d.id === id);
-  if(day) { day.slots.push(emptySlot()); saveCalData(calDays); renderDays(); }
+  if(day) { day.slots.push(emptySlot()); _open.add(id + ':' + (day.slots.length - 1)); saveCalData(calDays); renderDays(); }
 }
 function removeSlot(id, idx) {
   const day = calDays.find(d => d.id === id);
-  if(day && day.slots.length > 1) { day.slots.splice(idx, 1); saveCalData(calDays); renderDays(); }
+  if(day && day.slots.length > 1) { day.slots.splice(idx, 1); _open.clear(); saveCalData(calDays); renderDays(); }
 }
+function toggleMeal(id, i) {
+  const k = id + ':' + i, el = document.querySelector(`[data-meal="${k}"]`);
+  if(!el) return;
+  if(_open.has(k)) { _open.delete(k); el.classList.remove('open'); }
+  else { _open.add(k); el.classList.add('open'); }
+}
+function openMeal(id, i) {
+  _open.add(id + ':' + i);
+  renderDays();
+  const f = document.querySelector(`[data-meal="${id}:${i}"] input`);
+  if(f) f.focus();
+}
+
+function mealSum(s) {
+  const parts = [`<b>${_n(s.cal) ? _n(s.cal).toLocaleString() : '—'}</b><small>kcal</small>`];
+  [['pro','بروتين'],['carb','كارب'],['fat','دهون'],['fiber','ألياف']].forEach(([k, l]) => {
+    if(_n(s[k])) parts.push(`<span class="chip ${k}">${l} ${_n(s[k])}g</span>`);
+  });
+  return parts.join('');
+}
+function daySumText(day) {
+  return `${_r(_tot(day,'cal')).toLocaleString()} kcal · ${_r(_tot(day,'pro'))}g بروتين`;
+}
+
 function updateSlot(id, idx, field, val) {
   const day = calDays.find(d => d.id === id);
-  if(day) {
-    day.slots[idx][field] = val;
-    saveCalData(calDays);
-    const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
-    const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
-    const totalCarb = day.slots.reduce((a, s) => a + (parseFloat(s.carb)||0), 0);
-    const totalFat = day.slots.reduce((a, s) => a + (parseFloat(s.fat)||0), 0);
-    const totalFiber = day.slots.reduce((a, s) => a + (parseFloat(s.fiber)||0), 0);
-    const badge  = document.querySelector(`[data-badge="${id}"]`);
-    const bar    = document.querySelector(`[data-bar="${id}"]`);
-    const barPro = document.querySelector(`[data-bar-pro="${id}"]`);
-    if(badge) {
-      let html = (totalCal > 0 ? totalCal.toLocaleString() : '0') + ' CAL';
-      if(totalPro > 0) html += `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>`;
-      badge.innerHTML = html;
-    }
-    if(bar)    bar.style.width    = Math.min((totalCal / (calGoal || 2500)) * 100, 100) + '%';
-    if(barPro) barPro.style.width = Math.min((totalPro / (proGoal || 150))  * 100, 100) + '%';
-    updateDaySummary(id, totalCal, totalPro, totalCarb, totalFat, totalFiber);
-    updateCalSummary();
-    updateMotivBanner();
-  }
+  if(!day) return;
+  day.slots[idx][field] = val;
+  saveCalData(calDays);
+  const ms = document.querySelector(`[data-msum="${id}:${idx}"]`);
+  if(ms) ms.innerHTML = mealSum(day.slots[idx]);
+  updateDaySummary(id, _tot(day,'cal'), _tot(day,'pro'), _tot(day,'carb'), _tot(day,'fat'), _tot(day,'fiber'));
+  updateCalSummary();
+}
+
+function mealHTML(day, i) {
+  const s = day.slots[i], k = day.id + ':' + i;
+  const field = (f, label) => `
+    <div class="macro-item">
+      <span class="macro-label ${f}">${label}</span>
+      <input class="slot-input ${f}" type="number" inputmode="decimal" value="${s[f] || ''}" placeholder="0"
+        oninput="updateSlot(${day.id}, ${i}, '${f}', this.value)" min="0" />
+    </div>`;
+  return `
+    <div class="meal ${_open.has(k) ? 'open' : ''}" data-meal="${k}">
+      <button class="meal-head" onclick="toggleMeal(${day.id}, ${i})" aria-label="وجبة ${i+1}">
+        <span class="meal-name">وجبة ${i+1}</span>
+        <span class="meal-sum" data-msum="${k}">${mealSum(s)}</span>
+        <span class="chev"></span>
+      </button>
+      <div class="meal-edit">
+        <div class="macro-grid">
+          ${field('cal','سعرات')}${field('pro','بروتين')}${field('carb','كارب')}${field('fat','دهون')}${field('fiber','ألياف')}
+        </div>
+        ${day.slots.length > 1 ? `<button class="meal-del" onclick="removeSlot(${day.id}, ${i})">حذف الوجبة</button>` : ''}
+      </div>
+    </div>`;
 }
 
 function renderDays() {
   const container = document.getElementById('days-container');
   container.innerHTML = '';
-  calDays.forEach(day => {
-    const totalCal = day.slots.reduce((a, s) => a + (parseFloat(s.cal)||0), 0);
-    const totalPro = day.slots.reduce((a, s) => a + (parseFloat(s.pro)||0), 0);
-    const totalCarb = day.slots.reduce((a, s) => a + (parseFloat(s.carb)||0), 0);
-    const totalFat = day.slots.reduce((a, s) => a + (parseFloat(s.fat)||0), 0);
-    const totalFiber = day.slots.reduce((a, s) => a + (parseFloat(s.fiber)||0), 0);
-    const pct    = Math.min((totalCal / (calGoal || 2500)) * 100, 100);
-    const proPct = Math.min((totalPro / (proGoal || 150))  * 100, 100);
-    const dayNum = calDays.indexOf(day) + 1;
-
-    const remCal = (calGoal || 2500) - totalCal;
-    const remPro = (proGoal || 150) - totalPro;
-
-    // Smart summary pills
-    let calPill = '', proPill = '', macrosPill = '';
-    if(totalCal === 0) {
-      calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
-    } else if(remCal > 0) {
-      calPill = `<div class="day-sum-pill ok">🔥 متبقي ${remCal.toLocaleString()} kcal</div>`;
-    } else if(remCal === 0) {
-      calPill = `<div class="day-sum-pill warn">🎯 وصلت للهدف بالضبط!</div>`;
-    } else {
-      calPill = `<div class="day-sum-pill over">⚠️ تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal</div>`;
-    }
-    if(totalPro === 0) {
-      proPill = `<div class="day-sum-pill empty">💪 لم تُسجّل بروتين بعد</div>`;
-    } else if(remPro > 0) {
-      proPill = `<div class="day-sum-pill ok">💪 متبقي ${remPro}g بروتين</div>`;
-    } else if(remPro === 0) {
-      proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
-    } else {
-      proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
-    }
-    if(totalCarb > 0 || totalFat > 0 || totalFiber > 0) {
-      macrosPill = `<div class="day-sum-pill ok" style="border-color:rgba(0,212,170,0.2)">🥗 كارب ${totalCarb}g · دهون ${totalFat}g · ألياف ${totalFiber}g</div>`;
-    }
-
-    const card = document.createElement('div');
-    card.className = 'day-card';
-    card.innerHTML = `
-      <div class="day-card-header">
-        <div class="day-num">
-          <div class="day-pulse"></div>
-          يوم ${dayNum}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="day-badge" data-badge="${day.id}">
-            ${totalCal > 0 ? totalCal.toLocaleString() : '0'} CAL
-            ${totalPro > 0 ? `<span style="color:var(--gold);font-size:11px;display:block;margin-top:1px;font-family:'Cairo',sans-serif;">${totalPro}g PRO</span>` : ''}
-          </div>
-          <button class="btn-rm-day" onclick="removeDay(${day.id})">✕</button>
-        </div>
+  calDays.forEach((day, di) => {
+    const shown = i => slotFilled(day.slots[i]) || _open.has(day.id + ':' + i);
+    const firstEmpty = day.slots.findIndex((s, i) => !shown(i));
+    let html = day.slots.map((s, i) => shown(i) ? mealHTML(day, i) : '').join('');
+    // يظهر دائماً زر واحد ناعم لإضافة وجبة بدل صفوف الأصفار
+    html += firstEmpty >= 0
+      ? `<button class="meal-add" onclick="openMeal(${day.id}, ${firstEmpty})">＋ إضافة وجبة ${firstEmpty + 1}</button>`
+      : `<button class="meal-add" onclick="addSlot(${day.id})">＋ إضافة وجبة</button>`;
+    const block = document.createElement('div');
+    block.innerHTML = `
+      <div class="day-head">
+        <h2 class="day-title">${di === 0 ? 'وجبات اليوم' : formatDate(day.date)}</h2>
+        ${di > 0 ? `<span class="day-sum" data-dsum="${day.id}">${daySumText(day)}</span>` : ''}
+        <button class="day-rm" onclick="removeDay(${day.id})" aria-label="حذف اليوم">✕</button>
       </div>
-      <div class="day-card-body">
-        <div class="day-summary" data-summary="${day.id}">${calPill}${proPill}${macrosPill}</div>
-
-        <div class="sub-label fire">
-          <div class="sub-dot"></div>
-          الوجبات · MEALS
-        </div>
-        <div class="meals-list" id="meals-${day.id}">
-          ${day.slots.map((s, i) => `
-            <div class="meal-card">
-              <div class="meal-header">
-                <span class="meal-title">وجبة ${i+1}</span>
-                ${day.slots.length > 1 ? `<button class="btn-rm-slot" onclick="removeSlot(${day.id},${i})">✕</button>` : ''}
-              </div>
-              <div class="macro-grid">
-                <div class="macro-item">
-                  <span class="macro-label cal">سعرات</span>
-                  <input class="slot-input cal" type="number" value="${s.cal || ''}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'cal', this.value)" min="0" />
-                </div>
-                <div class="macro-item">
-                  <span class="macro-label pro">بروتين</span>
-                  <input class="slot-input pro" type="number" value="${s.pro || ''}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'pro', this.value)" min="0" />
-                </div>
-                <div class="macro-item">
-                  <span class="macro-label carb">كارب</span>
-                  <input class="slot-input carb" type="number" value="${s.carb || ''}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'carb', this.value)" min="0" />
-                </div>
-                <div class="macro-item">
-                  <span class="macro-label fat">دهون</span>
-                  <input class="slot-input fat" type="number" value="${s.fat || ''}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'fat', this.value)" min="0" />
-                </div>
-                <div class="macro-item">
-                  <span class="macro-label fiber">ألياف</span>
-                  <input class="slot-input fiber" type="number" value="${s.fiber || ''}" placeholder="0"
-                    oninput="updateSlot(${day.id}, ${i}, 'fiber', this.value)" min="0" />
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="prog-wrap">
-          <div class="prog-bar fire" data-bar="${day.id}" style="width:${pct}%"></div>
-        </div>
-        <div class="prog-wrap" style="margin-bottom:14px">
-          <div class="prog-bar gold" data-bar-pro="${day.id}" style="width:${proPct}%"></div>
-        </div>
-
-        <div class="day-actions">
-          <button class="btn-add-slot" onclick="addSlot(${day.id})">+ وجبة</button>
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
+      <div class="meals">${html}</div>`;
+    container.appendChild(block);
   });
   updateCalSummary();
   updateMotivBanner();
 }
 
+// اللوحة الرئيسية الموحدة: سعرات + ماكروز اليوم الحالي في مكان واحد
 function updateCalSummary() {
-  const totalCals = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.cal)||0), 0), 0);
-  const totalProt = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.pro)||0), 0), 0);
-  const totalCarb = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.carb)||0), 0), 0);
-  const totalFat  = calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.fat)||0), 0), 0);
-  const totalFiber= calDays.reduce((a, d) => a + d.slots.reduce((b, s) => b + (parseFloat(s.fiber)||0), 0), 0);
-  document.getElementById('sum-total').textContent = totalCals.toLocaleString();
-  document.getElementById('sum-protein').innerHTML = totalProt.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
-  document.getElementById('sum-carb').innerHTML = totalCarb.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
-  document.getElementById('sum-fat').innerHTML = totalFat.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
-  document.getElementById('sum-fiber').innerHTML = totalFiber.toLocaleString() + '<span style="font-size:13px;font-weight:700">g</span>';
+  const d = calDays[0];
+  if(!d) return;
+  const $ = id => document.getElementById(id);
+  const cal = _tot(d,'cal'), pro = _tot(d,'pro');
+  const goal = calGoal || 2500, pg = proGoal || 150, rem = goal - cal;
+  const C = 2 * Math.PI * 58, fg = $('ring-fg');
+  $('dash').className = 'dash ' + (rem > 0 ? 'ok' : rem === 0 ? 'warn' : 'over');
+  $('dash-date').textContent = formatDate(d.date);
+  fg.style.strokeDasharray = C;
+  fg.style.strokeDashoffset = C * (1 - Math.min(cal / goal, 1));
+  $('ring-num').textContent = _r(Math.abs(rem)).toLocaleString();
+  $('ring-lbl').textContent = rem >= 0 ? 'kcal متبقي' : 'kcal فوق الهدف';
+  $('dash-eaten').textContent = _r(cal).toLocaleString();
+  $('dash-goal').textContent = goal.toLocaleString();
+  $('m-pro').textContent = `${_r(pro)} / ${pg}g`;
+  $('m-pro-bar').style.width = Math.min(pro / pg * 100, 100) + '%';
+  $('m-carb').textContent = _r(_tot(d,'carb')) + 'g';
+  $('m-fat').textContent = _r(_tot(d,'fat')) + 'g';
+  $('m-fiber').textContent = _r(_tot(d,'fiber')) + 'g';
 }
 
-function updateDaySummary(id, totalCal, totalPro, totalCarb = 0, totalFat = 0, totalFiber = 0) {
-  const container = document.querySelector(`[data-summary="${id}"]`);
-  if(!container) return;
-  const remCal = (calGoal || 2500) - totalCal;
-  const remPro = (proGoal || 150) - totalPro;
-  let calPill, proPill, macrosPill = '';
-  if(totalCal === 0) calPill = `<div class="day-sum-pill empty">🔥 لم تُسجّل سعرات بعد</div>`;
-  else if(remCal > 0) calPill = `<div class="day-sum-pill ok">🔥 متبقي ${remCal.toLocaleString()} kcal</div>`;
-  else if(remCal === 0) calPill = `<div class="day-sum-pill warn">🎯 وصلت للهدف بالضبط!</div>`;
-  else calPill = `<div class="day-sum-pill over">⚠️ تجاوزت بـ ${Math.abs(remCal).toLocaleString()} kcal</div>`;
-  if(totalPro === 0) proPill = `<div class="day-sum-pill empty">💪 لم تُسجّل بروتين بعد</div>`;
-  else if(remPro > 0) proPill = `<div class="day-sum-pill ok">💪 متبقي ${remPro}g بروتين</div>`;
-  else if(remPro === 0) proPill = `<div class="day-sum-pill warn">💪 أكملت هدف البروتين!</div>`;
-  else proPill = `<div class="day-sum-pill warn">💪 تجاوزت هدف البروتين بـ ${Math.abs(remPro)}g</div>`;
-  if(totalCarb > 0 || totalFat > 0 || totalFiber > 0) {
-    macrosPill = `<div class="day-sum-pill ok" style="border-color:rgba(0,212,170,0.2)">🥗 كارب ${totalCarb}g · دهون ${totalFat}g · ألياف ${totalFiber}g</div>`;
-  }
-  container.innerHTML = calPill + proPill + macrosPill;
+function updateDaySummary(id) {
+  const el = document.querySelector(`[data-dsum="${id}"]`);
+  const day = calDays.find(d => d.id === id);
+  if(el && day) el.textContent = daySumText(day);
 }
 
 function updateMotivBanner() {
