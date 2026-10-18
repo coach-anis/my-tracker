@@ -1549,43 +1549,43 @@ body::after {
   --teal2: #00C8A0;
 }
 body { transition: background .3s, color .3s; }
-.theme-btn, .lang-btn {
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top));
-  z-index: 200;
-  width: 40px; height: 40px; border-radius: 12px;
-  border: 1px solid var(--border); background: var(--bg2);
-  color: var(--text); font-size: 1.05rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  transition: transform .2s;
-  font-family: 'Cairo', sans-serif; font-weight: 700;
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
-.theme-btn { left: 12px; }
-.lang-btn { left: 58px; font-size: 0.72rem; letter-spacing: 0.5px; }
-html[dir="ltr"] .theme-btn { left: auto; right: 12px; }
-html[dir="ltr"] .lang-btn { left: auto; right: 58px; }
-.theme-btn:active, .lang-btn:active { transform: scale(0.92); }
-.lang-menu {
-  position: fixed;
-  top: calc(56px + env(safe-area-inset-top));
-  left: 12px;
-  z-index: 210;
-  background: var(--bg2);
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
   border-radius: 14px;
-  box-shadow: var(--sh);
-  padding: 6px;
+  border: 0;
+  background: var(--bg4);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+}
+.settings-btn:active { transform: scale(0.97); }
+.settings-btn:hover { background: var(--bg3); }
+.lang-menu-inline {
   display: none;
   flex-direction: column;
   gap: 4px;
-  min-width: 130px;
+  margin-top: 10px;
+  background: var(--bg3);
+  border-radius: 14px;
+  padding: 6px;
 }
-html[dir="ltr"] .lang-menu { left: auto; right: 12px; }
-.lang-menu.show { display: flex; }
+.lang-menu-inline.show { display: flex; }
 .lang-opt {
   border: 0; background: transparent; color: var(--text);
   font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.85rem;
-  padding: 10px 14px; border-radius: 10px; cursor: pointer; text-align: start;
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; text-align: start;
 }
 .lang-opt:hover, .lang-opt.active { background: var(--bg4); color: var(--teal); }
 .tab-btn.active-tools {
@@ -1662,7 +1662,6 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .tabs{background:var(--bg2);padding:4px;border-radius:18px;box-shadow:var(--sh-sm);gap:4px;width:calc(100% - 32px);}
 .tab-btn{border:0;background:transparent;box-shadow:none;color:var(--muted);border-radius:14px;padding:11px 6px;font-size:.85rem;}
 .tab-btn[class*="active-"]{background:var(--bg4);color:var(--text);box-shadow:var(--sh-sm);}
-.theme-btn,.lang-btn{border:0;box-shadow:var(--sh-sm);}
 .panel{padding-top:16px;}
 
 /* dashboard */
@@ -1755,14 +1754,6 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 </head>
 <body>
 
-<button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="تبديل الوضع" data-i18n-title="theme_toggle">🌙</button>
-<button class="lang-btn" id="lang-btn" onclick="toggleLangMenu()" title="Language / اللغة">AR</button>
-<div class="lang-menu" id="lang-menu">
-  <button class="lang-opt" data-lang="ar" onclick="setLanguage('ar')">العربية</button>
-  <button class="lang-opt" data-lang="en" onclick="setLanguage('en')">English</button>
-  <button class="lang-opt" data-lang="fr" onclick="setLanguage('fr')">Français</button>
-</div>
-
 <div class="share-modal" id="share-modal">
   <div class="share-modal-box">
     <canvas id="share-canvas" width="600" height="700"></canvas>
@@ -1820,7 +1811,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <div class="pwa-toast" id="pwa-toast"></div>
 
 <!-- ── BACKUP REMINDER BANNER ── -->
-<div class="tabs" style="margin-top: calc(58px + env(safe-area-inset-top))">
+<div class="tabs" style="margin-top: calc(12px + env(safe-area-inset-top))">
   <button class="tab-btn active-cal" onclick="switchTab('cal')" data-i18n="tab_cal">🔥 السعرات</button>
   <button class="tab-btn" onclick="switchTab('bud')" data-i18n="tab_weight">⚖️ الوزن</button>
   <button class="tab-btn" onclick="switchTab('tools')" data-i18n="tab_tools">⚙️ أدوات</button>
@@ -1862,11 +1853,32 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   </section>
 
   <div id="days-container"></div>
+
+  <button class="btn-reset" onclick="if(confirm(t('confirm_reset_day'))) resetDay()" style="margin-top:16px" data-i18n="reset_calories">↺ تصفير السعرات · يوم جديد</button>
 </div>
 
 <!-- ═══ TOOLS PANEL ═══ -->
 <div class="panel" id="panel-tools">
   <div style="height:16px"></div>
+
+  <div class="tools-card">
+    <div class="tools-card-title" data-i18n="appearance">🎨 المظهر واللغة</div>
+    <div class="settings-row">
+      <button class="settings-btn" id="theme-btn" onclick="toggleTheme()" data-i18n-title="theme_toggle">
+        <span id="theme-icon">🌙</span>
+        <span id="theme-label" data-i18n="theme_dark">الوضع الليلي</span>
+      </button>
+      <button class="settings-btn" id="lang-btn" onclick="toggleLangMenu()">
+        <span>🌐</span>
+        <span id="lang-label">العربية</span>
+      </button>
+    </div>
+    <div class="lang-menu-inline" id="lang-menu">
+      <button class="lang-opt" data-lang="ar" onclick="setLanguage('ar')">العربية</button>
+      <button class="lang-opt" data-lang="en" onclick="setLanguage('en')">English</button>
+      <button class="lang-opt" data-lang="fr" onclick="setLanguage('fr')">Français</button>
+    </div>
+  </div>
 
   <div class="tools-card">
     <div class="tools-card-title" data-i18n="share_progress">📸 مشاركة التقدم</div>
@@ -1876,7 +1888,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <div class="tools-card">
     <div class="tools-card-title" data-i18n="data">📋 البيانات</div>
     <button class="btn-export" id="btn-export" onclick="exportData()" style="margin-top:0" data-i18n="copy_json">📋 نسخ البيانات (JSON)</button>
-    <button class="btn-reset" onclick="resetDay()" style="margin-top:10px" data-i18n="reset_day">↺ إعادة ضبط اليوم</button>
+    <button class="btn-reset" onclick="if(confirm(t('confirm_reset_day'))) resetDay()" style="margin-top:10px" data-i18n="reset_day">↺ إعادة ضبط اليوم</button>
   </div>
 
   <div class="backup-section" style="margin-top:0">
@@ -3125,6 +3137,11 @@ function dismissReminder() {
 const I18N = {
   ar: {
     theme_toggle: 'تبديل الوضع',
+    theme_dark: 'الوضع الليلي',
+    theme_light: 'الوضع النهاري',
+    appearance: '🎨 المظهر واللغة',
+    reset_calories: '↺ تصفير السعرات · يوم جديد',
+    confirm_reset_day: 'هل تريد تصفير سعرات اليوم؟ سيتم حذف كل الوجبات.',
     welcome_title: 'تطبيق المدرب أنيس',
     welcome_sub: 'تتبع سعراتك ووزنك يومياً',
     calories: 'السعرات',
@@ -3232,6 +3249,11 @@ const I18N = {
   },
   en: {
     theme_toggle: 'Toggle theme',
+    theme_dark: 'Dark mode',
+    theme_light: 'Light mode',
+    appearance: '🎨 Appearance & language',
+    reset_calories: '↺ Reset calories · New day',
+    confirm_reset_day: 'Reset today\'s calories? All meals will be deleted.',
     welcome_title: 'Coach Anis App',
     welcome_sub: 'Track your calories & weight daily',
     calories: 'Calories',
@@ -3339,6 +3361,11 @@ const I18N = {
   },
   fr: {
     theme_toggle: 'Changer le thème',
+    theme_dark: 'Mode sombre',
+    theme_light: 'Mode clair',
+    appearance: '🎨 Apparence et langue',
+    reset_calories: '↺ Remise à zéro · Nouveau jour',
+    confirm_reset_day: 'Réinitialiser les calories du jour ? Tous les repas seront supprimés.',
     welcome_title: 'App Coach Anis',
     welcome_sub: 'Suivez calories et poids chaque jour',
     calories: 'Calories',
@@ -3475,13 +3502,18 @@ function setLanguage(lang) {
   const html = document.documentElement;
   html.setAttribute('lang', lang);
   html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  const btn = document.getElementById('lang-btn');
-  if (btn) btn.textContent = lang.toUpperCase();
+  const langLabel = document.getElementById('lang-label');
+  if (langLabel) {
+    langLabel.textContent = lang === 'ar' ? 'العربية' : lang === 'fr' ? 'Français' : 'English';
+  }
   document.querySelectorAll('.lang-opt').forEach(o => {
     o.classList.toggle('active', o.getAttribute('data-lang') === lang);
   });
   document.getElementById('lang-menu')?.classList.remove('show');
   applyStaticI18n();
+  const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const themeLabel = document.getElementById('theme-label');
+  if (themeLabel) themeLabel.textContent = curTheme === 'light' ? t('theme_light') : t('theme_dark');
   // refresh dynamic UI
   try { if (typeof renderDays === 'function') renderDays(); } catch(e){}
   try { if (typeof updateCalSummary === 'function') updateCalSummary(); } catch(e){}
@@ -3499,20 +3531,22 @@ function toggleLangMenu() {
 document.addEventListener('click', (e) => {
   const m = document.getElementById('lang-menu');
   const b = document.getElementById('lang-btn');
-  if (m && m.classList.contains('show') && !m.contains(e.target) && e.target !== b) {
+  if (m && m.classList.contains('show') && !m.contains(e.target) && !b?.contains(e.target)) {
     m.classList.remove('show');
   }
 });
 
 
 // ─── THEME ───
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = t === 'light' ? '☀️' : '🌙';
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const icon = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (icon) icon.textContent = theme === 'light' ? '☀️' : '🌙';
+  if (label) label.textContent = theme === 'light' ? t('theme_light') : t('theme_dark');
   const meta = document.getElementById('meta-theme');
-  if (meta) meta.content = t === 'light' ? '#F5F5F8' : '#06060A';
-  localStorage.setItem('trackerTheme', t);
+  if (meta) meta.content = theme === 'light' ? '#F5F5F8' : '#06060A';
+  localStorage.setItem('trackerTheme', theme);
   if (typeof drawChart === 'function') setTimeout(drawChart, 50);
 }
 function toggleTheme() {
