@@ -1,5 +1,5 @@
 // ─── تغيير هذا الرقم عند كل تحديث يضمن تحديث الكاش تلقائياً ───
-const CACHE = 'mytracker-v2';
+const CACHE = 'mytracker-v4';
 
 const ASSETS = [
   '/my-tracker/',
@@ -27,7 +27,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: الشبكة أولاً — وإن لم تتوفر نرجع للكاش (يضمن دائماً أحدث نسخة)
+// Fetch: الشبكة أولاً — وإن لم يتوفر نرجع للكاش (يضمن دائماً أحدث نسخة)
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
@@ -46,4 +46,39 @@ self.addEventListener('fetch', e => {
         return caches.match(e.request);
       })
   );
+});
+
+// ─── الإشعارات ───
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // ركّز على نافذة مفتوحة إن وُجدت
+      for (const client of clientList) {
+        if (client.url.includes('/my-tracker') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // وإلا افتح التطبيق
+      if (clients.openWindow) {
+        return clients.openWindow('/my-tracker/');
+      }
+    })
+  );
+});
+
+// استقبال رسائل من الصفحة لعرض إشعار
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, tag } = event.data;
+    self.registration.showNotification(title || 'Coach Anis', {
+      body: body || '',
+      icon: '/my-tracker/icon.png',
+      badge: '/my-tracker/icon.png',
+      tag: tag || 'coach-anis-reminder',
+      renotify: true,
+      vibrate: [100, 50, 100],
+      data: { url: '/my-tracker/' }
+    });
+  }
 });

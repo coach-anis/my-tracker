@@ -1632,6 +1632,89 @@ body { transition: background .3s, color .3s; }
 }
 .btn-share:hover { background: rgba(0,212,170,0.15); }
 
+/* ── Notifications settings ── */
+.notif-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.notif-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.notif-toggle-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.notif-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.notif-status.granted { color: var(--teal); }
+.notif-status.denied { color: var(--red); }
+.notif-field {
+  margin-bottom: 12px;
+}
+.notif-field label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.notif-field input[type="time"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.notif-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.notif-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.notif-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.btn-test-notif {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(77,166,255,0.3);
+  background: rgba(77,166,255,0.1);
+  color: var(--blue);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn-test-notif:hover { background: rgba(77,166,255,0.18); }
+
 
 /* ═══════════ REDESIGN LAYER v3 — soft elevation, no outlines ═══════════ */
 :root{
@@ -1877,6 +1960,37 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       <button class="lang-opt" data-lang="ar" onclick="setLanguage('ar')">العربية</button>
       <button class="lang-opt" data-lang="en" onclick="setLanguage('en')">English</button>
       <button class="lang-opt" data-lang="fr" onclick="setLanguage('fr')">Français</button>
+    </div>
+  </div>
+
+  <!-- ─── الإشعارات والتذكيرات ─── -->
+  <div class="tools-card">
+    <div class="tools-card-title" data-i18n="notifications">🔔 الإشعارات والتذكيرات</div>
+    
+    <div class="notif-row">
+      <label class="notif-toggle-label">
+        <input type="checkbox" id="notif-enabled" onchange="toggleNotifications(this.checked)">
+        <span data-i18n="enable_notifications">تفعيل الإشعارات</span>
+      </label>
+      <span class="notif-status" id="notif-status"></span>
+    </div>
+
+    <div id="notif-settings" style="display:none; margin-top:12px;">
+      <div class="notif-field">
+        <label data-i18n="daily_reminder_time">وقت التذكير اليومي</label>
+        <input type="time" id="notif-time" value="20:00" onchange="saveNotifSettings()">
+      </div>
+      <div class="notif-checks">
+        <label class="notif-check">
+          <input type="checkbox" id="notif-calories" checked onchange="saveNotifSettings()">
+          <span data-i18n="remind_calories">تذكير بتسجيل السعرات</span>
+        </label>
+        <label class="notif-check">
+          <input type="checkbox" id="notif-weight" checked onchange="saveNotifSettings()">
+          <span data-i18n="remind_weight">تذكير بتسجيل الوزن</span>
+        </label>
+      </div>
+      <button class="btn-test-notif" onclick="testNotification()" data-i18n="test_notification">اختبار الإشعار الآن</button>
     </div>
   </div>
 
@@ -3024,6 +3138,256 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ─── NOTIFICATIONS & REMINDERS ───
+const KEY_NOTIF = 'trackerNotifSettings';
+let _notifTimeout = null;
+
+function getNotifSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY_NOTIF)) || {
+      enabled: false,
+      time: '20:00',
+      calories: true,
+      weight: true
+    };
+  } catch(e) {
+    return { enabled: false, time: '20:00', calories: true, weight: true };
+  }
+}
+
+function saveNotifSettings() {
+  const settings = {
+    enabled: document.getElementById('notif-enabled').checked,
+    time: document.getElementById('notif-time').value || '20:00',
+    calories: document.getElementById('notif-calories').checked,
+    weight: document.getElementById('notif-weight').checked
+  };
+  localStorage.setItem(KEY_NOTIF, JSON.stringify(settings));
+  if (settings.enabled && Notification.permission === 'granted') {
+    scheduleNextReminder();
+  }
+}
+
+function updateNotifUI() {
+  const settings = getNotifSettings();
+  const enabledEl = document.getElementById('notif-enabled');
+  const settingsEl = document.getElementById('notif-settings');
+  const statusEl = document.getElementById('notif-status');
+  const timeEl = document.getElementById('notif-time');
+  const calEl = document.getElementById('notif-calories');
+  const wgtEl = document.getElementById('notif-weight');
+
+  if (!enabledEl) return;
+
+  enabledEl.checked = settings.enabled;
+  if (timeEl) timeEl.value = settings.time || '20:00';
+  if (calEl) calEl.checked = settings.calories !== false;
+  if (wgtEl) wgtEl.checked = settings.weight !== false;
+
+  if (settings.enabled) {
+    settingsEl.style.display = 'block';
+  } else {
+    settingsEl.style.display = 'none';
+  }
+
+  if (!('Notification' in window)) {
+    statusEl.textContent = 'غير مدعوم';
+    statusEl.className = 'notif-status denied';
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    statusEl.textContent = t('notif_granted');
+    statusEl.className = 'notif-status granted';
+  } else if (Notification.permission === 'denied') {
+    statusEl.textContent = t('notif_denied');
+    statusEl.className = 'notif-status denied';
+  } else {
+    statusEl.textContent = t('notif_default');
+    statusEl.className = 'notif-status';
+  }
+}
+
+async function toggleNotifications(enabled) {
+  if (enabled) {
+    if (!('Notification' in window)) {
+      showToast('الإشعارات غير مدعومة في هذا المتصفح');
+      document.getElementById('notif-enabled').checked = false;
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      showToast(t('notif_denied'));
+      document.getElementById('notif-enabled').checked = false;
+      updateNotifUI();
+      return;
+    }
+    if (Notification.permission !== 'granted') {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        document.getElementById('notif-enabled').checked = false;
+        updateNotifUI();
+        showToast(t('notif_need_permission'));
+        return;
+      }
+    }
+    document.getElementById('notif-settings').style.display = 'block';
+    saveNotifSettings();
+    scheduleNextReminder();
+    showToast(t('notif_granted'));
+  } else {
+    document.getElementById('notif-settings').style.display = 'none';
+    clearAllNotifTimeouts();
+    saveNotifSettings();
+  }
+  updateNotifUI();
+}
+
+function showAppNotification(title, body, tag) {
+  if (Notification.permission !== 'granted') return;
+
+  // Prefer service worker for better reliability (works even if tab is backgrounded)
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SHOW_NOTIFICATION',
+      title: title,
+      body: body,
+      tag: tag || 'coach-anis'
+    });
+  } else if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body: body,
+        icon: '/my-tracker/icon.png',
+        badge: '/my-tracker/icon.png',
+        tag: tag || 'coach-anis',
+        renotify: true,
+        vibrate: [100, 50, 100]
+      });
+    }).catch(() => {
+      // Fallback to regular Notification
+      new Notification(title, {
+        body: body,
+        icon: '/my-tracker/icon.png',
+        tag: tag || 'coach-anis'
+      });
+    });
+  } else {
+    new Notification(title, {
+      body: body,
+      icon: '/my-tracker/icon.png',
+      tag: tag || 'coach-anis'
+    });
+  }
+}
+
+function getTodayCalStats() {
+  const d = calDays && calDays[0];
+  if (!d) {
+    return { cal: 0, pro: 0, carb: 0, fat: 0, fiber: 0, goal: calGoal || 2500, remaining: calGoal || 2500 };
+  }
+  const cal   = _tot(d, 'cal');
+  const pro   = _tot(d, 'pro');
+  const carb  = _tot(d, 'carb');
+  const fat   = _tot(d, 'fat');
+  const fiber = _tot(d, 'fiber');
+  const goal  = calGoal || 2500;
+  return {
+    cal: _r(cal),
+    pro: _r(pro),
+    carb: _r(carb),
+    fat: _r(fat),
+    fiber: _r(fiber),
+    goal: goal,
+    remaining: _r(goal - cal)
+  };
+}
+
+function buildProgressBody() {
+  const s = getTodayCalStats();
+  const remText = s.remaining >= 0
+    ? `${t('remaining_kcal')}: ${s.remaining.toLocaleString()} kcal`
+    : `${t('exceeded_by')}: ${Math.abs(s.remaining).toLocaleString()} kcal`;
+
+  // Multi-line body that works well on both Android and iOS
+  return [
+    `🔥 ${t('eaten')}: ${s.cal.toLocaleString()} / ${s.goal.toLocaleString()} kcal`,
+    `📉 ${remText}`,
+    `🥩 ${t('protein')}: ${s.pro}g  ·  🍞 ${t('carb')}: ${s.carb}g  ·  🥑 ${t('fat')}: ${s.fat}g`
+  ].join('\n');
+}
+
+function testNotification() {
+  if (Notification.permission !== 'granted') {
+    showToast(t('notif_need_permission'));
+    return;
+  }
+  const body = buildProgressBody();
+  showAppNotification(t('notif_title'), body, 'test');
+}
+
+let _notifTimeouts = [];
+
+function clearAllNotifTimeouts() {
+  _notifTimeouts.forEach(id => clearTimeout(id));
+  _notifTimeouts = [];
+  if (_notifTimeout) {
+    clearTimeout(_notifTimeout);
+    _notifTimeout = null;
+  }
+}
+
+function scheduleNextReminder() {
+  clearAllNotifTimeouts();
+
+  const settings = getNotifSettings();
+  if (!settings.enabled || Notification.permission !== 'granted') return;
+
+  const now = new Date();
+  const times = [];
+
+  // 1. User chosen time
+  const [h, m] = (settings.time || '20:00').split(':').map(Number);
+  times.push({ h, m });
+
+  // 2. Extra midday reminder (around 13:00) so it feels "from time to time"
+  if (h !== 13) {
+    times.push({ h: 13, m: 0 });
+  }
+
+  times.forEach(({ h, m }) => {
+    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+    if (target <= now) {
+      target.setDate(target.getDate() + 1);
+    }
+    const delay = target - now;
+    const id = setTimeout(() => {
+      fireDailyReminder();
+      // Reschedule everything for the next cycle
+      scheduleNextReminder();
+    }, delay);
+    _notifTimeouts.push(id);
+  });
+}
+
+function fireDailyReminder() {
+  const settings = getNotifSettings();
+  if (!settings.enabled) return;
+
+  // Always send current progress (calories + macros)
+  const body = buildProgressBody();
+  showAppNotification(t('notif_progress_title') || t('notif_title'), body, 'daily-reminder');
+}
+
+// Check on visibility change (when user returns to the app)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const settings = getNotifSettings();
+    if (settings.enabled && Notification.permission === 'granted') {
+      scheduleNextReminder();
+    }
+  }
+});
+
 // ─── BACKUP & RESTORE ───
 const KEY_LAST_BACKUP = 'trackerLastBackup';
 
@@ -3244,6 +3608,22 @@ const I18N = {
     confirm_restore: 'هل تريد استعادة البيانات؟ سيتم استبدال البيانات الحالية.',
     backup_saved: '💾 تم حفظ النسخة الاحتياطية!',
     need_7_days: 'يلزم 7 أيام على الأقل بين أول وآخر تسجيل لحساب المعدل الأسبوعي',
+    notifications: '🔔 الإشعارات والتذكيرات',
+    enable_notifications: 'تفعيل الإشعارات',
+    daily_reminder_time: 'وقت التذكير اليومي',
+    remind_calories: 'تذكير بتسجيل السعرات',
+    remind_weight: 'تذكير بتسجيل الوزن',
+    test_notification: 'اختبار الإشعار الآن',
+    notif_granted: 'مفعّل ✅',
+    notif_denied: 'مرفوض — فعّله من إعدادات المتصفح',
+    notif_default: 'اضغط للتفعيل',
+    notif_title: 'Coach Anis',
+    notif_body_calories: 'حان وقت تسجيل سعراتك اليوم! 🔥',
+    notif_body_weight: 'لا تنسَ تسجيل وزنك اليوم ⚖️',
+    notif_body_both: 'سجّل سعراتك ووزنك اليوم! 💪',
+    notif_test_body: 'هذا إشعار تجريبي — التطبيق يعمل بنجاح!',
+    notif_need_permission: 'يجب السماح بالإشعارات أولاً',
+    notif_progress_title: 'تحديث السعرات',
     months: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
     days: ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
   },
@@ -3356,6 +3736,22 @@ const I18N = {
     confirm_restore: 'Restore data? Current data will be replaced.',
     backup_saved: '💾 Backup saved!',
     need_7_days: 'Need at least 7 days between first and last log for weekly rate',
+    notifications: '🔔 Notifications & Reminders',
+    enable_notifications: 'Enable notifications',
+    daily_reminder_time: 'Daily reminder time',
+    remind_calories: 'Remind to log calories',
+    remind_weight: 'Remind to log weight',
+    test_notification: 'Test notification now',
+    notif_granted: 'Enabled ✅',
+    notif_denied: 'Denied — enable in browser settings',
+    notif_default: 'Tap to enable',
+    notif_title: 'Coach Anis',
+    notif_body_calories: 'Time to log your calories today! 🔥',
+    notif_body_weight: 'Don\'t forget to log your weight today ⚖️',
+    notif_body_both: 'Log your calories and weight today! 💪',
+    notif_test_body: 'This is a test notification — the app is working!',
+    notif_need_permission: 'Please allow notifications first',
+    notif_progress_title: 'Calorie update',
     months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
     days: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
   },
@@ -3468,6 +3864,22 @@ const I18N = {
     confirm_restore: 'Restaurer les données ? Les données actuelles seront remplacées.',
     backup_saved: '💾 Sauvegarde enregistrée !',
     need_7_days: 'Il faut au moins 7 jours entre le premier et le dernier enregistrement',
+    notifications: '🔔 Notifications & Rappels',
+    enable_notifications: 'Activer les notifications',
+    daily_reminder_time: 'Heure du rappel quotidien',
+    remind_calories: 'Rappel pour les calories',
+    remind_weight: 'Rappel pour le poids',
+    test_notification: 'Tester la notification',
+    notif_granted: 'Activé ✅',
+    notif_denied: 'Refusé — activez dans les paramètres du navigateur',
+    notif_default: 'Appuyez pour activer',
+    notif_title: 'Coach Anis',
+    notif_body_calories: 'Il est temps d\'enregistrer vos calories ! 🔥',
+    notif_body_weight: 'N\'oubliez pas d\'enregistrer votre poids ⚖️',
+    notif_body_both: 'Enregistrez vos calories et votre poids aujourd\'hui ! 💪',
+    notif_test_body: 'Ceci est une notification de test — l\'app fonctionne !',
+    notif_need_permission: 'Veuillez d\'abord autoriser les notifications',
+    notif_progress_title: 'Mise à jour des calories',
     months: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
     days: ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
   }
@@ -3522,6 +3934,7 @@ function setLanguage(lang) {
   try { if (typeof renderWgtList === 'function') renderWgtList(); } catch(e){}
   try { if (typeof drawChart === 'function') setTimeout(drawChart, 40); } catch(e){}
   try { if (typeof updateBackupLabel === 'function') updateBackupLabel(); } catch(e){}
+  try { if (typeof updateNotifUI === 'function') updateNotifUI(); } catch(e){}
 }
 
 function toggleLangMenu() {
@@ -3654,6 +4067,13 @@ renderWeight();
 updateStickyBar();
 updateBackupLabel();
 /* checkBackupReminder disabled */
+
+// تهيئة الإشعارات
+updateNotifUI();
+const _notifInit = getNotifSettings();
+if (_notifInit.enabled && Notification.permission === 'granted') {
+  scheduleNextReminder();
+}
 
 document.getElementById('btn-share-dl') && document.getElementById('btn-share-dl').addEventListener('click', () => {
   const canvas = document.getElementById('share-canvas');
