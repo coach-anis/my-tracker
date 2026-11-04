@@ -1034,19 +1034,19 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: rgba(6,6,10,0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(6,6,10,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 16px;
-  animation: fadeIn .4s ease both;
+  animation: fadeIn .25s ease both;
   pointer-events: none;
 }
 .welcome-overlay.hide {
-  animation: fadeOut .4s ease both;
+  animation: fadeOut .25s ease both;
   pointer-events: none !important;
   opacity: 0;
 }
@@ -1722,9 +1722,9 @@ body { transition: background .3s, color .3s; }
   z-index: 99999;
   background: #1a1a1e;
   border-top: 1px solid rgba(255,255,255,0.08);
-  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
   transform: translateY(110%);
-  transition: transform .22s cubic-bezier(.2,.8,.2,1);
+  transition: transform .2s cubic-bezier(.2,.8,.2,1);
   box-shadow: 0 -8px 32px rgba(0,0,0,0.45);
   user-select: none;
   -webkit-user-select: none;
@@ -1733,18 +1733,18 @@ body { transition: background .3s, color .3s; }
 .numpad-row {
   display: flex;
   gap: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 .numpad-row:last-child { margin-bottom: 0; }
 .numpad-key {
   flex: 1;
-  height: 48px;
+  height: 44px;
   border: none;
   border-radius: 10px;
   background: #2c2c32;
   color: #fff;
   font-family: -apple-system, 'SF Pro', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 500;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -1766,8 +1766,14 @@ body { transition: background .3s, color .3s; }
   font-size: 1.2rem;
 }
 .numpad-key.wide { flex: 2.05; }
-body.numpad-open { padding-bottom: 230px; }
-body.numpad-open .cal-sticky-bar { bottom: 220px !important; }
+/* مساحة سفلية خفيفة فقط حتى لا يغطي الـ numpad الحقل */
+body.numpad-open {
+  padding-bottom: 0;
+}
+#numpad {
+  /* تأكيد الارتفاع التقريبي للتمرير الذكي */
+  --numpad-h: 280px;
+}
 
 .notif-mode-row {
   display: flex;
@@ -3280,16 +3286,16 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('online',  () => showToast(t('online')));
 }
 
-// رسالة الترحيب المركزية — تظهر ثانية واحدة فقط
+// رسالة الترحيب — تختفي بسرعة حتى لا تبقى الشاشة سوداء
 function hideWelcome() {
   const overlay = document.getElementById('welcome-overlay');
-  if (!overlay) return;
+  if (!overlay || overlay.classList.contains('hide')) return;
   overlay.classList.add('hide');
-  setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 400);
+  setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 280);
 }
-window.addEventListener('load', () => setTimeout(hideWelcome, 1000));
-// احتياطي: إخفاء حتى لو تأخر load
-setTimeout(hideWelcome, 1500);
+window.addEventListener('DOMContentLoaded', () => setTimeout(hideWelcome, 350));
+window.addEventListener('load', () => setTimeout(hideWelcome, 500));
+setTimeout(hideWelcome, 800);
 
 // ─── PWA INSTALL PROMPT ───
 let _deferredPrompt = null;
@@ -4427,19 +4433,29 @@ document.getElementById('btn-share-native') && document.getElementById('btn-shar
     pad.classList.add('show');
     document.body.classList.add('numpad-open');
     justOpened = true;
-    setTimeout(() => { justOpened = false; }, 300);
-    // تمرير الحقل ليكون مرئياً فوق اللوحة
+    setTimeout(() => { justOpened = false; }, 350);
+
+    // تمرير ذكي: نحرك الصفحة فقط إذا كان الحقل مغطى بلوحة الأرقام
+    // بدون scrollIntoView(center) الذي كان يخفي كل المحتوى
     setTimeout(() => {
       try {
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const padH = pad.offsetHeight || 280;
+        const rect = input.getBoundingClientRect();
+        const safeBottom = window.innerHeight - padH - 12;
+        if (rect.bottom > safeBottom) {
+          const delta = rect.bottom - safeBottom;
+          window.scrollBy({ top: delta, behavior: 'smooth' });
+        } else if (rect.top < 80) {
+          // إذا كان الحقل تحت الشريط العلوي
+          window.scrollBy({ top: rect.top - 100, behavior: 'smooth' });
+        }
       } catch(e) {}
-    }, 50);
+    }, 80);
   }
 
   function closePad() {
     if (activeInput) {
       activeInput.removeAttribute('readonly');
-      // نُبقي inputmode=none حتى لا يفتح كيبورد النظام فجأة
       activeInput.blur();
     }
     activeInput = null;

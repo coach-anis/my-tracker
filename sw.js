@@ -1,5 +1,5 @@
 // ─── تغيير هذا الرقم عند كل تحديث يضمن تحديث الكاش تلقائياً ───
-const CACHE = 'mytracker-v6';
+const CACHE = 'mytracker-v7';
 
 const ASSETS = [
   '/my-tracker/',
