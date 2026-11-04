@@ -1034,19 +1034,19 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: rgba(6,6,10,0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(6,6,10,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 16px;
-  animation: fadeIn .25s ease both;
+  animation: fadeIn .4s ease both;
   pointer-events: none;
 }
 .welcome-overlay.hide {
-  animation: fadeOut .25s ease both;
+  animation: fadeOut .4s ease both;
   pointer-events: none !important;
   opacity: 0;
 }
@@ -1714,68 +1714,6 @@ body { transition: background .3s, color .3s; }
   cursor: pointer;
 }
 .btn-test-notif:hover { background: rgba(77,166,255,0.18); }
-
-/* ── Custom Western Number Pad (forces 0-9, ignores system Arabic digits) ── */
-#numpad {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 99999;
-  background: #1a1a1e;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-  transform: translateY(110%);
-  transition: transform .2s cubic-bezier(.2,.8,.2,1);
-  box-shadow: 0 -8px 32px rgba(0,0,0,0.45);
-  user-select: none;
-  -webkit-user-select: none;
-  direction: ltr; /* keep 1-2-3 left-to-right even in RTL pages */
-}
-#numpad.show { transform: translateY(0); }
-.numpad-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 5px;
-}
-.numpad-row:last-child { margin-bottom: 0; }
-.numpad-key {
-  flex: 1;
-  height: 44px;
-  border: none;
-  border-radius: 10px;
-  background: #2c2c32;
-  color: #fff;
-  font-family: -apple-system, 'SF Pro', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.25rem;
-  font-weight: 500;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.numpad-key:active { background: #3d3d45; }
-.numpad-key.done {
-  background: #00D4AA;
-  color: #06060A;
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-}
-.numpad-key.done:active { background: #00b894; }
-.numpad-key.del {
-  background: #3a3a42;
-  font-size: 1.2rem;
-}
-.numpad-key.wide { flex: 2.05; }
-/* مساحة سفلية خفيفة فقط حتى لا يغطي الـ numpad الحقل */
-body.numpad-open {
-  padding-bottom: 0;
-}
-#numpad {
-  /* تأكيد الارتفاع التقريبي للتمرير الذكي */
-  --numpad-h: 280px;
-}
-
 .notif-mode-row {
   display: flex;
   gap: 8px;
@@ -2100,8 +2038,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <details class="goals-fold">
       <summary data-i18n="edit_daily_goals">تعديل الأهداف اليومية</summary>
       <div class="goal-fields">
-        <div class="gf"><label for="cal-goal" data-i18n="calories_kcal">السعرات (kcal)</label><input class="goal-input" type="text" inputmode="none" lang="en" id="cal-goal" placeholder="2500" autocomplete="off" oninput="saveCalGoal()" /></div>
-        <div class="gf"><label for="pro-goal" data-i18n="protein_g">البروتين (g)</label><input class="goal-input" type="text" inputmode="none" lang="en" id="pro-goal" placeholder="150" autocomplete="off" oninput="saveProGoal()" /></div>
+        <div class="gf"><label for="cal-goal" data-i18n="calories_kcal">السعرات (kcal)</label><input class="goal-input" type="text" inputmode="numeric" lang="en" id="cal-goal" placeholder="2500" autocomplete="off" oninput="saveCalGoal()" /></div>
+        <div class="gf"><label for="pro-goal" data-i18n="protein_g">البروتين (g)</label><input class="goal-input" type="text" inputmode="numeric" lang="en" id="pro-goal" placeholder="150" autocomplete="off" oninput="saveProGoal()" /></div>
       </div>
     </details>
   </section>
@@ -2163,7 +2101,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       <div id="notif-interval-panel" style="display:none;">
         <div class="notif-interval-row">
           <label>كل</label>
-          <input type="text" inputmode="none" lang="en" id="notif-interval-hours" value="2" autocomplete="off" onchange="saveNotifSettings()" oninput="saveNotifSettings()">
+          <input type="text" inputmode="numeric" lang="en" id="notif-interval-hours" value="2" autocomplete="off" onchange="saveNotifSettings()" oninput="saveNotifSettings()">
           <label>ساعة / ساعات</label>
         </div>
       </div>
@@ -2179,7 +2117,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
         </label>
       </div>
       <button class="btn-test-notif" onclick="testNotification()" data-i18n="test_notification">اختبار الإشعار الآن</button>
-      <p class="notif-hint">مهم لآيفون: ثبّت التطبيق على الشاشة الرئيسية (إضافة إلى الشاشة الرئيسية) ثم فعّل الإشعارات من إعدادات النظام. بدون تثبيت كـ PWA لن تصل الإشعارات عند إغلاق الصفحة. على أندرويد تعمل بشكل أفضل بعد منح الإذن.</p>
+      <p class="notif-hint">ملاحظة: الإشعارات تعمل بشكل أفضل عندما يكون التطبيق مفتوحاً أو في الخلفية مؤخراً. على بعض الهواتف قد تحتاج تفعيل الإشعارات من إعدادات النظام.</p>
     </div>
   </div>
 
@@ -2212,11 +2150,11 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <div class="wgt-goals-row">
     <div class="wgt-goal-card">
       <label data-i18n="start_weight">وزن البداية (كغ)</label>
-      <input class="wgt-goal-input" type="text" inputmode="none" lang="en" id="start-weight" placeholder="مثال: 80" data-i18n-placeholder="ex_80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
+      <input class="wgt-goal-input" type="text" inputmode="decimal" lang="en" id="start-weight" placeholder="مثال: 80" data-i18n-placeholder="ex_80" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
     <div class="wgt-goal-card">
       <label data-i18n="target_weight">وزني المستهدف (كغ)</label>
-      <input class="wgt-goal-input" type="text" inputmode="none" lang="en" id="target-weight" placeholder="مثال: 70" data-i18n-placeholder="ex_70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
+      <input class="wgt-goal-input" type="text" inputmode="decimal" lang="en" id="target-weight" placeholder="مثال: 70" data-i18n-placeholder="ex_70" autocomplete="off" oninput="saveGoals()" onblur="fixGoalInput(this)" />
     </div>
   </div>
 
@@ -2454,11 +2392,11 @@ function updateSlot(id, idx, field, val) {
 
 function mealHTML(day, i) {
   const s = day.slots[i], k = day.id + ':' + i;
-  // لوحة الأرقام المخصصة تظهر عند التركيز — inputmode=none يمنع كيبورد النظام
+  // type=text + inputmode=decimal + lang=en يجبر الكيبورد على الأرقام الغربية دائماً
   const field = (f, label) => `
     <div class="macro-item">
       <span class="macro-label ${f}">${label}</span>
-      <input class="slot-input ${f}" type="text" inputmode="none" lang="en" autocomplete="off"
+      <input class="slot-input ${f}" type="text" inputmode="decimal" lang="en" autocomplete="off"
         value="${s[f] || ''}" placeholder="0"
         oninput="updateSlot(${day.id}, ${i}, '${f}', this.value)" />
     </div>`;
@@ -3208,7 +3146,7 @@ function renderWeight() {
     row.className = rowCls;
     row.innerHTML = `
       <div class="wgt-row-date">${dayLabel}</div>
-      <input class="wgt-row-input" type="text" inputmode="none" lang="en" autocomplete="off" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
+      <input class="wgt-row-input" type="text" inputmode="decimal" lang="en" autocomplete="off" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
         oninput="updateWeight('${dateStr}', this.value)" onblur="updateWeight('${dateStr}', this.value, this)" />
       ${diffHtml}
     `;
@@ -3287,16 +3225,16 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('online',  () => showToast(t('online')));
 }
 
-// رسالة الترحيب — تختفي بسرعة حتى لا تبقى الشاشة سوداء
+// رسالة الترحيب المركزية — تظهر ثانية واحدة فقط
 function hideWelcome() {
   const overlay = document.getElementById('welcome-overlay');
-  if (!overlay || overlay.classList.contains('hide')) return;
+  if (!overlay) return;
   overlay.classList.add('hide');
-  setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 280);
+  setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 400);
 }
-window.addEventListener('DOMContentLoaded', () => setTimeout(hideWelcome, 350));
-window.addEventListener('load', () => setTimeout(hideWelcome, 500));
-setTimeout(hideWelcome, 800);
+window.addEventListener('load', () => setTimeout(hideWelcome, 1000));
+// احتياطي: إخفاء حتى لو تأخر load
+setTimeout(hideWelcome, 1500);
 
 // ─── PWA INSTALL PROMPT ───
 let _deferredPrompt = null;
@@ -4382,167 +4320,7 @@ document.getElementById('btn-share-native') && document.getElementById('btn-shar
 });
 
 
-// ─── CUSTOM WESTERN NUMBER PAD ───
-// يجبر التطبيق على استخدام أرقام 0-9 فقط (لا يعتمد على كيبورد النظام العربي)
-(function initNumpad() {
-  const pad = document.createElement('div');
-  pad.id = 'numpad';
-  pad.innerHTML = `
-    <div class="numpad-row">
-      <button type="button" class="numpad-key" data-k="1">1</button>
-      <button type="button" class="numpad-key" data-k="2">2</button>
-      <button type="button" class="numpad-key" data-k="3">3</button>
-    </div>
-    <div class="numpad-row">
-      <button type="button" class="numpad-key" data-k="4">4</button>
-      <button type="button" class="numpad-key" data-k="5">5</button>
-      <button type="button" class="numpad-key" data-k="6">6</button>
-    </div>
-    <div class="numpad-row">
-      <button type="button" class="numpad-key" data-k="7">7</button>
-      <button type="button" class="numpad-key" data-k="8">8</button>
-      <button type="button" class="numpad-key" data-k="9">9</button>
-    </div>
-    <div class="numpad-row">
-      <button type="button" class="numpad-key" data-k=".">.</button>
-      <button type="button" class="numpad-key" data-k="0">0</button>
-      <button type="button" class="numpad-key del" data-k="del">⌫</button>
-    </div>
-    <div class="numpad-row">
-      <button type="button" class="numpad-key done wide" data-k="done">Done</button>
-    </div>
-  `;
-  document.body.appendChild(pad);
-
-  let activeInput = null;
-  let justOpened = false;
-
-  function isNumField(el) {
-    if (!el || el.tagName !== 'INPUT') return false;
-    return el.classList.contains('slot-input')
-      || el.classList.contains('wgt-row-input')
-      || el.classList.contains('wgt-goal-input')
-      || el.classList.contains('goal-input')
-      || el.id === 'notif-interval-hours';
-  }
-
-  function releaseInput(el) {
-    if (!el) return;
-    el.removeAttribute('readonly');
-  }
-
-  function openPad(input) {
-    if (activeInput && activeInput !== input) releaseInput(activeInput);
-    activeInput = input;
-    // منع كيبورد النظام تماماً
-    input.setAttribute('readonly', 'readonly');
-    input.setAttribute('inputmode', 'none');
-    pad.classList.add('show');
-    document.body.classList.add('numpad-open');
-    justOpened = true;
-    setTimeout(() => { justOpened = false; }, 350);
-
-    // تمرير ذكي: نحرك الصفحة فقط إذا كان الحقل مغطى بلوحة الأرقام
-    // بدون scrollIntoView(center) الذي كان يخفي كل المحتوى
-    setTimeout(() => {
-      try {
-        const padH = pad.offsetHeight || 280;
-        const rect = input.getBoundingClientRect();
-        const safeBottom = window.innerHeight - padH - 12;
-        if (rect.bottom > safeBottom) {
-          const delta = rect.bottom - safeBottom;
-          window.scrollBy({ top: delta, behavior: 'smooth' });
-        } else if (rect.top < 80) {
-          // إذا كان الحقل تحت الشريط العلوي
-          window.scrollBy({ top: rect.top - 100, behavior: 'smooth' });
-        }
-      } catch(e) {}
-    }, 80);
-  }
-
-  function closePad() {
-    if (activeInput) {
-      releaseInput(activeInput);
-      try { activeInput.blur(); } catch(e) {}
-    }
-    // تنظيف أي حقل بقي readonly أو بقي محتفظاً بالتركيز (يمنع تعليق اللوحة)
-    document.querySelectorAll('input[readonly]').forEach(el => { if (isNumField(el)) releaseInput(el); });
-    const ae = document.activeElement;
-    if (ae && ae.tagName === 'INPUT' && isNumField(ae)) { try { ae.blur(); } catch(e) {} }
-    activeInput = null;
-    pad.classList.remove('show');
-    document.body.classList.remove('numpad-open');
-  }
-
-  function press(key) {
-    if (!activeInput) return;
-    let val = activeInput.value || '';
-
-    if (key === 'del') {
-      val = val.slice(0, -1);
-    } else if (key === 'done') {
-      // تشغيل أحداث الحفظ
-      activeInput.dispatchEvent(new Event('input', { bubbles: true }));
-      activeInput.dispatchEvent(new Event('change', { bubbles: true }));
-      activeInput.dispatchEvent(new Event('blur', { bubbles: true }));
-      closePad();
-      return;
-    } else if (key === '.') {
-      if (val.includes('.')) return;
-      val = val + '.';
-    } else {
-      // أرقام غربية فقط 0-9
-      if (val === '0' && key !== '.') val = key;
-      else val = val + key;
-    }
-
-    activeInput.value = val;
-    // إطلاق oninput المرتبط (updateSlot / updateWeight / saveGoals ...)
-    activeInput.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-
-  pad.addEventListener('click', (e) => {
-    const btn = e.target.closest('.numpad-key');
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    press(btn.getAttribute('data-k'));
-  });
-
-  // منع إغلاق اللوحة عند الضغط عليها
-  pad.addEventListener('mousedown', e => e.preventDefault());
-  pad.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-
-  // فتح اللوحة عند التركيز على حقل رقمي
-  document.addEventListener('focusin', (e) => {
-    if (isNumField(e.target)) {
-      openPad(e.target);
-    }
-  });
-
-  // احتياط: إذا بقي الحقل محتفظاً بالتركيز فلن يُطلق focusin — نفتح اللوحة عند اللمس أيضاً
-  function tapOpen(e) {
-    const el = e.target;
-    if (isNumField(el) && !pad.classList.contains('show')) openPad(el);
-    else if (isNumField(el) && activeInput !== el) openPad(el);
-  }
-  document.addEventListener('click', tapOpen, true);
-  document.addEventListener('touchend', tapOpen, true);
-
-  // إغلاق عند النقر خارج الحقل واللوحة
-  document.addEventListener('pointerdown', (e) => {
-    if (!pad.classList.contains('show') || justOpened) return;
-    if (pad.contains(e.target)) return;
-    if (activeInput && (e.target === activeInput || activeInput.contains(e.target))) return;
-    closePad();
-  });
-
-  // إغلاق بزر الرجوع في أندرويد
-  window.addEventListener('popstate', () => {
-    if (pad.classList.contains('show')) closePad();
-  });
-})();
-
+// ─── CALORIE ADVISOR ───
 </script>
 </body>
 </html>
