@@ -4426,7 +4426,13 @@ document.getElementById('btn-share-native') && document.getElementById('btn-shar
       || el.id === 'notif-interval-hours';
   }
 
+  function releaseInput(el) {
+    if (!el) return;
+    el.removeAttribute('readonly');
+  }
+
   function openPad(input) {
+    if (activeInput && activeInput !== input) releaseInput(activeInput);
     activeInput = input;
     // منع كيبورد النظام تماماً
     input.setAttribute('readonly', 'readonly');
@@ -4456,9 +4462,13 @@ document.getElementById('btn-share-native') && document.getElementById('btn-shar
 
   function closePad() {
     if (activeInput) {
-      activeInput.removeAttribute('readonly');
-      activeInput.blur();
+      releaseInput(activeInput);
+      try { activeInput.blur(); } catch(e) {}
     }
+    // تنظيف أي حقل بقي readonly أو بقي محتفظاً بالتركيز (يمنع تعليق اللوحة)
+    document.querySelectorAll('input[readonly]').forEach(el => { if (isNumField(el)) releaseInput(el); });
+    const ae = document.activeElement;
+    if (ae && ae.tagName === 'INPUT' && isNumField(ae)) { try { ae.blur(); } catch(e) {} }
     activeInput = null;
     pad.classList.remove('show');
     document.body.classList.remove('numpad-open');
@@ -4509,6 +4519,15 @@ document.getElementById('btn-share-native') && document.getElementById('btn-shar
       openPad(e.target);
     }
   });
+
+  // احتياط: إذا بقي الحقل محتفظاً بالتركيز فلن يُطلق focusin — نفتح اللوحة عند اللمس أيضاً
+  function tapOpen(e) {
+    const el = e.target;
+    if (isNumField(el) && !pad.classList.contains('show')) openPad(el);
+    else if (isNumField(el) && activeInput !== el) openPad(el);
+  }
+  document.addEventListener('click', tapOpen, true);
+  document.addEventListener('touchend', tapOpen, true);
 
   // إغلاق عند النقر خارج الحقل واللوحة
   document.addEventListener('pointerdown', (e) => {
