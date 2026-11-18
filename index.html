@@ -863,12 +863,18 @@ body::after {
   text-transform:uppercase; color: var(--muted); margin-top:2px;
 }
 
-/* weight log rows */
+/* weight log rows — تمرير عمودي فقط، الخانات ثابتة أفقياً */
 .wgt-list-wrap {
   max-height: 420px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: rgba(0,212,170,0.15) transparent;
+  width: 100%;
+  max-width: 100%;
 }
 
 .btn-add-week {
@@ -915,17 +921,22 @@ body::after {
   background: linear-gradient(90deg, rgba(0,212,170,0.4), transparent);
 }
 
-/* ── WEEK START ROW ── */
+/* ── WEIGHT ROW — شبكة ثابتة: تاريخ | وزن | فرق (لا تتحرك يمين/يسار) ── */
 .wgt-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 72px;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  column-gap: 8px;
+  padding: 10px 12px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 12px;
   margin-bottom: 6px;
   transition: border-color .2s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .wgt-row.week-start {
   border-color: rgba(0,212,170,0.35);
@@ -938,9 +949,16 @@ body::after {
 }
 .wgt-row:focus-within { border-color: rgba(0,212,170,0.3); }
 .wgt-row-date {
-  min-width: 88px;
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
   color: var(--muted);
   line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 .wgt-row-date .wk-num {
   font-size: 0.78rem;
@@ -960,8 +978,11 @@ body::after {
   color: var(--gold);
 }
 .wgt-row-input {
-  flex:1;
-  padding: 7px 10px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 7px 8px;
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.05);
   background: var(--bg3);
@@ -972,19 +993,28 @@ body::after {
   text-align: center;
   outline: none;
   transition: border-color .2s;
+  /* يمنع تكبير iOS الذي يسبب اهتزاز التخطيط */
+  -webkit-appearance: none;
+  appearance: none;
 }
 .wgt-row-input:focus { border-color: rgba(0,212,170,0.4); }
 .wgt-row-input::placeholder { color: rgba(255,255,255,0.08); }
 
 .wgt-row-diff {
-  min-width: 64px;
+  width: 72px;
+  min-width: 72px;
+  max-width: 72px;
+  box-sizing: border-box;
   text-align: center;
   font-family: var(--font-num);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border-radius: 8px;
-  padding: 5px 6px;
+  padding: 5px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .wgt-row-diff.loss { color: var(--teal2); background: rgba(0,212,170,0.1); }
 .wgt-row-diff.gain { color: var(--red); background: rgba(255,77,109,0.1); }
@@ -2678,7 +2708,7 @@ if(!wgtData.targetWeight) wgtData.targetWeight = null;
 if(!wgtData.goalType || !['cut','gain','recomp'].includes(wgtData.goalType)) {
   wgtData.goalType = null; // null = استنتاج تلقائي من الأوزان
 }
-// سيتم استدعاء migrate بعد تعريف generateWeeks في الأسفل عبر refreshWeeks عند التحميل
+// refreshWeeks يُستدعى عند التحميل لتحديث ALL_DATES / ALL_WEEKS
 
 
 
@@ -2864,9 +2894,62 @@ function updateWeight(dateStr, val, inputEl) {
  * - الموثوقية: 3 قياسات فأكثر = موثوق، أقل = تقديري.
  * - التغيّر = متوسط هذا الأسبوع − متوسط آخر أسبوع سابق موثوق (مقارنة متوسطات وليس أوزاناً يومية).
  */
-/** لم يعد مستخدماً — التتبع أصبح أسبوعياً مباشرة (فرق أسبوع عن أسبوع) */
+/**
+ * متوسط الوزن الأسبوعي من القياسات اليومية
+ * - التغيّر = متوسط هذا الأسبوع − متوسط آخر أسبوع سابق موثوق
+ */
 function updateWeeklyAverages() {
-  // no-op
+  const MIN_RELIABLE = 3;
+  const weeks = {};
+  ALL_DATES.forEach((d, i) => {
+    const wk = Math.floor(i / 7) + 1;
+    if (!weeks[wk]) weeks[wk] = [];
+    const n = parseFloat(wgtData.weights && wgtData.weights[d]);
+    if (!isNaN(n) && n >= 40 && n <= 300) weeks[wk].push(n);
+  });
+
+  const avgs = {};
+  Object.keys(weeks).forEach(k => {
+    const a = weeks[k];
+    avgs[k] = a.length ? { avg: a.reduce((x, y) => x + y, 0) / a.length, n: a.length } : null;
+  });
+
+  let prev = null;
+  document.querySelectorAll('.wk-avg-card').forEach(card => {
+    const wk = parseInt(card.getAttribute('data-wk'), 10);
+    const cur = avgs[wk];
+    const T = (t('week') || 'الأسبوع') + ' ' + wk;
+
+    if (!cur) {
+      card.className = 'wk-avg-card empty';
+      card.innerHTML = '<div class="wk-avg-top"><span class="wk-avg-title">📊 متوسط ' + T + '</span><span class="wk-avg-badge">لا بيانات</span></div>';
+      return;
+    }
+
+    const reliable = cur.n >= MIN_RELIABLE;
+    let changeHtml = '--', changeCls = '', ref = '';
+    if (reliable && prev) {
+      const d = cur.avg - prev.avg;
+      const dr = Math.round(d * 100) / 100;
+      const pct = Math.round((d / prev.avg) * 1000) / 10;
+      changeHtml = (dr > 0 ? '+' : '') + dr.toFixed(2) + ' KG';
+      const dirWk = getGoalDirection(getSortedEntries(), wgtData.startWeight, wgtData.targetWeight);
+      changeCls = getChangeClass(dr, dirWk);
+      ref = (pct > 0 ? '+' : '') + pct + '%';
+    }
+
+    card.className = 'wk-avg-card';
+    card.innerHTML =
+      '<div class="wk-avg-top"><span class="wk-avg-title">📊 متوسط ' + T + '</span>' +
+      '<span class="wk-avg-badge ' + (reliable ? 'ok' : 'low') + '">' + cur.n + '/7 أيام' + (reliable ? '' : ' · تقديري') + '</span></div>' +
+      '<div class="wk-avg-body">' +
+        '<div class="wk-avg-item"><div class="wk-avg-val">' + (Math.round(cur.avg * 100) / 100).toFixed(2) + ' KG</div><div class="wk-avg-lbl">' + t('average') + '</div></div>' +
+        '<div class="wk-avg-div"></div>' +
+        '<div class="wk-avg-item"><div class="wk-avg-val ' + changeCls + '">' + changeHtml + '</div><div class="wk-avg-lbl">' + t('vs_prev_week') + (ref ? ' (' + ref + ')' : '') + '</div></div>' +
+      '</div>';
+
+    if (reliable) prev = cur;
+  });
 }
 
 function updateRowDiffs() {
@@ -3044,15 +3127,14 @@ function drawChart() {
   const canvas  = document.getElementById('wgt-canvas');
   const emptyEl = document.getElementById('chart-empty');
   if (!canvas || !emptyEl) return;
-  const entries = getSortedEntries();
+  // المنحنى أسبوعي: متوسط كل أسبوع من القياسات اليومية
+  const entries = getWeeklyChartEntries();
   if(entries.length < 2) { emptyEl.style.display = 'flex'; canvas.style.display = 'none'; return; }
   emptyEl.style.display = 'none'; canvas.style.display = 'block';
 
   const ctx = canvas.getContext('2d');
-  // إذا كانت اللوحة مخفية يكون العرض = 0 — نؤجل الرسم
   const W = canvas.offsetWidth || canvas.clientWidth, H = canvas.offsetHeight || canvas.clientHeight;
   if (W < 10 || H < 10) {
-    // حاول مرة أخرى بعد أن تصبح اللوحة مرئية
     setTimeout(drawChart, 120);
     return;
   }
@@ -3083,21 +3165,21 @@ function drawChart() {
     const v = maxV - i * (maxV - minV) / 4;
     const y = pad.t + (i / 4) * ch;
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.font = `bold 9px Cairo`;
+    ctx.font = 'bold 9px system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(v.toFixed(1), pad.l - 6, y + 4);
   }
 
-  // ── X-axis day labels ──
+  // ── X-axis week labels ──
   const maxLabels = Math.min(entries.length, 6);
   const step = Math.max(1, Math.floor(entries.length / maxLabels));
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = 'bold 8px Cairo';
+  ctx.font = 'bold 8px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  entries.forEach(([date], i) => {
+  entries.forEach((row, i) => {
     if(i % step !== 0 && i !== entries.length - 1) return;
-    const d = new Date(date + 'T00:00:00');
-    const label = `${d.getDate()}/${d.getMonth() + 1}`;
+    const weekNum = row[2];
+    const label = (t('week') || 'أ') + weekNum;
     ctx.fillText(label, tx(i), H - pad.b + 14);
   });
 
@@ -3111,9 +3193,8 @@ function drawChart() {
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l + cw, gy); ctx.stroke();
       ctx.setLineDash([]);
-      // label
       ctx.fillStyle = 'rgba(245,200,66,0.7)';
-      ctx.font = 'bold 8px Cairo';
+      ctx.font = 'bold 8px system-ui, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('GOAL  ' + target + ' KG', pad.l + 6, gy - 5);
       ctx.restore();
@@ -3204,11 +3285,9 @@ function drawChart() {
       if(dist < minDist) { minDist = dist; closest = i; }
     });
     if(minDist > 40) { tooltip.classList.remove('visible'); return; }
-    const [date, val] = entries[closest];
-    const d = new Date(date + 'T00:00:00');
+    const [date, val, weekNum, n] = entries[closest];
     tipVal.textContent = val + ' KG';
-    const wk = (typeof ALL_WEEKS !== 'undefined') ? ALL_WEEKS.find(w => w.key === date) : null;
-    tipDay.textContent = (wk ? `${t('week') || 'الأسبوع'} ${wk.weekNum}  ·  ` : '') + `${d.getDate()}/${d.getMonth() + 1}`;
+    tipDay.textContent = (t('week') || 'الأسبوع') + ' ' + (weekNum || '') + (n ? ' · ' + n + ' قياسات' : '');
     const tooltipX = pts[closest].x;
     const tooltipY = Math.max(pad.t + 4, ty(val) - 56);
     tooltip.style.right  = 'auto';
@@ -3236,7 +3315,6 @@ function getEndDate() {
   return new Date(2026, 11, 31); // 31 ديسمبر 2026 افتراضي
 }
 
-/** قائمة الأيام (للتوافق الداخلي) */
 function generateDates() {
   const dates = [];
   const start = getStartDate();
@@ -3249,7 +3327,7 @@ function generateDates() {
   return dates;
 }
 
-/** قائمة الأسابيع للتسجيل الأسبوعي: كل عنصر = { weekNum, key, start, end } */
+/** أسابيع للرسم البياني فقط (متوسط أسبوعي) */
 function generateWeeks() {
   const weeks = [];
   const start = getStartDate();
@@ -3263,7 +3341,7 @@ function generateWeeks() {
     if (weekEnd > end) weekEnd.setTime(end.getTime());
     weeks.push({
       weekNum,
-      key: toLocalDateStr(weekStart), // مفتاح التخزين = أول يوم في الأسبوع
+      key: toLocalDateStr(weekStart),
       start: toLocalDateStr(weekStart),
       end: toLocalDateStr(weekEnd)
     });
@@ -3276,39 +3354,9 @@ function generateWeeks() {
 let ALL_DATES = generateDates();
 let ALL_WEEKS = generateWeeks();
 
-/** تحويل الأوزان اليومية القديمة إلى وزن واحد لكل أسبوع (آخر قياس في الأسبوع) */
-function migrateWeightsToWeekly() {
-  if (!wgtData.weights) return;
-  const keys = Object.keys(wgtData.weights);
-  if (!keys.length) return;
-  // إذا كل المفاتيح أصلاً مفاتيح أسابيع معروفة → لا حاجة
-  const weekKeySet = new Set(ALL_WEEKS.map(w => w.key));
-  const hasNonWeekKey = keys.some(k => !weekKeySet.has(k));
-  if (!hasNonWeekKey) return;
-
-  const newWeights = {};
-  ALL_WEEKS.forEach(wk => {
-    // اجمع كل القياسات داخل نطاق هذا الأسبوع
-    const inWeek = keys
-      .filter(k => k >= wk.start && k <= wk.end)
-      .sort()
-      .map(k => ({ k, v: parseFloat(wgtData.weights[k]) }))
-      .filter(x => !isNaN(x.v) && x.v >= 40 && x.v <= 300);
-    if (inWeek.length) {
-      // آخر قياس في الأسبوع
-      const last = inWeek[inWeek.length - 1];
-      newWeights[wk.key] = Math.round(last.v * 10) / 10;
-    }
-  });
-  // أي مفتاح خارج النطاق نتركه إن كان week key، وإلا نتجاهله
-  wgtData.weights = newWeights;
-  saveWgtData(wgtData);
-}
-
 function refreshWeeks() {
   ALL_DATES = generateDates();
   ALL_WEEKS = generateWeeks();
-  migrateWeightsToWeekly();
 }
 
 function addWeeks(n) {
@@ -3322,19 +3370,21 @@ function addWeeks(n) {
   showToast(t('weeks_added') || ('تمت إضافة ' + n + ' أسبوع'));
 }
 
-/** تسمية نطاق الأسبوع للعرض */
-function weekRangeLabel(wk) {
-  try {
-    const s = new Date(wk.start + 'T00:00:00');
-    const e = new Date(wk.end + 'T00:00:00');
-    const months = t('months');
-    if (s.getMonth() === e.getMonth()) {
-      return s.getDate() + '–' + e.getDate() + ' ' + months[s.getMonth()];
+/** نقاط المنحنى = متوسط وزن كل أسبوع (من القياسات اليومية) */
+function getWeeklyChartEntries() {
+  const daily = getSortedEntries();
+  if (!daily.length) return [];
+  const out = [];
+  ALL_WEEKS.forEach(wk => {
+    const vals = daily
+      .filter(([d]) => d >= wk.start && d <= wk.end)
+      .map(([, v]) => v);
+    if (vals.length) {
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      out.push([wk.key, Math.round(avg * 100) / 100, wk.weekNum, vals.length]);
     }
-    return s.getDate() + ' ' + months[s.getMonth()] + ' – ' + e.getDate() + ' ' + months[e.getMonth()];
-  } catch (err) {
-    return wk.start;
-  }
+  });
+  return out;
 }
 
 function renderWeight() {
@@ -3347,69 +3397,84 @@ function renderWeight() {
   const entries = getSortedEntries();
   const dir = getGoalDirection(entries, wgtData.startWeight, wgtData.targetWeight);
 
-  ALL_WEEKS.forEach((wk) => {
-    const w = wgtData.weights[wk.key];
-    const sortedIdx = entries.findIndex(e => e[0] === wk.key);
+  ALL_DATES.forEach((dateStr, index) => {
+    const w = wgtData.weights[dateStr];
+    const sortedIdx = entries.findIndex(e => e[0] === dateStr);
+    const dayNum = index + 1;
 
-    let diffHtml = '<div class="wgt-row-diff empty" data-wdiff="' + wk.key + '">--</div>';
+    const isWeekStart = (dayNum - 1) % 7 === 0;
+    const isWeekEnd   = dayNum % 7 === 0;
+    const weekNum = Math.ceil(dayNum / 7);
+
+    if (isWeekStart) {
+      const sep = document.createElement('div');
+      sep.className = 'week-separator';
+      sep.setAttribute('data-week', weekNum);
+      sep.setAttribute('data-week-start', dateStr);
+      sep.innerHTML = '<span class="week-separator-label">' + (t('week') || 'الأسبوع') + ' ' + weekNum + '</span><span class="week-separator-line"></span>';
+      list.appendChild(sep);
+    }
+
+    let diffHtml = '<div class="wgt-row-diff empty" data-wdiff="' + dateStr + '">--</div>';
     const wValid = (w !== undefined && w !== null && w !== '') ? parseFloat(w) : NaN;
     if (!isNaN(wValid) && wValid >= 40 && wValid <= 300 && sortedIdx > 0) {
       const prev = entries[sortedIdx - 1][1];
       const diff = Math.round((wValid - prev) * 10) / 10;
       const cls  = getChangeClass(diff, dir);
-      diffHtml = '<div class="wgt-row-diff ' + cls + '" data-wdiff="' + wk.key + '">' + (diff > 0 ? '+' : '') + diff + ' KG</div>';
+      diffHtml = '<div class="wgt-row-diff ' + cls + '" data-wdiff="' + dateStr + '">' + (diff > 0 ? '+' : '') + diff + ' KG</div>';
     } else if (!isNaN(wValid) && wValid >= 40 && wValid <= 300) {
-      diffHtml = '<div class="wgt-row-diff same" data-wdiff="' + wk.key + '">--</div>';
+      diffHtml = '<div class="wgt-row-diff same" data-wdiff="' + dateStr + '">--</div>';
     }
 
+    const rowCls = isWeekStart ? 'wgt-row week-start' : isWeekEnd ? 'wgt-row week-end' : 'wgt-row';
+    const dayLabel = (t('day_n') || 'يوم') + ' ' + dayNum + (isWeekStart ? ' 🟢' : isWeekEnd ? ' 🟡' : '');
     const row = document.createElement('div');
-    row.className = 'wgt-row week-start';
-    row.setAttribute('data-date', wk.key);
-    row.setAttribute('data-week', wk.weekNum);
+    row.className = rowCls;
+    row.setAttribute('data-date', dateStr);
     row.innerHTML = `
-      <div class="wgt-row-date">
-        <div class="wk-num">${t('week') || 'الأسبوع'} ${wk.weekNum}</div>
-        <div class="wk-range">${weekRangeLabel(wk)}</div>
-      </div>
+      <div class="wgt-row-date">${dayLabel}</div>
       <input class="wgt-row-input" type="text" inputmode="decimal" lang="en" autocomplete="off" placeholder="--" value="${w !== undefined && w !== null && w !== '' ? w : ''}"
-        oninput="updateWeight('${wk.key}', this.value)" onblur="updateWeight('${wk.key}', this.value, this)" />
+        oninput="updateWeight('${dateStr}', this.value)" onblur="updateWeight('${dateStr}', this.value, this)" />
       ${diffHtml}
     `;
     list.appendChild(row);
+
+    if (isWeekEnd) {
+      const card = document.createElement('div');
+      card.className = 'wk-avg-card empty';
+      card.setAttribute('data-wk', weekNum);
+      list.appendChild(card);
+    }
   });
 
+  updateWeeklyAverages();
   updateWgtSummary();
   setTimeout(drawChart, 50);
   setTimeout(scrollToCurrentWeek, 30);
 }
 
-/** يُظهر آخر أسبوع دوّن فيه المستخدم وزنه */
+/** يُظهر آخر يوم/أسبوع سُجّل فيه وزن */
 function scrollToCurrentWeek() {
   const list = document.getElementById('wgt-list');
   if (!list) return;
 
   const entries = getSortedEntries();
-  let refKey = null;
-  if (entries.length) {
-    refKey = entries[entries.length - 1][0];
-  } else {
-    // لا بيانات: أسبوع اليوم التقويمي
-    const today = todayStr();
-    const wk = ALL_WEEKS.find(w => today >= w.start && today <= w.end) || ALL_WEEKS[ALL_WEEKS.length - 1];
-    if (wk) refKey = wk.key;
-  }
-  if (!refKey) return;
+  let refDate = entries.length ? entries[entries.length - 1][0] : todayStr();
 
-  const row = list.querySelector('[data-date="' + refKey + '"]');
+  const row = list.querySelector('[data-date="' + refDate + '"]');
   if (row) {
-    list.scrollTop = Math.max(0, row.offsetTop - 8);
+    // مرّر لفاصل الأسبوع إن وُجد فوق الصف
+    const idx = ALL_DATES.indexOf(refDate);
+    const weekNum = idx >= 0 ? Math.floor(idx / 7) + 1 : 1;
+    const sep = list.querySelector('[data-week="' + weekNum + '"]');
+    list.scrollTop = Math.max(0, (sep || row).offsetTop - 8);
     return;
   }
-  // احتياطي برقم الأسبوع
-  const wk = ALL_WEEKS.find(w => w.key === refKey);
-  if (wk) {
-    const byNum = list.querySelector('[data-week="' + wk.weekNum + '"]');
-    if (byNum) list.scrollTop = Math.max(0, byNum.offsetTop - 8);
+  const idx = ALL_DATES.indexOf(refDate);
+  if (idx >= 0) {
+    const weekNum = Math.floor(idx / 7) + 1;
+    const sep = list.querySelector('[data-week="' + weekNum + '"]');
+    if (sep) list.scrollTop = Math.max(0, sep.offsetTop - 8);
   }
 }
 
@@ -4066,6 +4131,7 @@ const I18N = {
     vs_prev_week: 'عن الأسبوع السابق',
     estimated: '· تقديري',
     week: 'الأسبوع',
+    day_n: 'يوم',
     change: 'التغيّر',
     average: 'المتوسط',
     your_weight: 'وزنك',
@@ -4200,6 +4266,7 @@ const I18N = {
     vs_prev_week: 'vs previous week',
     estimated: '· est.',
     week: 'Week',
+    day_n: 'Day',
     change: 'Change',
     average: 'Average',
     your_weight: 'Your weight',
@@ -4334,6 +4401,7 @@ const I18N = {
     vs_prev_week: 'vs semaine précédente',
     estimated: '· est.',
     week: 'Semaine',
+    day_n: 'Jour',
     change: 'Variation',
     average: 'Moyenne',
     your_weight: 'Votre poids',
@@ -4544,7 +4612,7 @@ function closeShareModal() {
 document.getElementById('cal-goal').value = calGoal || '';
 document.getElementById('pro-goal').value = proGoal || '';
 renderDays();
-refreshWeeks(); // تحويل السجل اليومي القديم إلى أسبوعي إن وُجد
+refreshWeeks();
 cleanWeightLog();
 renderWeight();
 updateStickyBar();

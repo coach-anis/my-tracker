@@ -1,5 +1,5 @@
 // ─── رفع الرقم عند كل تحديث لضمان تحديث الكاش ───
-const CACHE = 'mytracker-v6-offline';
+const CACHE = 'mytracker-v7-offline';
 
 // ملفات محلية فقط — بدون أي طلب إنترنت
 const ASSETS = [
