@@ -2416,7 +2416,6 @@ function switchTab(tab) {
     // الرسم يجب أن يحدث بعد أن يصبح اللوحة مرئية (وإلا يكون عرض الكانفاس = 0)
     setTimeout(() => {
       try { drawChart(); } catch(e) {}
-      try { scrollToCurrentWeek(); } catch(e) {}
     }, 60);
   } else {
     document.querySelectorAll('.tab-btn')[2].className = 'tab-btn active-tools';
@@ -3450,32 +3449,9 @@ function renderWeight() {
   updateWeeklyAverages();
   updateWgtSummary();
   setTimeout(drawChart, 50);
-  setTimeout(scrollToCurrentWeek, 30);
-}
-
-/** يُظهر آخر يوم/أسبوع سُجّل فيه وزن */
-function scrollToCurrentWeek() {
-  const list = document.getElementById('wgt-list');
-  if (!list) return;
-
-  const entries = getSortedEntries();
-  let refDate = entries.length ? entries[entries.length - 1][0] : todayStr();
-
-  const row = list.querySelector('[data-date="' + refDate + '"]');
-  if (row) {
-    // مرّر لفاصل الأسبوع إن وُجد فوق الصف
-    const idx = ALL_DATES.indexOf(refDate);
-    const weekNum = idx >= 0 ? Math.floor(idx / 7) + 1 : 1;
-    const sep = list.querySelector('[data-week="' + weekNum + '"]');
-    list.scrollTop = Math.max(0, (sep || row).offsetTop - 8);
-    return;
-  }
-  const idx = ALL_DATES.indexOf(refDate);
-  if (idx >= 0) {
-    const weekNum = Math.floor(idx / 7) + 1;
-    const sep = list.querySelector('[data-week="' + weekNum + '"]');
-    if (sep) list.scrollTop = Math.max(0, sep.offsetTop - 8);
-  }
+  // ابدأ دائماً من الأسبوع الأول (أعلى القائمة)
+  const listEl = document.getElementById('wgt-list');
+  if (listEl) listEl.scrollTop = 0;
 }
 
 // ─── STICKY CALORIE BAR ───
